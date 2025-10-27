@@ -20,13 +20,6 @@
         .bg-cyan-50 {
             background-color: #ecfeff;
         }
-        .sortable-header {
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .sortable-header:hover {
-            background-color: #f9fafb;
-        }
     </style>
 </head>
 
@@ -127,84 +120,6 @@
                             <i class="fas fa-plus"></i>
                             Add Data
                         </button>
-                        
-                        <!-- Tombol Sorting -->
-                        <div class="relative">
-                            <button id="sortButton" onclick="toggleSortDropdown()"
-                                class="flex items-center gap-2 px-5 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
-                                <i class="fas fa-sort"></i>
-                                <span id="sortText">Sort: Tanggal Terbaru</span>
-                                <i id="sortIcon" class="fas fa-sort-down ml-1"></i>
-                            </button>
-                            
-                            <!-- Dropdown Sorting -->
-                            <div id="sortDropdown" class="hidden absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-20">
-                                <div class="p-2">
-                                    <div class="text-xs font-semibold text-gray-500 px-3 py-2 uppercase tracking-wide">Sort By</div>
-                                    
-                                    <!-- Tanggal -->
-                                    <div class="mb-2">
-                                        <div class="text-sm font-medium text-gray-700 px-3 py-1">Tanggal</div>
-                                        <button onclick="applySort('admitted_date', 'desc')" 
-                                            class="w-full text-left px-6 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded flex items-center justify-between">
-                                            <span>Terbaru ke Terlama</span>
-                                            <i class="fas fa-sort-down text-blue-600"></i>
-                                        </button>
-                                        <button onclick="applySort('admitted_date', 'asc')" 
-                                            class="w-full text-left px-6 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded flex items-center justify-between">
-                                            <span>Terlama ke Terbaru</span>
-                                            <i class="fas fa-sort-up text-blue-600"></i>
-                                        </button>
-                                    </div>
-                                    
-                                    <!-- Nama -->
-                                    <div class="mb-2">
-                                        <div class="text-sm font-medium text-gray-700 px-3 py-1">Nama</div>
-                                        <button onclick="applySort('nama', 'asc')" 
-                                            class="w-full text-left px-6 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded flex items-center justify-between">
-                                            <span>A - Z</span>
-                                            <i class="fas fa-sort-up text-blue-600"></i>
-                                        </button>
-                                        <button onclick="applySort('nama', 'desc')" 
-                                            class="w-full text-left px-6 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded flex items-center justify-between">
-                                            <span>Z - A</span>
-                                            <i class="fas fa-sort-down text-blue-600"></i>
-                                        </button>
-                                    </div>
-                                    
-                                    <!-- Status -->
-                                    <div class="mb-2">
-                                        <div class="text-sm font-medium text-gray-700 px-3 py-1">Status</div>
-                                        <button onclick="applySort('status', 'asc')" 
-                                            class="w-full text-left px-6 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded flex items-center justify-between">
-                                            <span>A - Z</span>
-                                            <i class="fas fa-sort-up text-blue-600"></i>
-                                        </button>
-                                        <button onclick="applySort('status', 'desc')" 
-                                            class="w-full text-left px-6 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded flex items-center justify-between">
-                                            <span>Z - A</span>
-                                            <i class="fas fa-sort-down text-blue-600"></i>
-                                        </button>
-                                    </div>
-                                    
-                                    <!-- Kontak -->
-                                    <div>
-                                        <div class="text-sm font-medium text-gray-700 px-3 py-1">Kontak</div>
-                                        <button onclick="applySort('contact', 'asc')" 
-                                            class="w-full text-left px-6 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded flex items-center justify-between">
-                                            <span>0 - 9</span>
-                                            <i class="fas fa-sort-up text-blue-600"></i>
-                                        </button>
-                                        <button onclick="applySort('contact', 'desc')" 
-                                            class="w-full text-left px-6 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded flex items-center justify-between">
-                                            <span>9 - 0</span>
-                                            <i class="fas fa-sort-down text-blue-600"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
                         <button
                             class="flex items-center gap-2 px-5 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
                             <i class="fas fa-sliders-h"></i>
@@ -218,57 +133,17 @@
                     <table class="w-full">
                         <thead>
                             <tr class="border-b border-gray-200">
-                                <th class="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider sortable-header"
-                                    onclick="applySort('admitted_date', getNextSortDirection('admitted_date'))">
+                                <th class="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                     ADMITTED
-                                    @if(request('sort_field') == 'admitted_date')
-                                        @if(request('sort_direction') == 'asc')
-                                            <i class="fas fa-sort-up text-blue-600 ml-1"></i>
-                                        @else
-                                            <i class="fas fa-sort-down text-blue-600 ml-1"></i>
-                                        @endif
-                                    @else
-                                        <i class="fas fa-sort text-gray-400 ml-1"></i>
-                                    @endif
                                 </th>
-                                <th class="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider sortable-header"
-                                    onclick="applySort('nama', getNextSortDirection('nama'))">
+                                <th class="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                     NAMA
-                                    @if(request('sort_field') == 'nama')
-                                        @if(request('sort_direction') == 'asc')
-                                            <i class="fas fa-sort-up text-blue-600 ml-1"></i>
-                                        @else
-                                            <i class="fas fa-sort-down text-blue-600 ml-1"></i>
-                                        @endif
-                                    @else
-                                        <i class="fas fa-sort text-gray-400 ml-1"></i>
-                                    @endif
                                 </th>
-                                <th class="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider sortable-header"
-                                    onclick="applySort('status', getNextSortDirection('status'))">
+                                <th class="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                     STATUS
-                                    @if(request('sort_field') == 'status')
-                                        @if(request('sort_direction') == 'asc')
-                                            <i class="fas fa-sort-up text-blue-600 ml-1"></i>
-                                        @else
-                                            <i class="fas fa-sort-down text-blue-600 ml-1"></i>
-                                        @endif
-                                    @else
-                                        <i class="fas fa-sort text-gray-400 ml-1"></i>
-                                    @endif
                                 </th>
-                                <th class="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider sortable-header"
-                                    onclick="applySort('contact', getNextSortDirection('contact'))">
+                                <th class="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                     CONTACT
-                                    @if(request('sort_field') == 'contact')
-                                        @if(request('sort_direction') == 'asc')
-                                            <i class="fas fa-sort-up text-blue-600 ml-1"></i>
-                                        @else
-                                            <i class="fas fa-sort-down text-blue-600 ml-1"></i>
-                                        @endif
-                                    @else
-                                        <i class="fas fa-sort text-gray-400 ml-1"></i>
-                                    @endif
                                 </th>
                                 <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                     ACTIONS
@@ -434,92 +309,7 @@
     <script>
         let currentDataNakesId = null;
 
-        // ==================== SORTING FUNCTIONS ====================
-        
-        function toggleSortDropdown() {
-            const dropdown = document.getElementById('sortDropdown');
-            dropdown.classList.toggle('hidden');
-        }
-
-        function applySort(field, direction) {
-            const url = new URL(window.location.href);
-            url.searchParams.set('sort_field', field);
-            url.searchParams.set('sort_direction', direction);
-            
-            // Close dropdown jika menggunakan dropdown sorting
-            const dropdown = document.getElementById('sortDropdown');
-            if (dropdown) {
-                dropdown.classList.add('hidden');
-            }
-            
-            window.location.href = url.toString();
-        }
-
-        function getNextSortDirection(field) {
-            const currentField = '{{ request('sort_field', 'admitted_date') }}';
-            const currentDirection = '{{ request('sort_direction', 'desc') }}';
-            
-            if (currentField === field) {
-                return currentDirection === 'asc' ? 'desc' : 'asc';
-            }
-            return 'asc';
-        }
-
-        function updateSortButtonText() {
-            const sortButton = document.getElementById('sortButton');
-            const sortText = document.getElementById('sortText');
-            const sortIcon = document.getElementById('sortIcon');
-            
-            if (!sortButton) return;
-            
-            const field = '{{ request('sort_field', 'admitted_date') }}';
-            const direction = '{{ request('sort_direction', 'desc') }}';
-            
-            const fieldNames = {
-                'admitted_date': 'Tanggal',
-                'nama': 'Nama',
-                'status': 'Status',
-                'contact': 'Kontak'
-            };
-            
-            const directionTexts = {
-                'asc': 'A-Z',
-                'desc': 'Z-A'
-            };
-            
-            const directionIcons = {
-                'asc': 'fa-sort-up',
-                'desc': 'fa-sort-down'
-            };
-            
-            let displayText = `Sort: ${fieldNames[field]}`;
-            if (field === 'admitted_date') {
-                displayText = direction === 'desc' ? 'Sort: Tanggal Terbaru' : 'Sort: Tanggal Terlama';
-            } else {
-                displayText = `Sort: ${fieldNames[field]} ${directionTexts[direction]}`;
-            }
-            
-            sortText.textContent = displayText;
-            sortIcon.className = `fas ${directionIcons[direction]} ml-1`;
-        }
-
-        // Initialize sort button text
-        document.addEventListener('DOMContentLoaded', function() {
-            updateSortButtonText();
-            
-            // Close sort dropdown when clicking outside
-            document.addEventListener('click', function(e) {
-                const sortButton = document.getElementById('sortButton');
-                const sortDropdown = document.getElementById('sortDropdown');
-                
-                if (sortButton && sortDropdown && !sortButton.contains(e.target) && !sortDropdown.contains(e.target)) {
-                    sortDropdown.classList.add('hidden');
-                }
-            });
-        });
-
-        // ==================== MODAL FUNCTIONS ====================
-        
+        // Modal functions
         function openModal(action, id = null) {
             const modal = document.getElementById('dataModal');
             const title = document.getElementById('modalTitle');
