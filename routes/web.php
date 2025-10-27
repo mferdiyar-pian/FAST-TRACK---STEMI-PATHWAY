@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DataNakesController;
 use App\Http\Controllers\CodeStemiController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\BroadcastController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -12,7 +13,12 @@ Route::get('/', function () {
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard.index');
 Route::get('/data-nakes', [DataNakesController::class, 'index'])->name('data-nakes.index');
-Route::get('/code-stemi', [CodeStemiController::class, 'index'])->name('code-stemi.index');
+
+
+Route::resource('code-stemi', CodeStemiController::class)->except(['create']);
+Route::patch('/code-stemi/{id}/finish', [CodeStemiController::class, 'finish'])->name('code-stemi.finish');
+Route::post('/code-stemi/{id}/checklist', [CodeStemiController::class, 'updateChecklist'])->name('code-stemi.update-checklist');
+
 Route::get('/setting', [SettingController::class, 'index'])->name('setting.index');
 
 // TAMBAHAN ROUTES UNTUK CRUD DATA NAKES
@@ -35,3 +41,7 @@ Route::prefix('data-nakes')->group(function () {
     // Route untuk menghapus data
     Route::delete('/{id}', [DataNakesController::class, 'destroy'])->name('data-nakes.destroy');
 });
+
+
+Route::get('/broadcast', [BroadcastController::class, 'index'])->name('broadcast.index');
+Route::post('/broadcast/send', [BroadcastController::class, 'send'])->name('broadcast.send');
