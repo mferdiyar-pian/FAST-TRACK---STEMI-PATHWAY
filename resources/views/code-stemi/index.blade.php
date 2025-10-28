@@ -1,3 +1,4 @@
+{{-- resources/views/code-stemi/index.blade.php --}}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,11 +11,13 @@
 
 <body class="bg-gray-50">
     <div class="flex h-screen">
-        {{-- Sidebar --}}
+       {{-- Sidebar --}}
         <aside class="w-64 bg-white shadow-sm">
             <div class="p-6">
                 <div class="flex items-center gap-3">
+                    {{-- Logo Image (tanpa text) --}}
                     <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway" class="h-16 w-16 object-contain">
+                    
                     <div>
                         <h1 class="text-blue-600 font-bold text-sm leading-tight">FAST</h1>
                         <h1 class="text-blue-600 font-bold text-sm leading-tight">TRACK</h1>
@@ -90,7 +93,7 @@
                 </div>
 
                 <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                    @if($data->count() > 0)
+                    @if(isset($data) && $data->count() > 0)
                         <table class="w-full">
                             <thead>
                                 <tr class="border-b border-gray-200">
@@ -172,76 +175,69 @@
 
     {{-- Modal Add Data --}}
     <div id="addCodeStemiModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-md transform transition-all">
-            <div class="flex items-center justify-between p-5 border-b border-gray-200">
-                <h3 class="text-lg font-bold text-gray-800">REGISTRASI CODE STEMI</h3>
-                <button onclick="closeAddModal()" class="text-gray-400 hover:text-gray-600 transition">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform transition-all">
+            <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                <h3 class="text-xl font-bold text-gray-800">REGISTRASI CODE STEMI</h3>
+                <div class="flex items-center gap-4">
+                    <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway" class="h-12 object-contain">
+                    <div>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight">FAST</h1>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight">TRACK</h1>
+                        <p class="text-teal-600 font-bold text-xs leading-tight">STEMI</p>
+                        <p class="text-teal-600 font-bold text-xs leading-tight">PATHWAY</p>
+                    </div>
+                    <button onclick="closeAddModal()" class="text-gray-400 hover:text-gray-600 transition">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
             </div>
 
             <form action="{{ route('code-stemi.store') }}" method="POST" id="activationForm">
                 @csrf
                 <div class="p-6 space-y-6">
                     {{-- Checklist Section --}}
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-800 mb-3">Checklist Pemeriksaan (Opsional)</label>
-                        <p class="text-xs text-gray-500 mb-3">Pilih checklist yang sudah dilakukan, atau lanjutkan tanpa checklist</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        @php
+                            $checklistItems = [
+                                'Anamnesis' => 'Anamnesis',
+                                'EKG' => 'EKG', 
+                                'Rongten Thorax' => 'Rongten Thorax',
+                                'Pemeriksaan Fisik' => 'Pemeriksaan Fisik',
+                                'Laboratorium' => 'Laboratorium',
+                                'Informed Consent' => 'Informed Consent'
+                            ];
+                        @endphp
                         
-                        <div class="grid grid-cols-2 gap-3">
-                            @php
-                                $checklistItems = [
-                                    'Anamnesis' => 'Anamnesis',
-                                    'EKG' => 'EKG', 
-                                    'Rongten Thorax' => 'Rongten Thorax',
-                                    'Pemeriksaan Fisik' => 'Pemeriksaan Fisik',
-                                    'Laboratorium' => 'Laboratorium',
-                                    'Informed Consent' => 'Informed Consent'
-                                ];
-                            @endphp
-                            
-                            @foreach($checklistItems as $key => $label)
-                                <label class="flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-gray-50 transition">
-                                    <input type="checkbox" name="checklist[]" value="{{ $key }}" 
-                                           class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
-                                    <span class="text-sm text-gray-700">{{ $label }}</span>
-                                </label>
-                            @endforeach
-                        </div>
+                        @foreach($checklistItems as $key => $label)
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="checklist[]" value="{{ $key }}" 
+                                       class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700">{{ $label }}</span>
+                            </label>
+                        @endforeach
                     </div>
 
-                    {{-- Divider --}}
-                    <div class="border-t border-gray-200"></div>
-
-                    {{-- Broadcast Message Section --}}
+                    {{-- Pesan Broadcast Section --}}
                     <div>
                         <label class="block text-sm font-semibold text-gray-800 mb-3">Pesan Broadcast</label>
                         <p class="text-xs text-gray-600 mb-2">Fast Track STEMI Pathway</p>
 
-                        <div class="bg-gray-100 rounded-lg p-4 space-y-2 text-sm">
-                            <p class="text-gray-700 font-semibold">CODE STEMI AKTIF</p>
-                            <p class="text-gray-600">Pasien STEMI telah berada di IGD RS Otak M Hatta Bukittinggi.</p>
-                            <p class="text-gray-600">Seluruh unit terkait dimohon segera siaga.</p>
-                            <p class="text-gray-600">Fast Track STEMI Pathway aktif.</p>
-                            <p class="text-gray-600">Waktu Door-to-balloon dimulai.</p>
+                        <div class="bg-gray-100 rounded-lg p-4 space-y-2">
+                            <p class="text-sm text-gray-700 font-semibold">CODE STEMI AKTIF</p>
+                            <p class="text-xs text-gray-600">Pasien STEMI telah berada di IGD RS Otak M Hatta Bukittinggi.</p>
+                            <p class="text-xs text-gray-600">Seluruh unit terkait dimohon segera siaga.</p>
+                            <p class="text-xs text-gray-600">Fast Track STEMI Pathway aktif.</p>
+                            <p class="text-xs text-gray-600">Waktu Door-to-balloon dimulai.</p>
                         </div>
 
-                        {{-- Custom Message Input --}}
-                        <div class="mt-4">
-                            <textarea 
-                                name="custom_message" 
-                                placeholder="Dapat menambahkan custom messages disini (opsional)"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                                rows="3"
-                            ></textarea>
-                        </div>
+                        <p class="text-xs text-gray-400 italic mt-2">Dapat menambahkan custom messages disini</p>
                     </div>
 
-                    {{-- Activation Button --}}
+                    {{-- Submit Button --}}
                     <button type="submit" 
-                            class="w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                            class="w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition"
                             onclick="return confirm('Apakah Anda yakin ingin mengaktifkan Code STEMI?')">
-                        AKTIVASI CODE STEMI DIMULAI
+                        AKTIVASI CODE STEMI<br />DIMULAI
                     </button>
                 </div>
             </form>
@@ -250,25 +246,32 @@
 
     {{-- Modal Detail Data --}}
     <div id="detailCodeStemiModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-sm transform transition-all">
-            <div class="flex items-center justify-between p-4 border-b border-gray-200">
-                <h3 class="text-base font-bold text-gray-800">DETAIL CODE STEMI</h3>
-                <button onclick="closeDetailModal()" class="text-gray-400 hover:text-gray-600 transition">
-                    <i class="fas fa-times"></i>
-                </button>
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform transition-all">
+            <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                <h3 class="text-xl font-bold text-gray-800">REGISTRASI CODE STEMI</h3>
+                <div class="flex items-center gap-4">
+                    <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway" class="h-12 object-contain">
+                     <div>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight">FAST</h1>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight">TRACK</h1>
+                        <p class="text-teal-600 font-bold text-xs leading-tight">STEMI</p>
+                        <p class="text-teal-600 font-bold text-xs leading-tight">PATHWAY</p>
+                    </div>
+                    <button onclick="closeDetailModal()" class="text-gray-400 hover:text-gray-600 transition">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
             </div>
-            <div id="detailContent" class="p-4 space-y-4">
+            <div id="detailContent" class="p-6 space-y-4">
                 {{-- Content akan diisi via JavaScript --}}
             </div>
         </div>
     </div>
 
     <script>
-        // Timer management
         let timers = new Map();
         let detailTimers = new Map();
 
-        // Initialize timers when page loads
         document.addEventListener('DOMContentLoaded', function() {
             initializeTimers();
         });
@@ -291,24 +294,19 @@
             
             function updateTimer() {
                 const now = new Date();
-                const diff = now - start;
+                const diff = Math.max(0, now - start);
                 
-                // Pastikan tidak negatif
-                const safeDiff = Math.max(0, diff);
-                
-                const hours = Math.floor(safeDiff / (1000 * 60 * 60));
-                const minutes = Math.floor((safeDiff % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((safeDiff % (1000 * 60)) / 1000);
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
                 
                 const timeString = `${hours.toString().padStart(2, '0')}h : ${minutes.toString().padStart(2, '0')}m : ${seconds.toString().padStart(2, '0')}s`;
                 
-                // Update table
                 const timeElement = document.getElementById(`time-${id}`);
                 if (timeElement) {
                     timeElement.textContent = timeString;
                 }
                 
-                // Update detail modal if open
                 if (detailTimers.has(id)) {
                     const detailTimeElement = document.getElementById(`detail-time-${id}`);
                     if (detailTimeElement) {
@@ -317,26 +315,11 @@
                 }
             }
             
-            // Update immediately
             updateTimer();
-            
-            // Update every second
             const timerId = setInterval(updateTimer, 1000);
             timers.set(id, timerId);
         }
 
-        function stopTimer(id) {
-            if (timers.has(id)) {
-                clearInterval(timers.get(id));
-                timers.delete(id);
-            }
-            if (detailTimers.has(id)) {
-                clearInterval(detailTimers.get(id));
-                detailTimers.delete(id);
-            }
-        }
-
-        // Modal Functions
         function openAddModal() {
             const modal = document.getElementById('addCodeStemiModal');
             modal.classList.remove('hidden');
@@ -365,19 +348,12 @@
             modal.classList.remove('flex');
             document.body.style.overflow = 'auto';
             
-            // Stop all detail timers
-            detailTimers.forEach((timerId, id) => {
+            detailTimers.forEach((timerId) => {
                 clearInterval(timerId);
             });
             detailTimers.clear();
         }
 
-        // Form Validation - Checklist sekarang opsional
-        function validateForm() {
-            return confirm('Apakah Anda yakin ingin mengaktifkan Code STEMI?');
-        }
-
-        // Dropdown Functions
         function toggleDropdown(id) {
             const dropdown = document.getElementById('dropdown-' + id);
             dropdown.classList.toggle('hidden');
@@ -389,29 +365,24 @@
             });
         }
 
-        // Close modals when clicking outside
         document.addEventListener('click', function(e) {
-            // Close dropdowns
             if (!e.target.closest('[id^="dropdown-"]') && !e.target.closest('[onclick*="toggleDropdown"]')) {
                 document.querySelectorAll('[id^="dropdown-"]').forEach(dropdown => {
                     dropdown.classList.add('hidden');
                 });
             }
             
-            // Close add modal
             const addModal = document.getElementById('addCodeStemiModal');
             if (e.target === addModal) {
                 closeAddModal();
             }
             
-            // Close detail modal
             const detailModal = document.getElementById('detailCodeStemiModal');
             if (e.target === detailModal) {
                 closeDetailModal();
             }
         });
 
-        // Close modals with Escape key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeAddModal();
@@ -419,7 +390,6 @@
             }
         });
 
-        // Load detail data for modal
         async function loadDetailData(id) {
             try {
                 const response = await fetch(`/code-stemi/${id}`);
@@ -432,50 +402,48 @@
                     const isChecked = data.checklist && data.checklist.includes(item);
                     checklistHTML += `
                         <label class="flex items-center gap-2">
-                            <input type="checkbox" ${isChecked ? 'checked' : ''} disabled class="w-3 h-3 text-blue-600 rounded border-gray-300">
-                            <span class="text-gray-700 text-xs ${isChecked ? 'font-medium' : 'text-gray-400'}">${item}</span>
+                            <input type="checkbox" ${isChecked ? 'checked' : ''} disabled class="w-4 h-4 text-blue-600 rounded border-gray-300">
+                            <span class="text-sm text-gray-700 ${isChecked ? 'font-medium' : 'text-gray-400'}">${item}</span>
                         </label>
                     `;
                 });
 
                 document.getElementById('detailContent').innerHTML = `
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-800 mb-2">Checklist Pemeriksaan</label>
-                        <div class="grid grid-cols-2 gap-2 text-xs">
-                            ${checklistHTML}
-                        </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        ${checklistHTML}
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-gray-800 mb-2">Pesan Broadcast</label>
-                        <div class="bg-blue-50 rounded p-3 space-y-1 text-xs">
-                            <p class="text-blue-900 font-semibold">CODE STEMI AKTIF</p>
-                            <p class="text-blue-800">Pasien STEMI telah teriada di IGD RS Otak M Hatta Bukittinggi.</p>
-                            <p class="text-blue-800">Seluruh unit terkait dimohon segera siaga.</p>
-                            <p class="text-blue-800">Fast Track STEMI Pathway aktif.</p>
-                            <p class="text-blue-800">Waktu Door-to-balloon dimulai.</p>
-                            ${data.custom_message ? `<p class="text-blue-800 mt-2 font-semibold">Pesan Tambahan:</p><p class="text-blue-800">${data.custom_message}</p>` : ''}
+                        <label class="block text-sm font-semibold text-gray-800 mb-2">Pesan Broadcast</label>
+                        <p class="text-xs text-gray-600 mb-2">Fast Track STEMI Pathway</p>
+                        <div class="bg-blue-50 rounded-lg p-4 space-y-2">
+                            <p class="text-sm text-blue-900 font-semibold">CODE STEMI AKTIF</p>
+                            <p class="text-xs text-blue-800">Pasien STEMI telah berada di IGD RS Otak M Hatta Bukittinggi.</p>
+                            <p class="text-xs text-blue-800">Seluruh unit terkait dimohon segera siaga.</p>
+                            <p class="text-xs text-blue-800">Fast Track STEMI Pathway aktif.</p>
+                            <p class="text-xs text-blue-800">Waktu Door-to-balloon dimulai.</p>
+                            ${data.custom_message ? `<p class="text-xs text-blue-800 mt-2 font-semibold">Pesan Tambahan:</p><p class="text-xs text-blue-800">${data.custom_message}</p>` : ''}
                         </div>
+                        <p class="text-xs text-gray-400 italic mt-2">Dapat menambahkan custom messages disini</p>
                     </div>
 
-                    <div class="bg-white border border-gray-200 rounded-lg p-4 text-center">
-                        <p class="text-xs font-semibold text-gray-800 mb-2">DOOR TO BALLOON TIME</p>
-                        <div id="detail-time-${data.id}" class="text-2xl font-bold text-blue-600 tracking-wider">${data.door_to_balloon_time}</div>
+                    <div class="bg-white border-2 border-gray-200 rounded-xl p-6 text-center">
+                        <p class="text-sm font-semibold text-gray-800 mb-3">DOOR TO BALLOON TIME</p>
+                        <div id="detail-time-${data.id}" class="text-6xl font-bold text-blue-600 tracking-wider">${data.door_to_balloon_time}</div>
                     </div>
 
                     ${data.status === 'Running' ? `
                     <form action="/code-stemi/${id}/finish" method="POST">
                         <input type="hidden" name="_token" value="{{ csrf_token() }}">
                         <input type="hidden" name="_method" value="PATCH">
-                        <button type="submit" class="w-full py-2 bg-red-600 text-white text-sm font-bold rounded-lg hover:bg-red-700 transition" 
+                        <button type="submit" class="w-full py-3 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition" 
                                 onclick="return confirm('Apakah Anda yakin ingin menyelesaikan Code STEMI ini?')">
-                            AKTIVASI CODE STEMI SELESAI
+                            AKTIVASI CODE STEMI<br/>SELESAI
                         </button>
                     </form>
                     ` : ''}
                 `;
 
-                // Start real-time timer for detail modal if status is Running
                 if (data.status === 'Running') {
                     startDetailTimer(data.id, data.start_time);
                 }
@@ -491,7 +459,7 @@
             
             function updateDetailTimer() {
                 const now = new Date();
-                const diff = now - start;
+                const diff = Math.max(0, now - start);
                 
                 const hours = Math.floor(diff / (1000 * 60 * 60));
                 const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -505,29 +473,10 @@
                 }
             }
             
-            // Update immediately
             updateDetailTimer();
-            
-            // Update every second
             const timerId = setInterval(updateDetailTimer, 1000);
             detailTimers.set(id, timerId);
         }
-
-        // Handle form submission to refresh page and restart timers
-        document.getElementById('activationForm')?.addEventListener('submit', function() {
-            // Timers will be reinitialized when page reloads after form submission
-        });
-
-        // Auto-refresh the page every 30 seconds to sync with server
-        setInterval(() => {
-            // Only refresh if no modals are open
-            const addModal = document.getElementById('addCodeStemiModal');
-            const detailModal = document.getElementById('detailCodeStemiModal');
-            
-            if (addModal.classList.contains('hidden') && detailModal.classList.contains('hidden')) {
-                window.location.reload();
-            }
-        }, 30000); // 30 seconds
     </script>
 </body>
 </html>
