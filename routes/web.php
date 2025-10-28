@@ -14,10 +14,32 @@ Route::get('/', function () {
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard.index');
 Route::get('/data-nakes', [DataNakesController::class, 'index'])->name('data-nakes.index');
 
-
-Route::resource('code-stemi', CodeStemiController::class)->except(['create']);
-Route::patch('/code-stemi/{id}/finish', [CodeStemiController::class, 'finish'])->name('code-stemi.finish');
-Route::post('/code-stemi/{id}/checklist', [CodeStemiController::class, 'updateChecklist'])->name('code-stemi.update-checklist');
+// ROUTES CODE STEMI
+Route::prefix('code-stemi')->group(function () {
+    // Route utama untuk index
+    Route::get('/', [CodeStemiController::class, 'index'])->name('code-stemi.index');
+    
+    // Route untuk menyimpan data baru (aktivasi code stemi)
+    Route::post('/', [CodeStemiController::class, 'store'])->name('code-stemi.store');
+    
+    // Route untuk menampilkan detail (modal detail)
+    Route::get('/{id}', [CodeStemiController::class, 'show'])->name('code-stemi.show');
+    
+    // Route untuk menampilkan form edit (modal edit)
+    Route::get('/{id}/edit', [CodeStemiController::class, 'edit'])->name('code-stemi.edit');
+    
+    // Route untuk update data (proses edit)
+    Route::put('/{id}', [CodeStemiController::class, 'update'])->name('code-stemi.update');
+    
+    // Route untuk menghapus data
+    Route::delete('/{id}', [CodeStemiController::class, 'destroy'])->name('code-stemi.destroy');
+    
+    // Route tambahan untuk finish code stemi
+    Route::patch('/{id}/finish', [CodeStemiController::class, 'finish'])->name('code-stemi.finish');
+    
+    // Route untuk update checklist (jika masih digunakan)
+    Route::post('/{id}/checklist', [CodeStemiController::class, 'updateChecklist'])->name('code-stemi.update-checklist');
+});
 
 Route::get('/setting', [SettingController::class, 'index'])->name('setting.index');
 
@@ -41,7 +63,6 @@ Route::prefix('data-nakes')->group(function () {
     // Route untuk menghapus data
     Route::delete('/{id}', [DataNakesController::class, 'destroy'])->name('data-nakes.destroy');
 });
-
 
 Route::get('/broadcast', [BroadcastController::class, 'index'])->name('broadcast.index');
 Route::post('/broadcast/send', [BroadcastController::class, 'send'])->name('broadcast.send');

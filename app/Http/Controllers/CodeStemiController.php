@@ -101,6 +101,55 @@ class CodeStemiController extends Controller
     }
 
     /**
+     * Tampilkan form edit Code STEMI dalam format JSON untuk modal.
+     */
+    public function edit($id)
+    {
+        $codeStemi = CodeStemi::findOrFail($id);
+        
+        return response()->json([
+            'id' => $codeStemi->id,
+            'status' => $codeStemi->status,
+            'checklist' => $codeStemi->checklist,
+            'custom_message' => $codeStemi->custom_message,
+            'start_time' => $codeStemi->start_time->setTimezone('Asia/Makassar')->toISOString(),
+            'door_to_balloon_time' => $codeStemi->door_to_balloon_time,
+        ]);
+    }
+
+    /**
+     * Update data Code STEMI.
+     */
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'checklist' => 'nullable|array',
+            'checklist.*' => 'string',
+            'custom_message' => 'nullable|string|max:500'
+        ]);
+
+        try {
+            $codeStemi = CodeStemi::findOrFail($id);
+            
+            $codeStemi->update([
+                'checklist' => $request->checklist ?? [],
+                'custom_message' => $request->custom_message,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data Code STEMI berhasil diperbarui!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memperbarui data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Update checklist dari modal detail.
      */
     public function updateChecklist(Request $request, $id)

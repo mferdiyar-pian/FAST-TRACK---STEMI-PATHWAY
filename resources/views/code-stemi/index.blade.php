@@ -1,4 +1,3 @@
-{{-- resources/views/code-stemi/index.blade.php --}}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -101,7 +100,7 @@
                                     <th class="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase">STATUS</th>
                                     <th class="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase">DOOR TO BALLOON TIME</th>
                                     <th class="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase">ACTION</th>
-                                    <th class="px-6 py-4"></th>
+                                    <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase w-32">OPTIONS</th>
                                 </tr>
                             </thead>
                             <tbody id="codeStemiTableBody">
@@ -138,20 +137,36 @@
                                                 @endif
                                             </div>
                                         </td>
-                                        <td class="px-6 py-4 text-right">
-                                            <div class="relative">
-                                                <button class="text-gray-400 hover:text-gray-600 transition" onclick="toggleDropdown({{ $item->id }})">
-                                                    <i class="fas fa-ellipsis-v"></i>
-                                                </button>
-                                                <div id="dropdown-{{ $item->id }}" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden z-10">
-                                                    <form action="{{ route('code-stemi.destroy', $item->id) }}" method="POST">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50" 
-                                                                onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
-                                                            Hapus Data
-                                                        </button>
-                                                    </form>
+                                        {{-- DROPDOWN OPTIONS --}}
+                                        <td class="px-6 py-4">
+                                            <div class="flex justify-end">
+                                                <div class="relative">
+                                                    {{-- Tombol dropdown --}}
+                                                    <button class="text-gray-400 hover:text-gray-600 transition p-2 rounded-lg hover:bg-gray-100 dropdown-toggle" 
+                                                            onclick="toggleDropdown({{ $item->id }})">
+                                                        <i class="fas fa-ellipsis-v"></i>
+                                                    </button>
+                                                    
+                                                    {{-- Dropdown menu --}}
+                                                    <div id="dropdown-{{ $item->id }}" class="hidden absolute right-0 mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                                                        <div class="py-1">
+                                                            <button onclick="openEditModal({{ $item->id }})" 
+                                                                    class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition flex items-center gap-2">
+                                                                <i class="fas fa-edit text-xs"></i>
+                                                                <span>Edit</span>
+                                                            </button>
+                                                            <form action="{{ route('code-stemi.destroy', $item->id) }}" method="POST" class="inline w-full">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit" 
+                                                                        class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition flex items-center gap-2"
+                                                                        onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
+                                                                    <i class="fas fa-trash text-xs"></i>
+                                                                    <span>Hapus</span>
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </td>
@@ -175,69 +190,154 @@
 
     {{-- Modal Add Data --}}
     <div id="addCodeStemiModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform transition-all">
-            <div class="flex items-center justify-between p-6 border-b border-gray-200">
-                <h3 class="text-xl font-bold text-gray-800">REGISTRASI CODE STEMI</h3>
-                <div class="flex items-center gap-4">
-                    <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway" class="h-12 object-contain">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md transform transition-all">
+            <div class="flex items-center justify-between p-4 border-b border-gray-200">
+                <h3 class="text-lg font-bold text-gray-800">REGISTRASI CODE STEMI</h3>
+                <div class="flex items-center gap-3">
+                    <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway" class="h-10 object-contain">
                     <div>
-                        <h1 class="text-blue-600 font-bold text-sm leading-tight">FAST</h1>
-                        <h1 class="text-blue-600 font-bold text-sm leading-tight">TRACK</h1>
+                        <h1 class="text-blue-600 font-bold text-xs leading-tight">FAST</h1>
+                        <h1 class="text-blue-600 font-bold text-xs leading-tight">TRACK</h1>
                         <p class="text-teal-600 font-bold text-xs leading-tight">STEMI</p>
                         <p class="text-teal-600 font-bold text-xs leading-tight">PATHWAY</p>
                     </div>
                     <button onclick="closeAddModal()" class="text-gray-400 hover:text-gray-600 transition">
-                        <i class="fas fa-times text-xl"></i>
+                        <i class="fas fa-times text-lg"></i>
                     </button>
                 </div>
             </div>
 
             <form action="{{ route('code-stemi.store') }}" method="POST" id="activationForm">
                 @csrf
-                <div class="p-6 space-y-6">
+                <div class="p-5 space-y-4">
                     {{-- Checklist Section --}}
-                    <div class="grid grid-cols-2 gap-3">
-                        @php
-                            $checklistItems = [
-                                'Anamnesis' => 'Anamnesis',
-                                'EKG' => 'EKG', 
-                                'Rongten Thorax' => 'Rongten Thorax',
-                                'Pemeriksaan Fisik' => 'Pemeriksaan Fisik',
-                                'Laboratorium' => 'Laboratorium',
-                                'Informed Consent' => 'Informed Consent'
-                            ];
-                        @endphp
-                        
-                        @foreach($checklistItems as $key => $label)
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" name="checklist[]" value="{{ $key }}" 
-                                       class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
-                                <span class="text-sm text-gray-700">{{ $label }}</span>
-                            </label>
-                        @endforeach
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-800 mb-2">Checklist Registrasi</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            @php
+                                $checklistItems = [
+                                    'Anamnesis' => 'Anamnesis',
+                                    'EKG' => 'EKG', 
+                                    'Rongten Thorax' => 'Rongten Thorax',
+                                    'Pemeriksaan Fisik' => 'Pemeriksaan Fisik',
+                                    'Laboratorium' => 'Laboratorium',
+                                    'Informed Consent' => 'Informed Consent'
+                                ];
+                            @endphp
+                            
+                            @foreach($checklistItems as $key => $label)
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" name="checklist[]" value="{{ $key }}" 
+                                           class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                                    <span class="text-sm text-gray-700">{{ $label }}</span>
+                                </label>
+                            @endforeach
+                        </div>
                     </div>
 
-                    {{-- Pesan Broadcast Section --}}
+                    {{-- Custom Message Section --}}
                     <div>
-                        <label class="block text-sm font-semibold text-gray-800 mb-3">Pesan Broadcast</label>
+                        <label class="block text-sm font-semibold text-gray-800 mb-2">Pesan Custom Broadcast</label>
                         <p class="text-xs text-gray-600 mb-2">Fast Track STEMI Pathway</p>
 
-                        <div class="bg-gray-100 rounded-lg p-4 space-y-2">
-                            <p class="text-sm text-gray-700 font-semibold">CODE STEMI AKTIF</p>
+                        <div class="bg-gray-100 rounded-lg p-3 space-y-1 mb-2">
+                            <p class="text-xs text-gray-700 font-semibold">CODE STEMI AKTIF</p>
                             <p class="text-xs text-gray-600">Pasien STEMI telah berada di IGD RS Otak M Hatta Bukittinggi.</p>
                             <p class="text-xs text-gray-600">Seluruh unit terkait dimohon segera siaga.</p>
                             <p class="text-xs text-gray-600">Fast Track STEMI Pathway aktif.</p>
                             <p class="text-xs text-gray-600">Waktu Door-to-balloon dimulai.</p>
                         </div>
 
-                        <p class="text-xs text-gray-400 italic mt-2">Dapat menambahkan custom messages disini</p>
+                        <textarea name="custom_message" 
+                                  placeholder="Tambahkan pesan custom disini (opsional)"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+                                  rows="2"></textarea>
+                        <p class="text-xs text-gray-400 italic mt-1">Pesan ini akan ditambahkan di akhir broadcast</p>
                     </div>
 
                     {{-- Submit Button --}}
                     <button type="submit" 
-                            class="w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition"
+                            class="w-full py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition text-sm"
                             onclick="return confirm('Apakah Anda yakin ingin mengaktifkan Code STEMI?')">
-                        AKTIVASI CODE STEMI<br />DIMULAI
+                        AKTIVASI CODE STEMI DIMULAI
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- Modal Edit Data --}}
+    <div id="editCodeStemiModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md transform transition-all">
+            <div class="flex items-center justify-between p-4 border-b border-gray-200">
+                <h3 class="text-lg font-bold text-gray-800">EDIT CODE STEMI</h3>
+                <div class="flex items-center gap-3">
+                    <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway" class="h-10 object-contain">
+                    <div>
+                        <h1 class="text-blue-600 font-bold text-xs leading-tight">FAST</h1>
+                        <h1 class="text-blue-600 font-bold text-xs leading-tight">TRACK</h1>
+                        <p class="text-teal-600 font-bold text-xs leading-tight">STEMI</p>
+                        <p class="text-teal-600 font-bold text-xs leading-tight">PATHWAY</p>
+                    </div>
+                    <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 transition">
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <form id="editCodeStemiForm" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="p-5 space-y-4">
+                    {{-- Checklist Section --}}
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-800 mb-2">Checklist Registrasi</label>
+                        <div class="grid grid-cols-2 gap-2" id="editChecklistContainer">
+                            @php
+                                $checklistItems = [
+                                    'Anamnesis' => 'Anamnesis',
+                                    'EKG' => 'EKG', 
+                                    'Rongten Thorax' => 'Rongten Thorax',
+                                    'Pemeriksaan Fisik' => 'Pemeriksaan Fisik',
+                                    'Laboratorium' => 'Laboratorium',
+                                    'Informed Consent' => 'Informed Consent'
+                                ];
+                            @endphp
+                            
+                            @foreach($checklistItems as $key => $label)
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" name="checklist[]" value="{{ $key }}" 
+                                           class="edit-checklist w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                                    <span class="text-sm text-gray-700">{{ $label }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- Custom Message Section --}}
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-800 mb-2">Pesan Custom Broadcast</label>
+                        <p class="text-xs text-gray-600 mb-2">Fast Track STEMI Pathway</p>
+
+                        <div class="bg-gray-100 rounded-lg p-3 space-y-1 mb-2">
+                            <p class="text-xs text-gray-700 font-semibold">CODE STEMI AKTIF</p>
+                            <p class="text-xs text-gray-600">Pasien STEMI telah berada di IGD RS Otak M Hatta Bukittinggi.</p>
+                            <p class="text-xs text-gray-600">Seluruh unit terkait dimohon segera siaga.</p>
+                            <p class="text-xs text-gray-600">Fast Track STEMI Pathway aktif.</p>
+                            <p class="text-xs text-gray-600">Waktu Door-to-balloon dimulai.</p>
+                        </div>
+
+                        <textarea name="custom_message" id="editCustomMessage" 
+                                  placeholder="Tambahkan pesan custom disini (opsional)"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+                                  rows="2"></textarea>
+                        <p class="text-xs text-gray-400 italic mt-1">Pesan ini akan ditambahkan di akhir broadcast</p>
+                    </div>
+
+                    {{-- Submit Button --}}
+                    <button type="submit" 
+                            class="w-full py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition text-sm">
+                        UPDATE CODE STEMI
                     </button>
                 </div>
             </form>
@@ -246,23 +346,23 @@
 
     {{-- Modal Detail Data --}}
     <div id="detailCodeStemiModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform transition-all">
-            <div class="flex items-center justify-between p-6 border-b border-gray-200">
-                <h3 class="text-xl font-bold text-gray-800">REGISTRASI CODE STEMI</h3>
-                <div class="flex items-center gap-4">
-                    <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway" class="h-12 object-contain">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md transform transition-all">
+            <div class="flex items-center justify-between p-4 border-b border-gray-200">
+                <h3 class="text-lg font-bold text-gray-800">DETAIL CODE STEMI</h3>
+                <div class="flex items-center gap-3">
+                    <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway" class="h-10 object-contain">
                      <div>
-                        <h1 class="text-blue-600 font-bold text-sm leading-tight">FAST</h1>
-                        <h1 class="text-blue-600 font-bold text-sm leading-tight">TRACK</h1>
+                        <h1 class="text-blue-600 font-bold text-xs leading-tight">FAST</h1>
+                        <h1 class="text-blue-600 font-bold text-xs leading-tight">TRACK</h1>
                         <p class="text-teal-600 font-bold text-xs leading-tight">STEMI</p>
                         <p class="text-teal-600 font-bold text-xs leading-tight">PATHWAY</p>
                     </div>
                     <button onclick="closeDetailModal()" class="text-gray-400 hover:text-gray-600 transition">
-                        <i class="fas fa-times text-xl"></i>
+                        <i class="fas fa-times text-lg"></i>
                     </button>
                 </div>
             </div>
-            <div id="detailContent" class="p-6 space-y-4">
+            <div id="detailContent" class="p-5 space-y-4">
                 {{-- Content akan diisi via JavaScript --}}
             </div>
         </div>
@@ -271,9 +371,51 @@
     <script>
         let timers = new Map();
         let detailTimers = new Map();
+        let activeDropdown = null;
 
         document.addEventListener('DOMContentLoaded', function() {
             initializeTimers();
+            
+            // Tutup dropdown ketika klik di luar
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.dropdown-toggle')) {
+                    closeAllDropdowns();
+                }
+            });
+
+            // Handle form submission edit
+            document.getElementById('editCodeStemiForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const form = this;
+                const formData = new FormData(form);
+                const url = form.action;
+                
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert(result.message);
+                        closeEditModal();
+                        location.reload(); // Reload untuk update data terbaru
+                    } else {
+                        alert(result.message);
+                    }
+                    
+                } catch (error) {
+                    console.error('Error updating data:', error);
+                    alert('Terjadi kesalahan saat mengupdate data');
+                }
+            });
         });
 
         function initializeTimers() {
@@ -320,6 +462,34 @@
             timers.set(id, timerId);
         }
 
+        // FUNGSI DROPDOWN
+        function toggleDropdown(id) {
+            const dropdown = document.getElementById(`dropdown-${id}`);
+            
+            // Tutup semua dropdown lainnya
+            closeAllDropdowns();
+            
+            // Buka/tutup dropdown yang diklik
+            if (dropdown.classList.contains('hidden')) {
+                dropdown.classList.remove('hidden');
+                dropdown.classList.add('block');
+                activeDropdown = id;
+            } else {
+                dropdown.classList.add('hidden');
+                dropdown.classList.remove('block');
+                activeDropdown = null;
+            }
+        }
+
+        function closeAllDropdowns() {
+            document.querySelectorAll('[id^="dropdown-"]').forEach(dropdown => {
+                dropdown.classList.add('hidden');
+                dropdown.classList.remove('block');
+            });
+            activeDropdown = null;
+        }
+
+        // FUNGSI MODAL ADD
         function openAddModal() {
             const modal = document.getElementById('addCodeStemiModal');
             modal.classList.remove('hidden');
@@ -334,6 +504,24 @@
             document.body.style.overflow = 'auto';
         }
 
+        // FUNGSI MODAL EDIT
+        function openEditModal(id) {
+            closeAllDropdowns();
+            loadEditData(id);
+            const modal = document.getElementById('editCodeStemiModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeEditModal() {
+            const modal = document.getElementById('editCodeStemiModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
+
+        // FUNGSI MODAL DETAIL
         function openDetailModal(id) {
             loadDetailData(id);
             const modal = document.getElementById('detailCodeStemiModal');
@@ -354,42 +542,31 @@
             detailTimers.clear();
         }
 
-        function toggleDropdown(id) {
-            const dropdown = document.getElementById('dropdown-' + id);
-            dropdown.classList.toggle('hidden');
-            
-            document.querySelectorAll('[id^="dropdown-"]').forEach(otherDropdown => {
-                if (otherDropdown.id !== 'dropdown-' + id) {
-                    otherDropdown.classList.add('hidden');
-                }
-            });
+        // LOAD DATA UNTUK EDIT
+        async function loadEditData(id) {
+            try {
+                const response = await fetch(`/code-stemi/${id}/edit`);
+                const data = await response.json();
+                
+                // Set form action
+                document.getElementById('editCodeStemiForm').action = `/code-stemi/${id}`;
+                
+                // Set checklist
+                const checkboxes = document.querySelectorAll('.edit-checklist');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = data.checklist && data.checklist.includes(checkbox.value);
+                });
+                
+                // Set custom message
+                document.getElementById('editCustomMessage').value = data.custom_message || '';
+                
+            } catch (error) {
+                console.error('Error loading edit data:', error);
+                alert('Gagal memuat data untuk edit');
+            }
         }
 
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('[id^="dropdown-"]') && !e.target.closest('[onclick*="toggleDropdown"]')) {
-                document.querySelectorAll('[id^="dropdown-"]').forEach(dropdown => {
-                    dropdown.classList.add('hidden');
-                });
-            }
-            
-            const addModal = document.getElementById('addCodeStemiModal');
-            if (e.target === addModal) {
-                closeAddModal();
-            }
-            
-            const detailModal = document.getElementById('detailCodeStemiModal');
-            if (e.target === detailModal) {
-                closeDetailModal();
-            }
-        });
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeAddModal();
-                closeDetailModal();
-            }
-        });
-
+        // LOAD DATA UNTUK DETAIL
         async function loadDetailData(id) {
             try {
                 const response = await fetch(`/code-stemi/${id}`);
@@ -409,36 +586,36 @@
                 });
 
                 document.getElementById('detailContent').innerHTML = `
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-2 gap-2">
                         ${checklistHTML}
                     </div>
 
                     <div>
                         <label class="block text-sm font-semibold text-gray-800 mb-2">Pesan Broadcast</label>
                         <p class="text-xs text-gray-600 mb-2">Fast Track STEMI Pathway</p>
-                        <div class="bg-blue-50 rounded-lg p-4 space-y-2">
-                            <p class="text-sm text-blue-900 font-semibold">CODE STEMI AKTIF</p>
+                        <div class="bg-blue-50 rounded-lg p-3 space-y-1">
+                            <p class="text-xs text-blue-900 font-semibold">CODE STEMI AKTIF</p>
                             <p class="text-xs text-blue-800">Pasien STEMI telah berada di IGD RS Otak M Hatta Bukittinggi.</p>
                             <p class="text-xs text-blue-800">Seluruh unit terkait dimohon segera siaga.</p>
                             <p class="text-xs text-blue-800">Fast Track STEMI Pathway aktif.</p>
                             <p class="text-xs text-blue-800">Waktu Door-to-balloon dimulai.</p>
                             ${data.custom_message ? `<p class="text-xs text-blue-800 mt-2 font-semibold">Pesan Tambahan:</p><p class="text-xs text-blue-800">${data.custom_message}</p>` : ''}
                         </div>
-                        <p class="text-xs text-gray-400 italic mt-2">Dapat menambahkan custom messages disini</p>
+                        <p class="text-xs text-gray-400 italic mt-1">Dapat menambahkan custom messages disini</p>
                     </div>
 
-                    <div class="bg-white border-2 border-gray-200 rounded-xl p-6 text-center">
-                        <p class="text-sm font-semibold text-gray-800 mb-3">DOOR TO BALLOON TIME</p>
-                        <div id="detail-time-${data.id}" class="text-6xl font-bold text-blue-600 tracking-wider">${data.door_to_balloon_time}</div>
+                    <div class="bg-white border border-gray-200 rounded-lg p-4 text-center">
+                        <p class="text-sm font-semibold text-gray-800 mb-2">DOOR TO BALLOON TIME</p>
+                        <div id="detail-time-${data.id}" class="text-3xl font-bold text-blue-600 tracking-wider">${data.door_to_balloon_time}</div>
                     </div>
 
                     ${data.status === 'Running' ? `
                     <form action="/code-stemi/${id}/finish" method="POST">
                         <input type="hidden" name="_token" value="{{ csrf_token() }}">
                         <input type="hidden" name="_method" value="PATCH">
-                        <button type="submit" class="w-full py-3 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition" 
+                        <button type="submit" class="w-full py-2.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition text-sm" 
                                 onclick="return confirm('Apakah Anda yakin ingin menyelesaikan Code STEMI ini?')">
-                            AKTIVASI CODE STEMI<br/>SELESAI
+                            AKTIVASI CODE STEMI SELESAI
                         </button>
                     </form>
                     ` : ''}
@@ -477,6 +654,33 @@
             const timerId = setInterval(updateDetailTimer, 1000);
             detailTimers.set(id, timerId);
         }
+
+        // EVENT LISTENER UNTUK CLOSE MODAL
+        document.addEventListener('click', function(e) {
+            const addModal = document.getElementById('addCodeStemiModal');
+            if (e.target === addModal) {
+                closeAddModal();
+            }
+            
+            const editModal = document.getElementById('editCodeStemiModal');
+            if (e.target === editModal) {
+                closeEditModal();
+            }
+            
+            const detailModal = document.getElementById('detailCodeStemiModal');
+            if (e.target === detailModal) {
+                closeDetailModal();
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeAddModal();
+                closeEditModal();
+                closeDetailModal();
+                closeAllDropdowns();
+            }
+        });
     </script>
 </body>
 </html>
