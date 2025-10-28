@@ -56,23 +56,23 @@ class CodeStemiController extends Controller
 
             // Kirim pesan ke setiap staf
             foreach ($staffs as $staff) {
-                if ($staff->no_hp) {
+                if ($staff->contact) {
                     try {
                         $response = Http::timeout(10)
                             ->withHeaders([
-                                'Authorization' => env('FONNTE_TOKEN'),
+                                'Authorization' => config('services.fonnte.token'),
                             ])->post('https://api.fonnte.com/send', [
-                                'target' => $staff->no_hp,
+                                'target' => $staff->contact,
                                 'message' => $message,
                             ]);
 
                         if ($response->successful()) {
                             $successCount++;
                         } else {
-                            $failedNumbers[] = $staff->no_hp;
+                            $failedNumbers[] = $staff->contact;
                         }
                     } catch (\Exception $e) {
-                        $failedNumbers[] = $staff->no_hp;
+                        $failedNumbers[] = $staff->contact;
                     }
                 }
             }
