@@ -26,8 +26,8 @@
                 <div class="flex items-center gap-3">
                     <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway" class="h-14 w-14 object-contain">
                     <div>
-                        <h1 class="text-teal-600 font-bold text-sm leading-tight">FAST</h1>
-                        <h1 class="text-teal-600 font-bold text-sm leading-tight">TRACK</h1>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight">FAST</h1>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight">TRACK</h1>
                         <p class="text-teal-600 font-bold text-xs leading-tight">STEMI</p>
                         <p class="text-teal-600 font-bold text-xs leading-tight">PATHWAY</p>
                     </div>
@@ -232,9 +232,9 @@
             <div class="flex items-center justify-between p-6 border-b border-gray-200">
                 <div class="flex items-center gap-3">
                     <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway" class="h-12 w-12 object-contain">
-                    <div>
-                        <h1 class="text-teal-600 font-bold text-sm leading-tight">FAST</h1>
-                        <h1 class="text-teal-600 font-bold text-sm leading-tight">TRACK</h1>
+                   <div>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight">FAST</h1>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight">TRACK</h1>
                         <p class="text-teal-600 font-bold text-xs leading-tight">STEMI</p>
                         <p class="text-teal-600 font-bold text-xs leading-tight">PATHWAY</p>
                     </div>

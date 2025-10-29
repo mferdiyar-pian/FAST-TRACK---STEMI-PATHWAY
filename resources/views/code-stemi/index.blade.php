@@ -6,6 +6,11 @@
     <title>Fast Track STEMI Pathway - Code STEMI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .bg-cyan-light {
+            background-color: #E0F7FA;
+        }
+    </style>
 </head>
 
 <body class="bg-gray-50">
@@ -14,9 +19,7 @@
         <aside class="w-64 bg-white shadow-sm">
             <div class="p-6">
                 <div class="flex items-center gap-3">
-                    {{-- Logo Image (tanpa text) --}}
-                    <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway" class="h-16 w-16 object-contain">
-                    
+                    <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway" class="h-14 w-14 object-contain">
                     <div>
                         <h1 class="text-blue-600 font-bold text-sm leading-tight">FAST</h1>
                         <h1 class="text-blue-600 font-bold text-sm leading-tight">TRACK</h1>
@@ -28,16 +31,16 @@
 
             <nav class="mt-8">
                 <a href="{{ route('dashboard.index') }}" class="flex items-center gap-3 px-6 py-3 text-gray-500 hover:bg-gray-50">
-                    <i class="fas fa-th-large"></i><span class="font-medium">Dashboard</span>
+                    <i class="fas fa-th-large w-5"></i><span class="font-medium">Dashboard</span>
                 </a>
                 <a href="{{ route('data-nakes.index') }}" class="flex items-center gap-3 px-6 py-3 text-gray-500 hover:bg-gray-50">
-                    <i class="fas fa-briefcase"></i><span class="font-medium">Data Nakes</span>
+                    <i class="fas fa-user-md w-5"></i><span class="font-medium">Data Nakes</span>
                 </a>
                 <a href="{{ route('code-stemi.index') }}" class="flex items-center gap-3 px-6 py-3 bg-blue-50 text-blue-600 border-l-4 border-blue-600">
-                    <i class="fas fa-file-alt"></i><span class="font-medium">Code STEMI</span>
+                    <i class="fas fa-file-medical-alt w-5"></i><span class="font-medium">Code STEMI</span>
                 </a>
                 <a href="{{ route('setting.index') }}" class="flex items-center gap-3 px-6 py-3 text-gray-500 hover:bg-gray-50">
-                    <i class="fas fa-cog"></i><span class="font-medium">Setting</span>
+                    <i class="fas fa-cog w-5"></i><span class="font-medium">Setting</span>
                 </a>
             </nav>
         </aside>
@@ -49,7 +52,7 @@
                     <div></div>
                     <div class="flex items-center gap-6">
                         <div class="relative">
-                            <input type="text" placeholder="Search type of keywords" class="w-80 pl-4 pr-10 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500">
+                            <input type="text" placeholder="Search type of keywords" class="w-80 pl-4 pr-10 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
                             <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
                         </div>
                         <button class="relative">
@@ -57,8 +60,8 @@
                             <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                         </button>
                         <div class="flex items-center gap-3">
-                            <span class="text-gray-700 font-medium">dr. Muhammad Zaky, Sp.JP</span>
-                            <i class="fas fa-chevron-down text-gray-400"></i>
+                            <span class="text-gray-700 font-medium text-sm">dr. Muhammad Zaky, Sp.JP</span>
+                            <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
                         </div>
                     </div>
                 </div>
@@ -79,13 +82,13 @@
                     </div>
                 @endif
 
-                <div class="flex items-center justify-between mb-8">
-                    <h2 class="text-3xl font-bold text-gray-800">Code STEMI</h2>
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Code STEMI</h2>
                     <div class="flex gap-3">
-                        <button onclick="openAddModal()" class="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+                        <button onclick="openAddModal()" class="flex items-center gap-2 px-5 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition font-medium text-sm">
                             <i class="fas fa-plus"></i>Add Data
                         </button>
-                        <button class="flex items-center gap-2 px-5 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+                        <button class="flex items-center gap-2 px-5 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-sm">
                             <i class="fas fa-sliders-h"></i>Filter
                         </button>
                     </div>
@@ -95,17 +98,17 @@
                     @if(isset($data) && $data->count() > 0)
                         <table class="w-full">
                             <thead>
-                                <tr class="border-b border-gray-200">
-                                    <th class="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase">ADMITTED</th>
-                                    <th class="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase">STATUS</th>
-                                    <th class="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase">DOOR TO BALLOON TIME</th>
-                                    <th class="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase">ACTION</th>
-                                    <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase w-32">OPTIONS</th>
+                                <tr class="bg-white">
+                                    <th class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">ADMITTED</th>
+                                    <th class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">STATUS</th>
+                                    <th class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">DOOR TO BALLOON TIME</th>
+                                    <th class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">ACTION</th>
+                                    <th class="px-6 py-3"></th>
                                 </tr>
                             </thead>
                             <tbody id="codeStemiTableBody">
                                 @foreach ($data as $index => $item)
-                                    <tr class="border-b border-gray-100 hover:bg-gray-50 transition {{ $index % 2 == 1 ? 'bg-cyan-50' : 'bg-white' }}" 
+                                    <tr class="border-t border-gray-100 {{ $index % 2 == 0 ? 'bg-cyan-light' : 'bg-white' }}" 
                                         data-id="{{ $item->id }}" 
                                         data-start-time="{{ $item->start_time->toISOString() }}" 
                                         data-status="{{ $item->status }}" 
@@ -124,12 +127,12 @@
                                         </td>
                                         <td class="px-6 py-4">
                                             <div class="flex items-center gap-2">
-                                                <button onclick="openDetailModal({{ $item->id }})" class="px-4 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition font-medium">Detail</button>
+                                                <button onclick="openDetailModal({{ $item->id }})" class="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition font-medium">Detail</button>
                                                 @if ($item->status === 'Running')
                                                     <form action="{{ route('code-stemi.finish', $item->id) }}" method="POST" class="inline">
                                                         @csrf
                                                         @method('PATCH')
-                                                        <button type="submit" class="px-4 py-1.5 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition font-medium whitespace-nowrap" 
+                                                        <button type="submit" class="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition font-medium whitespace-nowrap" 
                                                                 onclick="return confirm('Apakah Anda yakin ingin menyelesaikan Code STEMI ini?')">
                                                             Aktivasi Code Stemi Selesai
                                                         </button>
@@ -137,43 +140,77 @@
                                                 @endif
                                             </div>
                                         </td>
-                                        {{-- DROPDOWN OPTIONS --}}
                                         <td class="px-6 py-4">
-                                            <div class="flex justify-end">
-                                                <div class="relative">
-                                                    {{-- Tombol dropdown --}}
-                                                    <button class="text-gray-400 hover:text-gray-600 transition p-2 rounded-lg hover:bg-gray-100 dropdown-toggle" 
-                                                            onclick="toggleDropdown({{ $item->id }})">
-                                                        <i class="fas fa-ellipsis-v"></i>
-                                                    </button>
-                                                    
-                                                    {{-- Dropdown menu --}}
-                                                    <div id="dropdown-{{ $item->id }}" class="hidden absolute right-0 mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-                                                        <div class="py-1">
-                                                            <button onclick="openEditModal({{ $item->id }})" 
-                                                                    class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition flex items-center gap-2">
-                                                                <i class="fas fa-edit text-xs"></i>
-                                                                <span>Edit</span>
-                                                            </button>
-                                                            <form action="{{ route('code-stemi.destroy', $item->id) }}" method="POST" class="inline w-full">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <button type="submit" 
-                                                                        class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition flex items-center gap-2"
-                                                                        onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
-                                                                    <i class="fas fa-trash text-xs"></i>
-                                                                    <span>Hapus</span>
-                                                                </button>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                            <div class="flex items-center justify-end">
+                                                <button onclick="openContextMenu(event, {{ $item->id }})" 
+                                                    class="text-gray-400 hover:text-gray-600 transition p-2">
+                                                    <i class="fas fa-ellipsis-v"></i>
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
+
+                        {{-- Pagination --}}
+                        @if(isset($data) && method_exists($data, 'lastPage') && $data->lastPage() > 1)
+                            <div class="border-t border-gray-200 px-6 py-4">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-1">
+                                        {{-- Previous --}}
+                                        @if ($data->onFirstPage())
+                                            <button disabled class="px-3 py-2 text-gray-400 cursor-not-allowed text-sm flex items-center gap-1">
+                                                <i class="fas fa-chevron-left"></i>Previous
+                                            </button>
+                                        @else
+                                            <a href="{{ $data->previousPageUrl() }}" class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm flex items-center gap-1">
+                                                <i class="fas fa-chevron-left"></i>Previous
+                                            </a>
+                                        @endif
+
+                                        {{-- Page Numbers --}}
+                                        @php
+                                            $currentPage = $data->currentPage();
+                                            $lastPage = $data->lastPage();
+                                        @endphp
+
+                                        @for ($i = 1; $i <= min(5, $lastPage); $i++)
+                                            @if ($i == $currentPage)
+                                                <button class="px-3 py-2 bg-blue-500 text-white rounded font-medium text-sm min-w-[40px]">{{ $i }}</button>
+                                            @else
+                                                <a href="{{ $data->url($i) }}" class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm min-w-[40px] text-center">{{ $i }}</a>
+                                            @endif
+                                        @endfor
+
+                                        @if ($lastPage > 5)
+                                            <span class="px-2 text-gray-400 text-sm">...</span>
+                                            <a href="{{ $data->url($lastPage) }}" class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm">{{ $lastPage }}</a>
+                                        @endif
+
+                                        {{-- Next --}}
+                                        @if ($data->hasMorePages())
+                                            <a href="{{ $data->nextPageUrl() }}" class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm flex items-center gap-1">
+                                                Next<i class="fas fa-chevron-right"></i>
+                                            </a>
+                                        @else
+                                            <button disabled class="px-3 py-2 text-gray-400 cursor-not-allowed text-sm flex items-center gap-1">
+                                                Next<i class="fas fa-chevron-right"></i>
+                                            </button>
+                                        @endif
+                                    </div>
+
+                                    <div class="flex items-center gap-4">
+                                        <button class="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 transition font-medium text-sm">
+                                            <i class="fas fa-download"></i>Export
+                                        </button>
+                                        <span class="text-sm text-gray-600">
+                                            Page <span class="font-semibold">{{ $data->currentPage() }}</span> <span class="text-gray-400">of</span> <span class="font-semibold">{{ $data->lastPage() }}</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
                     @else
                         <div class="text-center py-12">
                             <i class="fas fa-file-alt text-4xl text-gray-300 mb-4"></i>
@@ -188,6 +225,16 @@
         </main>
     </div>
 
+    {{-- Context Menu --}}
+    <div id="contextMenu" class="fixed hidden bg-white shadow-lg rounded-lg py-2 z-50 border border-gray-200" style="min-width: 140px;">
+        <button onclick="editFromMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-700 flex items-center gap-2">
+            <i class="fas fa-edit text-blue-500 w-4"></i>Edit
+        </button>
+        <button onclick="deleteFromMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-700 flex items-center gap-2">
+            <i class="fas fa-trash-alt text-red-500 w-4"></i>Hapus
+        </button>
+    </div>
+
     {{-- Modal Add Data --}}
     <div id="addCodeStemiModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-md transform transition-all">
@@ -196,8 +243,8 @@
                 <div class="flex items-center gap-3">
                     <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway" class="h-10 object-contain">
                     <div>
-                        <h1 class="text-blue-600 font-bold text-xs leading-tight">FAST</h1>
-                        <h1 class="text-blue-600 font-bold text-xs leading-tight">TRACK</h1>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight">FAST</h1>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight">TRACK</h1>
                         <p class="text-teal-600 font-bold text-xs leading-tight">STEMI</p>
                         <p class="text-teal-600 font-bold text-xs leading-tight">PATHWAY</p>
                     </div>
@@ -273,9 +320,9 @@
                 <h3 class="text-lg font-bold text-gray-800">EDIT CODE STEMI</h3>
                 <div class="flex items-center gap-3">
                     <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway" class="h-10 object-contain">
-                    <div>
-                        <h1 class="text-blue-600 font-bold text-xs leading-tight">FAST</h1>
-                        <h1 class="text-blue-600 font-bold text-xs leading-tight">TRACK</h1>
+                   <div>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight">FAST</h1>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight">TRACK</h1>
                         <p class="text-teal-600 font-bold text-xs leading-tight">STEMI</p>
                         <p class="text-teal-600 font-bold text-xs leading-tight">PATHWAY</p>
                     </div>
@@ -352,8 +399,8 @@
                 <div class="flex items-center gap-3">
                     <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway" class="h-10 object-contain">
                      <div>
-                        <h1 class="text-blue-600 font-bold text-xs leading-tight">FAST</h1>
-                        <h1 class="text-blue-600 font-bold text-xs leading-tight">TRACK</h1>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight">FAST</h1>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight">TRACK</h1>
                         <p class="text-teal-600 font-bold text-xs leading-tight">STEMI</p>
                         <p class="text-teal-600 font-bold text-xs leading-tight">PATHWAY</p>
                     </div>
@@ -371,17 +418,10 @@
     <script>
         let timers = new Map();
         let detailTimers = new Map();
-        let activeDropdown = null;
+        let contextMenuItemId = null;
 
         document.addEventListener('DOMContentLoaded', function() {
             initializeTimers();
-            
-            // Tutup dropdown ketika klik di luar
-            document.addEventListener('click', function(e) {
-                if (!e.target.closest('.dropdown-toggle')) {
-                    closeAllDropdowns();
-                }
-            });
 
             // Handle form submission edit
             document.getElementById('editCodeStemiForm').addEventListener('submit', async function(e) {
@@ -406,7 +446,7 @@
                     if (result.success) {
                         alert(result.message);
                         closeEditModal();
-                        location.reload(); // Reload untuk update data terbaru
+                        location.reload();
                     } else {
                         alert(result.message);
                     }
@@ -462,32 +502,54 @@
             timers.set(id, timerId);
         }
 
-        // FUNGSI DROPDOWN
-        function toggleDropdown(id) {
-            const dropdown = document.getElementById(`dropdown-${id}`);
+        // FUNGSI CONTEXT MENU
+        function openContextMenu(event, id) {
+            event.stopPropagation();
+            const menu = document.getElementById('contextMenu');
+            contextMenuItemId = id;
             
-            // Tutup semua dropdown lainnya
-            closeAllDropdowns();
-            
-            // Buka/tutup dropdown yang diklik
-            if (dropdown.classList.contains('hidden')) {
-                dropdown.classList.remove('hidden');
-                dropdown.classList.add('block');
-                activeDropdown = id;
-            } else {
-                dropdown.classList.add('hidden');
-                dropdown.classList.remove('block');
-                activeDropdown = null;
+            // Position menu at button
+            const rect = event.currentTarget.getBoundingClientRect();
+            menu.style.left = (rect.left - 120) + 'px';
+            menu.style.top = (rect.bottom + 5) + 'px';
+            menu.classList.remove('hidden');
+        }
+
+        function editFromMenu() {
+            const id = contextMenuItemId;
+            document.getElementById('contextMenu').classList.add('hidden');
+            openEditModal(id);
+        }
+
+        function deleteFromMenu() {
+            const id = contextMenuItemId;
+            document.getElementById('contextMenu').classList.add('hidden');
+            if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/code-stemi/${id}`;
+                
+                const csrfToken = document.querySelector('meta[name="csrf-token"]') || 
+                                 document.querySelector('input[name="_token"]');
+                const tokenValue = csrfToken ? csrfToken.content || csrfToken.value : '';
+                
+                form.innerHTML = `
+                    <input type="hidden" name="_token" value="${tokenValue}">
+                    <input type="hidden" name="_method" value="DELETE">
+                `;
+                
+                document.body.appendChild(form);
+                form.submit();
             }
         }
 
-        function closeAllDropdowns() {
-            document.querySelectorAll('[id^="dropdown-"]').forEach(dropdown => {
-                dropdown.classList.add('hidden');
-                dropdown.classList.remove('block');
-            });
-            activeDropdown = null;
-        }
+        // Close context menu when clicking outside
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('contextMenu');
+            if (!menu.contains(e.target)) {
+                menu.classList.add('hidden');
+            }
+        });
 
         // FUNGSI MODAL ADD
         function openAddModal() {
@@ -506,7 +568,6 @@
 
         // FUNGSI MODAL EDIT
         function openEditModal(id) {
-            closeAllDropdowns();
             loadEditData(id);
             const modal = document.getElementById('editCodeStemiModal');
             modal.classList.remove('hidden');
@@ -678,7 +739,7 @@
                 closeAddModal();
                 closeEditModal();
                 closeDetailModal();
-                closeAllDropdowns();
+                document.getElementById('contextMenu').classList.add('hidden');
             }
         });
     </script>
