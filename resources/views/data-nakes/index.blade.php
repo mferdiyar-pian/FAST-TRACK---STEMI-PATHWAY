@@ -21,6 +21,15 @@
         .filter-dropdown.show {
             display: block;
         }
+        .pagination-active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .pagination-disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
     </style>
 </head>
 
@@ -61,10 +70,14 @@
                 <div class="flex items-center justify-between">
                     <div></div>
                     <div class="flex items-center gap-6">
-                        <div class="relative">
-                            <input type="text" placeholder="Search type of keywords" class="w-80 pl-4 pr-10 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
-                            <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
-                        </div>
+                        <form id="searchForm" method="GET" action="{{ route('data-nakes.index') }}" class="relative">
+                            <input type="text" name="search" id="searchInput" placeholder="Search type of keywords" 
+                                value="{{ request('search') }}"
+                                class="w-80 pl-4 pr-10 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
+                            <button type="submit" class="absolute right-3 top-3 text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </form>
                         <button class="relative">
                             <i class="fas fa-bell text-gray-500 text-xl"></i>
                             <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
@@ -271,22 +284,67 @@
                             {{-- Left: Pagination Navigation --}}
                             <div class="flex items-center gap-1">
                                 {{-- Previous Button --}}
-                                <button class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm flex items-center gap-2">
+                                @php
+                                    $currentPage = request('page', 1);
+                                    $totalItems = count($data_nakes);
+                                    $perPage = 10; // Sesuaikan dengan jumlah item per halaman
+                                    $totalPages = ceil($totalItems / $perPage);
+                                    $prevPage = $currentPage > 1 ? $currentPage - 1 : null;
+                                    $nextPage = $currentPage < $totalPages ? $currentPage + 1 : null;
+                                    
+                                    // Build URL dengan parameter yang ada
+                                    $baseUrl = request()->url();
+                                    $queryParams = request()->except('page');
+                                @endphp
+
+                                <a href="{{ $prevPage ? $baseUrl . '?' . http_build_query(array_merge($queryParams, ['page' => $prevPage])) : '#' }}" 
+                                   class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm flex items-center gap-2 {{ !$prevPage ? 'pagination-disabled' : '' }}">
                                     <i class="fas fa-chevron-left text-xs"></i>Previous
-                                </button>
+                                </a>
 
                                 {{-- Page Numbers --}}
-                                <button class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm min-w-[40px] text-center">1</button>
-                                <button class="px-3 py-2 bg-blue-500 text-white rounded font-medium text-sm min-w-[40px]">2</button>
-                                <button class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm min-w-[40px] text-center">3</button>
-                                <button class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm min-w-[40px] text-center">4</button>
-                                <span class="px-2 text-gray-400 text-sm">...</span>
-                                <button class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm min-w-[40px] text-center">10</button>
+                                @php
+                                    $startPage = max($currentPage - 2, 1);
+                                    $endPage = min($currentPage + 2, $totalPages);
+                                    
+                                    // Adjust start and end if we're near the beginning or end
+                                    if ($endPage - $startPage < 4) {
+                                        if ($startPage == 1) {
+                                            $endPage = min($startPage + 4, $totalPages);
+                                        } else if ($endPage == $totalPages) {
+                                            $startPage = max($endPage - 4, 1);
+                                        }
+                                    }
+                                @endphp
+                                
+                                @if($startPage > 1)
+                                    <a href="{{ $baseUrl . '?' . http_build_query(array_merge($queryParams, ['page' => 1])) }}" 
+                                       class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm min-w-[40px] text-center">1</a>
+                                    @if($startPage > 2)
+                                        <span class="px-2 text-gray-400 text-sm">...</span>
+                                    @endif
+                                @endif
+                                
+                                @for ($i = $startPage; $i <= $endPage; $i++)
+                                    <a href="{{ $baseUrl . '?' . http_build_query(array_merge($queryParams, ['page' => $i])) }}" 
+                                       class="px-3 py-2 rounded font-medium text-sm min-w-[40px] text-center {{ $i == $currentPage ? 'bg-blue-500 text-white pagination-active' : 'text-gray-700 hover:bg-gray-100' }}">
+                                        {{ $i }}
+                                    </a>
+                                @endfor
+                                
+                                @if($endPage < $totalPages)
+                                    @if($endPage < $totalPages - 1)
+                                        <span class="px-2 text-gray-400 text-sm">...</span>
+                                    @endif
+                                    <a href="{{ $baseUrl . '?' . http_build_query(array_merge($queryParams, ['page' => $totalPages])) }}" 
+                                       class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm min-w-[40px] text-center">{{ $totalPages }}</a>
+                                @endif
 
                                 {{-- Next Button --}}
-                                <button class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm flex items-center gap-2">
+                                <a href="{{ $nextPage ? $baseUrl . '?' . http_build_query(array_merge($queryParams, ['page' => $nextPage])) : '#' }}" 
+                                   class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm flex items-center gap-2 {{ !$nextPage ? 'pagination-disabled' : '' }}">
                                     Next<i class="fas fa-chevron-right text-xs"></i>
-                                </button>
+                                </a>
                             </div>
 
                             {{-- Right: Export and Page Info --}}
@@ -300,23 +358,16 @@
                                 <div class="flex items-center gap-2 text-sm text-gray-600">
                                     <span>Page</span>
                                     <div class="relative">
-                                        <select class="appearance-none bg-white border border-gray-300 rounded px-3 py-1 text-sm focus:outline-none focus:border-blue-500">
-                                            <option value="1">1</option>
-                                            <option value="2" selected>2</option>
-                                            <option value="3">3</option>
-                                            <option value="4">4</option>
-                                            <option value="5">5</option>
-                                            <option value="6">6</option>
-                                            <option value="7">7</option>
-                                            <option value="8">8</option>
-                                            <option value="9">9</option>
-                                            <option value="10">10</option>
+                                        <select id="pageSelect" class="appearance-none bg-white border border-gray-300 rounded px-3 py-1 text-sm focus:outline-none focus:border-blue-500">
+                                            @for($i = 1; $i <= $totalPages; $i++)
+                                                <option value="{{ $i }}" {{ $i == $currentPage ? 'selected' : '' }}>{{ $i }}</option>
+                                            @endfor
                                         </select>
                                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
                                             <i class="fas fa-chevron-down text-xs"></i>
                                         </div>
                                     </div>
-                                    <span>of 10</span>
+                                    <span>of {{ $totalPages }}</span>
                                 </div>
                             </div>
                         </div>
@@ -428,6 +479,35 @@
         let currentDataNakesId = null;
         let contextMenuItemId = null;
 
+        // ==================== PAGINATION FUNCTIONS ====================
+        
+        // Handle page select change
+        document.getElementById('pageSelect').addEventListener('change', function() {
+            const page = this.value;
+            const url = new URL(window.location.href);
+            url.searchParams.set('page', page);
+            window.location.href = url.toString();
+        });
+
+        // ==================== SEARCH FUNCTION ====================
+        
+        // Handle search form submission
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const searchValue = document.getElementById('searchInput').value;
+            const url = new URL(window.location.href);
+            
+            if (searchValue) {
+                url.searchParams.set('search', searchValue);
+            } else {
+                url.searchParams.delete('search');
+            }
+            
+            // Reset to page 1 when searching
+            url.searchParams.set('page', 1);
+            window.location.href = url.toString();
+        });
+
         // ==================== FILTER FUNCTIONS ====================
         
         function toggleFilterDropdown() {
@@ -446,6 +526,9 @@
                 }
             }
             
+            // Reset to page 1 when applying filters
+            params.append('page', 1);
+            
             // Close filter dropdown
             document.getElementById('filterDropdown').classList.remove('show');
             
@@ -463,6 +546,8 @@
         function removeFilter(filterName) {
             const url = new URL(window.location.href);
             url.searchParams.delete(filterName);
+            // Reset to page 1 when removing filters
+            url.searchParams.set('page', 1);
             window.location.href = url.toString();
         }
 
