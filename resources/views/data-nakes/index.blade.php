@@ -393,12 +393,12 @@
                                     <i class="fas fa-download"></i>Export
                                 </button>
 
-                                {{-- Page Info --}}
-                                <div class="flex items-center gap-2 text-sm text-gray-600">
-                                    <span>Page</span>
+                                <!-- 📄 Page Info (Rapi & Centered) -->
+                                <div class="flex items-center gap-3 text-sm text-gray-600">
+                                    <span class="font-medium text-gray-700">Page</span>
                                     <div class="relative">
                                         <select id="pageSelect"
-                                            class="appearance-none bg-white border border-gray-300 rounded px-3 py-1 text-sm focus:outline-none focus:border-blue-500">
+                                            class="appearance-none bg-white border border-gray-300 rounded-lg px-3 py-1.5 pr-8 text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200">
                                             @for ($i = 1; $i <= $totalPages; $i++)
                                                 <option value="{{ $i }}"
                                                     {{ $i == $currentPage ? 'selected' : '' }}>{{ $i }}
@@ -406,11 +406,11 @@
                                             @endfor
                                         </select>
                                         <div
-                                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-gray-500">
                                             <i class="fas fa-chevron-down text-xs"></i>
                                         </div>
                                     </div>
-                                    <span>of {{ $totalPages }}</span>
+                                    <span>of <span class="font-medium text-gray-800">{{ $totalPages }}</span></span>
                                 </div>
                             </div>
                         </div>

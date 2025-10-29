@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -31,7 +31,7 @@
 
 <body class="bg-gray-50">
     <div class="flex h-screen">
-       {{-- Sidebar --}}
+        {{-- Sidebar --}}
         <aside class="w-64 bg-white shadow-sm">
             <div class="p-6">
                 <div class="flex items-center gap-3">
@@ -67,7 +67,7 @@
                 <div class="flex items-center justify-between">
                     <div></div>
                     <div class="flex items-center gap-6">
-                        <form id="searchForm" method="GET" action="{{ route('data-nakes.index') }}"
+                        <form id="searchForm" method="GET" action="{{ route('code-stemi.index') }}"
                             class="relative flex items-center">
                             <input type="text" name="search" id="searchInput" placeholder="Search type of keywords"
                                 value="{{ request('search') }}"
@@ -252,14 +252,9 @@
                                             <div class="flex items-center gap-2">
                                                 <button onclick="openDetailModal({{ $item->id }})" class="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition font-medium">Detail</button>
                                                 @if ($item->status === 'Running')
-                                                    <form action="{{ route('code-stemi.finish', $item->id) }}" method="POST" class="inline">
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <button type="submit" class="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition font-medium whitespace-nowrap" 
-                                                                onclick="return confirm('Apakah Anda yakin ingin menyelesaikan Code STEMI ini?')">
-                                                            Aktivasi Code Stemi Selesai
-                                                        </button>
-                                                    </form>
+                                                    <button onclick="confirmFinish({{ $item->id }})" class="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition font-medium whitespace-nowrap">
+                                                        Aktivasi Code Stemi Selesai
+                                                    </button>
                                                 @endif
                                             </div>
                                         </td>
@@ -351,20 +346,24 @@
                                         <i class="fas fa-download"></i>Export
                                     </button>
                                     
-                                    {{-- Page Info --}}
-                                    <div class="flex items-center gap-2 text-sm text-gray-600">
-                                        <span>Page</span>
+                                    <!-- 📄 Page Info (Rapi & Centered) -->
+                                    <div class="flex items-center gap-3 text-sm text-gray-600">
+                                        <span class="font-medium text-gray-700">Page</span>
                                         <div class="relative">
-                                            <select id="pageSelect" class="appearance-none bg-white border border-gray-300 rounded px-3 py-1 text-sm focus:outline-none focus:border-blue-500">
-                                                @for($i = 1; $i <= $totalPages; $i++)
-                                                    <option value="{{ $i }}" {{ $i == $currentPage ? 'selected' : '' }}>{{ $i }}</option>
+                                            <select id="pageSelect"
+                                                class="appearance-none bg-white border border-gray-300 rounded-lg px-3 py-1.5 pr-8 text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200">
+                                                @for ($i = 1; $i <= $totalPages; $i++)
+                                                    <option value="{{ $i }}"
+                                                        {{ $i == $currentPage ? 'selected' : '' }}>{{ $i }}
+                                                    </option>
                                                 @endfor
                                             </select>
-                                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                            <div
+                                                class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-gray-500">
                                                 <i class="fas fa-chevron-down text-xs"></i>
                                             </div>
                                         </div>
-                                        <span>of {{ $totalPages }}</span>
+                                        <span>of <span class="font-medium text-gray-800">{{ $totalPages }}</span></span>
                                     </div>
                                 </div>
                             </div>
@@ -468,13 +467,95 @@
                     </div>
 
                     {{-- Submit Button --}}
-                    <button type="submit" 
-                            class="w-full py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition text-sm"
-                            onclick="return confirm('Apakah Anda yakin ingin mengaktifkan Code STEMI?')">
+                    <button type="button" onclick="confirmActivation()" 
+                            class="w-full py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition text-sm">
                         AKTIVASI CODE STEMI DIMULAI
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    {{-- Modal Konfirmasi Aktivasi --}}
+    <div id="activationConfirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 transform transition-all">
+            <div class="p-6">
+                <div class="flex items-center justify-center w-16 h-16 mx-auto bg-blue-100 rounded-full mb-4">
+                    <i class="fas fa-question-circle text-blue-600 text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 text-center mb-2">Konfirmasi Aktivasi</h3>
+                <p class="text-gray-600 text-center mb-6">Apakah Anda yakin ingin mengaktifkan Code STEMI?</p>
+
+                <div class="flex gap-3">
+                    <button onclick="closeActivationConfirmModal()"
+                        class="flex-1 py-3 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition">
+                        <i class="fas fa-times mr-2"></i>BATAL
+                    </button>
+                    <button onclick="submitActivationForm()"
+                        class="flex-1 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-check mr-2"></i>AKTIVASI
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Modal Konfirmasi Penyelesaian --}}
+    <div id="finishConfirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 transform transition-all">
+            <div class="p-6">
+                <div class="flex items-center justify-center w-16 h-16 mx-auto bg-orange-100 rounded-full mb-4">
+                    <i class="fas fa-exclamation-circle text-orange-600 text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 text-center mb-2">Konfirmasi Penyelesaian</h3>
+                <p class="text-gray-600 text-center mb-6">Apakah Anda yakin ingin menyelesaikan Code STEMI ini?</p>
+
+                <div class="flex gap-3">
+                    <button onclick="closeFinishConfirmModal()"
+                        class="flex-1 py-3 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition">
+                        <i class="fas fa-times mr-2"></i>BATAL
+                    </button>
+                    <form id="finishForm" method="POST" class="flex-1">
+                        @csrf
+                        @method('PATCH')
+                        <button type="submit" onclick="handleFinishSubmit(event)"
+                            class="w-full py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition">
+                            <i class="fas fa-check mr-2"></i>SELESAI
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Modal Success --}}
+    <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 transform transition-all">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway" class="h-12 object-contain">
+                        <div>
+                            <h1 class="text-blue-600 font-bold text-sm leading-tight">FAST</h1>
+                            <h1 class="text-blue-600 font-bold text-sm leading-tight">TRACK</h1>
+                            <p class="text-teal-600 font-bold text-xs leading-tight">STEMI</p>
+                            <p class="text-teal-600 font-bold text-xs leading-tight">PATHWAY</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-center w-16 h-16 mx-auto bg-green-100 rounded-full mb-4">
+                    <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 text-center mb-2">Berhasil!</h3>
+                <p class="text-gray-600 text-center mb-2">Data Code STEMI berhasil diperbarui</p>
+                <p class="text-green-600 font-semibold text-center mb-6">Code STEMI selesai!</p>
+
+                <button onclick="closeSuccessModal()"
+                    class="w-full py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition">
+                    <i class="fas fa-check mr-2"></i>OK
+                </button>
+            </div>
         </div>
     </div>
 
@@ -580,6 +661,34 @@
         </div>
     </div>
 
+    {{-- Modal Delete --}}
+    <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 transform transition-all">
+            <div class="p-6">
+                <div class="flex items-center justify-center w-16 h-16 mx-auto bg-red-100 rounded-full mb-4">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 text-center mb-2">Konfirmasi Hapus</h3>
+                <p class="text-gray-600 text-center mb-6">Apakah Anda yakin ingin menghapus data Code STEMI ini?</p>
+
+                <div class="flex gap-3">
+                    <button onclick="closeDeleteModal()"
+                        class="flex-1 py-3 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition">
+                        <i class="fas fa-times mr-2"></i>BATAL
+                    </button>
+                    <form id="deleteForm" method="POST" class="flex-1">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit"
+                            class="w-full py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition">
+                            <i class="fas fa-trash mr-2"></i>HAPUS
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         let timers = new Map();
         let detailTimers = new Map();
@@ -638,9 +747,11 @@
                     const result = await response.json();
                     
                     if (result.success) {
-                        alert(result.message);
+                        showSuccessModal('Data Code STEMI berhasil diperbarui');
                         closeEditModal();
-                        location.reload();
+                        setTimeout(() => {
+                            location.reload();
+                        }, 2000);
                     } else {
                         alert(result.message);
                     }
@@ -749,7 +860,84 @@
             timers.set(id, timerId);
         }
 
-        // FUNGSI CONTEXT MENU
+        // ==================== SUCCESS MODAL FUNCTIONS ====================
+        function showSuccessModal(message) {
+            document.getElementById('successModal').classList.remove('hidden');
+            document.getElementById('successModal').classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.add('hidden');
+            document.getElementById('successModal').classList.remove('flex');
+            document.body.style.overflow = 'auto';
+            location.reload();
+        }
+
+        // ==================== ACTIVATION CONFIRMATION FUNCTIONS ====================
+        function confirmActivation() {
+            document.getElementById('activationConfirmModal').classList.remove('hidden');
+            document.getElementById('activationConfirmModal').classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeActivationConfirmModal() {
+            document.getElementById('activationConfirmModal').classList.add('hidden');
+            document.getElementById('activationConfirmModal').classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
+
+        function submitActivationForm() {
+            document.getElementById('activationForm').submit();
+        }
+
+        // ==================== FINISH CONFIRMATION FUNCTIONS ====================
+        function confirmFinish(id) {
+            document.getElementById('finishForm').action = `/code-stemi/${id}/finish`;
+            document.getElementById('finishConfirmModal').classList.remove('hidden');
+            document.getElementById('finishConfirmModal').classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeFinishConfirmModal() {
+            document.getElementById('finishConfirmModal').classList.add('hidden');
+            document.getElementById('finishConfirmModal').classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
+
+        function handleFinishSubmit(event) {
+            event.preventDefault();
+            const form = document.getElementById('finishForm');
+            const formData = new FormData(form);
+            const url = form.action;
+            
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    closeFinishConfirmModal();
+                    showSuccessModal('Data Code STEMI berhasil diperbarui');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    alert(result.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat menyelesaikan Code STEMI');
+            });
+        }
+
+        // ==================== CONTEXT MENU FUNCTIONS ====================
         function openContextMenu(event, id) {
             event.stopPropagation();
             const menu = document.getElementById('contextMenu');
@@ -771,34 +959,24 @@
         function deleteFromMenu() {
             const id = contextMenuItemId;
             document.getElementById('contextMenu').classList.add('hidden');
-            if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `/code-stemi/${id}`;
-                
-                const csrfToken = document.querySelector('meta[name="csrf-token"]') || 
-                                 document.querySelector('input[name="_token"]');
-                const tokenValue = csrfToken ? csrfToken.content || csrfToken.value : '';
-                
-                form.innerHTML = `
-                    <input type="hidden" name="_token" value="${tokenValue}">
-                    <input type="hidden" name="_method" value="DELETE">
-                `;
-                
-                document.body.appendChild(form);
-                form.submit();
-            }
+            confirmDelete(id);
         }
 
-        // Close context menu when clicking outside
-        document.addEventListener('click', function(e) {
-            const menu = document.getElementById('contextMenu');
-            if (menu && !menu.contains(e.target)) {
-                menu.classList.add('hidden');
-            }
-        });
+        // ==================== DELETE MODAL FUNCTIONS ====================
+        function confirmDelete(id) {
+            document.getElementById('deleteForm').action = `/code-stemi/${id}`;
+            document.getElementById('deleteModal').classList.remove('hidden');
+            document.getElementById('deleteModal').classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
 
-        // FUNGSI MODAL ADD
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.add('hidden');
+            document.getElementById('deleteModal').classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
+
+        // ==================== MODAL FUNCTIONS ====================
         function openAddModal() {
             const modal = document.getElementById('addCodeStemiModal');
             modal.classList.remove('hidden');
@@ -813,7 +991,6 @@
             document.body.style.overflow = 'auto';
         }
 
-        // FUNGSI MODAL EDIT
         function openEditModal(id) {
             loadEditData(id);
             const modal = document.getElementById('editCodeStemiModal');
@@ -829,7 +1006,6 @@
             document.body.style.overflow = 'auto';
         }
 
-        // FUNGSI MODAL DETAIL
         function openDetailModal(id) {
             loadDetailData(id);
             const modal = document.getElementById('detailCodeStemiModal');
@@ -850,7 +1026,7 @@
             detailTimers.clear();
         }
 
-        // LOAD DATA UNTUK EDIT
+        // ==================== DATA LOADING FUNCTIONS ====================
         async function loadEditData(id) {
             try {
                 const response = await fetch(`/code-stemi/${id}/edit`);
@@ -874,7 +1050,6 @@
             }
         }
 
-        // LOAD DATA UNTUK DETAIL
         async function loadDetailData(id) {
             try {
                 const response = await fetch(`/code-stemi/${id}`);
@@ -918,14 +1093,9 @@
                     </div>
 
                     ${data.status === 'Running' ? `
-                    <form action="/code-stemi/${id}/finish" method="POST">
-                        <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                        <input type="hidden" name="_method" value="PATCH">
-                        <button type="submit" class="w-full py-2.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition text-sm" 
-                                onclick="return confirm('Apakah Anda yakin ingin menyelesaikan Code STEMI ini?')">
-                            AKTIVASI CODE STEMI SELESAI
-                        </button>
-                    </form>
+                    <button onclick="confirmFinish(${data.id})" class="w-full py-2.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition text-sm">
+                        AKTIVASI CODE STEMI SELESAI
+                    </button>
                     ` : ''}
                 `;
 
@@ -963,11 +1133,33 @@
             detailTimers.set(id, timerId);
         }
 
-        // EVENT LISTENER UNTUK CLOSE MODAL
+        // ==================== EVENT LISTENERS ====================
         document.addEventListener('click', function(e) {
+            // Close context menu when clicking outside
+            const menu = document.getElementById('contextMenu');
+            if (menu && !menu.contains(e.target)) {
+                menu.classList.add('hidden');
+            }
+            
+            // Close modals when clicking outside
             const addModal = document.getElementById('addCodeStemiModal');
             if (e.target === addModal) {
                 closeAddModal();
+            }
+            
+            const activationConfirmModal = document.getElementById('activationConfirmModal');
+            if (e.target === activationConfirmModal) {
+                closeActivationConfirmModal();
+            }
+            
+            const finishConfirmModal = document.getElementById('finishConfirmModal');
+            if (e.target === finishConfirmModal) {
+                closeFinishConfirmModal();
+            }
+            
+            const successModal = document.getElementById('successModal');
+            if (e.target === successModal) {
+                closeSuccessModal();
             }
             
             const editModal = document.getElementById('editCodeStemiModal');
@@ -979,13 +1171,22 @@
             if (e.target === detailModal) {
                 closeDetailModal();
             }
+            
+            const deleteModal = document.getElementById('deleteModal');
+            if (e.target === deleteModal) {
+                closeDeleteModal();
+            }
         });
 
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeAddModal();
+                closeActivationConfirmModal();
+                closeFinishConfirmModal();
+                closeSuccessModal();
                 closeEditModal();
                 closeDetailModal();
+                closeDeleteModal();
                 document.getElementById('contextMenu').classList.add('hidden');
                 document.getElementById('filterDropdown').classList.remove('show');
             }
