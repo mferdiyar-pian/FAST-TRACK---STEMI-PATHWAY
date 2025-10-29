@@ -9,13 +9,37 @@ use Illuminate\Support\Facades\DB;
 
 class DataNakesController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $data_nakes = DataNakes::orderBy('admitted_date', 'desc')->get();
+        $query = DataNakes::query();
+        
+        // Filter berdasarkan status
+        if ($request->has('status') && $request->status != '') {
+            $query->where('status', $request->status);
+        }
+        
+        // Filter berdasarkan tanggal mulai
+        if ($request->has('start_date') && $request->start_date != '') {
+            $query->whereDate('admitted_date', '>=', $request->start_date);
+        }
+        
+        // Filter berdasarkan tanggal akhir
+        if ($request->has('end_date') && $request->end_date != '') {
+            $query->whereDate('admitted_date', '<=', $request->end_date);
+        }
+        
+        // Filter berdasarkan pencarian nama
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where('nama', 'like', "%{$search}%");
+        }
+        
+        $data_nakes = $query->orderBy('admitted_date', 'desc')->get();
         
         return view('data-nakes.index', compact('data_nakes'));
     }
 
+    // Method store, update, destroy, show tetap sama seperti sebelumnya
     public function store(Request $request)
     {
         $request->validate([

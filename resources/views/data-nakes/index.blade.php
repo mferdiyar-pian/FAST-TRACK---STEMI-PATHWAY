@@ -15,6 +15,12 @@
         .bg-cyan-light {
             background-color: #E0F7FA;
         }
+        .filter-dropdown {
+            display: none;
+        }
+        .filter-dropdown.show {
+            display: block;
+        }
     </style>
 </head>
 
@@ -96,10 +102,112 @@
                         <button onclick="openModal('add')" class="flex items-center gap-2 px-5 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition font-medium text-sm">
                             <i class="fas fa-plus"></i>Add Data
                         </button>
-                        <button class="flex items-center gap-2 px-5 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-sm">
-                            <i class="fas fa-sliders-h"></i>Filter
-                        </button>
+                        
+                        <!-- Tombol Filter dengan Dropdown -->
+                        <div class="relative">
+                            <button onclick="toggleFilterDropdown()" class="flex items-center gap-2 px-5 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-sm">
+                                <i class="fas fa-sliders-h"></i>Filter
+                                <i class="fas fa-chevron-down text-xs ml-1"></i>
+                            </button>
+                            
+                            <!-- Dropdown Filter -->
+                            <div id="filterDropdown" class="filter-dropdown absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-10">
+                                <div class="p-4">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Filter Data Nakes</h3>
+                                    
+                                    <form id="filterForm" class="space-y-4">
+                                        <!-- Status Filter -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                                            <select name="status" id="filterStatus" 
+                                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                                                <option value="">Semua Status</option>
+                                                <option value="Dokter" {{ request('status') == 'Dokter' ? 'selected' : '' }}>Dokter</option>
+                                                <option value="Perawat" {{ request('status') == 'Perawat' ? 'selected' : '' }}>Perawat</option>
+                                                <option value="Laboran" {{ request('status') == 'Laboran' ? 'selected' : '' }}>Laboran</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <!-- Date Range Filter -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Rentang Tanggal</label>
+                                            <div class="grid grid-cols-2 gap-2">
+                                                <div>
+                                                    <input type="date" name="start_date" id="filterStartDate" 
+                                                        value="{{ request('start_date') }}"
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                                                    <label class="text-xs text-gray-500 mt-1">Dari Tanggal</label>
+                                                </div>
+                                                <div>
+                                                    <input type="date" name="end_date" id="filterEndDate" 
+                                                        value="{{ request('end_date') }}"
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                                                    <label class="text-xs text-gray-500 mt-1">Sampai Tanggal</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Search Filter -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Pencarian Nama</label>
+                                            <input type="text" name="search" id="filterSearch" 
+                                                value="{{ request('search') }}"
+                                                placeholder="Cari berdasarkan nama..."
+                                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                                        </div>
+                                        
+                                        <!-- Action Buttons -->
+                                        <div class="flex gap-2 pt-2">
+                                            <button type="button" onclick="applyFilter()" 
+                                                class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition font-medium text-sm">
+                                                Terapkan Filter
+                                            </button>
+                                            <button type="button" onclick="resetFilter()" 
+                                                class="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition font-medium text-sm">
+                                                Reset
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                </div>
+
+                <!-- Filter Active Badges -->
+                <div id="activeFilters" class="mb-6 flex flex-wrap gap-2">
+                    @if(request('status'))
+                        <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full flex items-center gap-1">
+                            Status: {{ request('status') }}
+                            <button onclick="removeFilter('status')" class="text-blue-600 hover:text-blue-800">
+                                <i class="fas fa-times text-xs"></i>
+                            </button>
+                        </span>
+                    @endif
+                    @if(request('start_date'))
+                        <span class="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full flex items-center gap-1">
+                            Dari: {{ request('start_date') }}
+                            <button onclick="removeFilter('start_date')" class="text-green-600 hover:text-green-800">
+                                <i class="fas fa-times text-xs"></i>
+                            </button>
+                        </span>
+                    @endif
+                    @if(request('end_date'))
+                        <span class="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full flex items-center gap-1">
+                            Sampai: {{ request('end_date') }}
+                            <button onclick="removeFilter('end_date')" class="text-green-600 hover:text-green-800">
+                                <i class="fas fa-times text-xs"></i>
+                            </button>
+                        </span>
+                    @endif
+                    @if(request('search'))
+                        <span class="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full flex items-center gap-1">
+                            Pencarian: "{{ request('search') }}"
+                            <button onclick="removeFilter('search')" class="text-purple-600 hover:text-purple-800">
+                                <i class="fas fa-times text-xs"></i>
+                            </button>
+                        </span>
+                    @endif
                 </div>
 
                 <div class="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -146,7 +254,11 @@
                                 <tr>
                                     <td colspan="5" class="px-6 py-8 text-center text-gray-500">
                                         <i class="fas fa-inbox text-4xl mb-2 block"></i>
-                                        Tidak ada data nakes
+                                        @if(request()->anyFilled(['status', 'start_date', 'end_date', 'search']))
+                                            Tidak ada data yang sesuai dengan filter
+                                        @else
+                                            Tidak ada data nakes
+                                        @endif
                                     </td>
                                 </tr>
                             @endforelse
@@ -316,6 +428,56 @@
         let currentDataNakesId = null;
         let contextMenuItemId = null;
 
+        // ==================== FILTER FUNCTIONS ====================
+        
+        function toggleFilterDropdown() {
+            const dropdown = document.getElementById('filterDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function applyFilter() {
+            const form = document.getElementById('filterForm');
+            const formData = new FormData(form);
+            const params = new URLSearchParams();
+            
+            for (let [key, value] of formData) {
+                if (value) {
+                    params.append(key, value);
+                }
+            }
+            
+            // Close filter dropdown
+            document.getElementById('filterDropdown').classList.remove('show');
+            
+            // Redirect with filter parameters
+            window.location.href = '{{ route('data-nakes.index') }}?' + params.toString();
+        }
+
+        function resetFilter() {
+            // Reset form
+            document.getElementById('filterForm').reset();
+            // Redirect without parameters
+            window.location.href = '{{ route('data-nakes.index') }}';
+        }
+
+        function removeFilter(filterName) {
+            const url = new URL(window.location.href);
+            url.searchParams.delete(filterName);
+            window.location.href = url.toString();
+        }
+
+        // Close filter dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            const filterBtn = document.querySelector('button[onclick="toggleFilterDropdown()"]');
+            const dropdown = document.getElementById('filterDropdown');
+            
+            if (filterBtn && dropdown && !filterBtn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        // ==================== CONTEXT MENU FUNCTIONS ====================
+        
         function openContextMenu(event, id) {
             event.stopPropagation();
             const menu = document.getElementById('contextMenu');
@@ -340,6 +502,8 @@
             confirmDelete(id);
         }
 
+        // ==================== MODAL FUNCTIONS ====================
+        
         function openModal(action, id = null) {
             const modal = document.getElementById('dataModal');
             const title = document.getElementById('modalTitle');
@@ -421,7 +585,7 @@
         // Close context menu when clicking outside
         document.addEventListener('click', function(e) {
             const menu = document.getElementById('contextMenu');
-            if (!menu.contains(e.target)) {
+            if (menu && !menu.contains(e.target)) {
                 menu.classList.add('hidden');
             }
         });
@@ -439,6 +603,7 @@
                 closeModal();
                 closeDeleteModal();
                 document.getElementById('contextMenu').classList.add('hidden');
+                document.getElementById('filterDropdown').classList.remove('show');
             }
         });
 
