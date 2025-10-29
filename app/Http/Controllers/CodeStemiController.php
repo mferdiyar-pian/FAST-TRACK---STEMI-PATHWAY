@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Models\DataNakes;
 use Carbon\Carbon;
+use App\Events\CodeStemiStatusUpdated;
 
 class CodeStemiController extends Controller
 {
@@ -113,6 +114,9 @@ class CodeStemiController extends Controller
                 'custom_message' => $request->custom_message,
             ]);
 
+            // ✅ TRIGGER REAL-TIME UPDATE
+            broadcast(new CodeStemiStatusUpdated());
+
             $message = 'Code STEMI berhasil diaktifkan! ';
             if ($successCount > 0) {
                 $message .= "Notifikasi berhasil dikirim ke {$successCount} staf.";
@@ -164,6 +168,9 @@ class CodeStemiController extends Controller
                 'custom_message' => $request->custom_message,
             ]);
 
+            // ✅ TRIGGER REAL-TIME UPDATE
+            broadcast(new CodeStemiStatusUpdated());
+
             return response()->json([
                 'success' => true,
                 'message' => 'Data Code STEMI berhasil diperbarui!'
@@ -193,6 +200,9 @@ class CodeStemiController extends Controller
             $codeStemi->update([
                 'checklist' => $request->checklist ?? [],
             ]);
+
+            // ✅ TRIGGER REAL-TIME UPDATE
+            broadcast(new CodeStemiStatusUpdated());
 
             return response()->json([
                 'success' => true,
@@ -245,6 +255,9 @@ class CodeStemiController extends Controller
             // Hitung ulang duration
             $this->calculateDuration($code);
 
+            // ✅ TRIGGER REAL-TIME UPDATE
+            broadcast(new CodeStemiStatusUpdated());
+
             return redirect()->route('code-stemi.index')->with('success', 'Code STEMI selesai!');
 
         } catch (\Exception $e) {
@@ -260,6 +273,9 @@ class CodeStemiController extends Controller
         try {
             $code = CodeStemi::findOrFail($id);
             $code->delete();
+
+            // ✅ TRIGGER REAL-TIME UPDATE
+            broadcast(new CodeStemiStatusUpdated());
 
             return redirect()->route('code-stemi.index')->with('success', 'Data berhasil dihapus.');
 
@@ -281,6 +297,44 @@ class CodeStemiController extends Controller
             $duration = sprintf('%02dh : %02dm : %02ds', $diff->h, $diff->i, $diff->s);
             
             $codeStemi->update(['duration' => $duration]);
+        }
+    }
+
+    /**
+     * API untuk mendapatkan statistik terbaru (untuk real-time)
+     */
+    public function getStats()
+    {
+        try {
+            $runningCount = CodeStemi::where('status', 'Running')->count();
+            $finishedCount = CodeStemi::where('status', 'Finished')->count();
+            
+            $recentActivities = CodeStemi::orderBy('created_at', 'desc')
+                ->limit(5)
+                ->get()
+                ->map(function($item) {
+                    return [
+                        'id' => $item->id,
+                        'status' => $item->status,
+                        'formatted_date' => $item->formatted_date,
+                        'door_to_balloon_time' => $item->door_to_balloon_time,
+                        'user_name' => 'System'
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'runningCount' => $runningCount,
+                'finishedCount' => $finishedCount,
+                'recentActivities' => $recentActivities,
+                'lastUpdate' => now()->setTimezone('Asia/Makassar')->format('H:i:s')
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data statistik'
+            ], 500);
         }
     }
 

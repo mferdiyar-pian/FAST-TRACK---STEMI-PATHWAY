@@ -89,3 +89,7 @@ Route::prefix('data-nakes')->group(function () {
     Route::delete('/{id}', [DataNakesController::class, 'destroy'])->name('data-nakes.destroy');
 });
 
+Route::get('/dashboard/stats', [CodeStemiController::class, 'getStats']);
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+// atau jika menggunakan root path:
+Route::get('/', [DashboardController::class, 'index'])->name('dashboard.index');

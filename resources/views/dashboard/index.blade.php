@@ -1,4 +1,3 @@
-{{-- resources/views/dashboard/index.blade.php --}}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,8 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<style>
+    <!-- Pusher untuk real-time -->
+    <script src="https://js.pusher.com/7.2/pusher.min.js"></script>
+    <style>
         .bg-cyan-light {
             background-color: #E0F7FA;
         }
@@ -102,7 +102,8 @@
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <p class="text-gray-500 text-sm mb-2">Running</p>
-                                        <p class="text-4xl font-bold text-gray-800">20</p>
+                                        {{-- PERBAIKAN: Gunakan null coalescing operator --}}
+                                        <p id="runningCount" class="text-4xl font-bold text-gray-800">{{ $runningCount ?? 0 }}</p>
                                     </div>
                                     <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
                                         <i class="fas fa-running text-blue-500 text-xl"></i>
@@ -114,7 +115,8 @@
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <p class="text-gray-500 text-sm mb-2">Finished</p>
-                                        <p class="text-4xl font-bold text-gray-800">375</p>
+                                        {{-- PERBAIKAN: Gunakan null coalescing operator --}}
+                                        <p id="finishedCount" class="text-4xl font-bold text-gray-800">{{ $finishedCount ?? 0 }}</p>
                                     </div>
                                     <div class="w-12 h-12 bg-pink-50 rounded-full flex items-center justify-center">
                                         <i class="fas fa-user-check text-pink-500 text-xl"></i>
@@ -130,12 +132,12 @@
                                     <h3 class="text-lg font-semibold text-gray-800 mb-2">Overview</h3>
                                     <div class="flex items-center gap-6 text-sm">
                                         <div class="flex items-center gap-2">
-                                            <span class="w-3 h-3 bg-blue-500 rounded-full"></span>
+                                            <span class="w-3 h-3 bg-pink-500 rounded-full"></span>
                                             <span class="text-gray-600">Finished</span>
                                         </div>
                                         <div class="flex items-center gap-2">
-                                            <span class="w-3 h-3 bg-pink-300 rounded-full"></span>
-                                            <span class="text-gray-600">Unfinish</span>
+                                            <span class="w-3 h-3 bg-blue-500 rounded-full"></span>
+                                            <span class="text-gray-600">Running</span>
                                         </div>
                                     </div>
                                 </div>
@@ -146,10 +148,6 @@
                                 </select>
                             </div>
                             <div class="relative">
-                                <div class="absolute top-0 left-0 text-xs text-gray-400">
-                                    <div class="mb-8">Finished</div>
-                                    <div>375</div>
-                                </div>
                                 <canvas id="overviewChart" height="80"></canvas>
                             </div>
                         </div>
@@ -158,7 +156,8 @@
                     {{-- Right Section: Calendar --}}
                     <div class="bg-white rounded-xl p-6 shadow-sm">
                         <div class="flex items-center justify-between mb-6">
-                            <h3 class="text-xl font-bold text-gray-800">July, 2022</h3>
+                            {{-- PERBAIKAN: Update bulan ke bulan saat ini --}}
+                            <h3 class="text-xl font-bold text-gray-800" id="currentMonth">{{ date('F, Y') }}</h3>
                             <div class="flex gap-2">
                                 <button class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded">
                                     <i class="fas fa-chevron-left text-gray-400"></i>
@@ -179,16 +178,42 @@
                             <div class="text-xs font-semibold text-blue-600 mb-2">Sun</div>
 
                             @php
-                                $dates = [26, 27, 28, 29, 30, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
+                                // PERBAIKAN: Generate tanggal dinamis berdasarkan bulan saat ini
+                                $firstDayOfMonth = date('N', strtotime(date('Y-m-01')));
+                                $daysInMonth = date('t');
+                                $dates = [];
+                                
+                                // Hari dari bulan sebelumnya
+                                $prevMonthDays = $firstDayOfMonth - 1;
+                                if ($prevMonthDays > 0) {
+                                    $prevMonthLastDay = date('t', strtotime('-1 month'));
+                                    for ($i = $prevMonthLastDay - $prevMonthDays + 1; $i <= $prevMonthLastDay; $i++) {
+                                        $dates[] = ['day' => $i, 'current' => false];
+                                    }
+                                }
+                                
+                                // Hari bulan ini
+                                for ($i = 1; $i <= $daysInMonth; $i++) {
+                                    $dates[] = ['day' => $i, 'current' => true];
+                                }
+                                
+                                // Hari dari bulan berikutnya
+                                $totalCells = 42; // 6 rows x 7 days
+                                $nextMonthDays = $totalCells - count($dates);
+                                for ($i = 1; $i <= $nextMonthDays; $i++) {
+                                    $dates[] = ['day' => $i, 'current' => false];
+                                }
                             @endphp
 
-                            @foreach($dates as $index => $date)
-                                @if($date == 6)
-                                    <div class="w-10 h-10 flex items-center justify-center bg-blue-600 text-white rounded-lg font-medium text-sm">{{ $date }}</div>
-                                @elseif($index < 5)
-                                    <div class="w-10 h-10 flex items-center justify-center text-gray-300 text-sm">{{ $date }}</div>
+                            @foreach($dates as $date)
+                                @if($date['current'])
+                                    @if($date['day'] == date('j'))
+                                        <div class="w-10 h-10 flex items-center justify-center bg-blue-600 text-white rounded-lg font-medium text-sm">{{ $date['day'] }}</div>
+                                    @else
+                                        <div class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-lg text-gray-700 text-sm cursor-pointer">{{ $date['day'] }}</div>
+                                    @endif
                                 @else
-                                    <div class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-lg text-gray-700 text-sm cursor-pointer">{{ $date }}</div>
+                                    <div class="w-10 h-10 flex items-center justify-center text-gray-300 text-sm">{{ $date['day'] }}</div>
                                 @endif
                             @endforeach
                         </div>
@@ -199,6 +224,10 @@
     </div>
 
     <script>
+        // PERBAIKAN: Handle kasus ketika variabel tidak terdefinisi
+        let currentRunningCount = {{ $runningCount ?? 0 }};
+        let currentFinishedCount = {{ $finishedCount ?? 0 }};
+
         // Chart.js Configuration
         const ctx = document.getElementById('overviewChart').getContext('2d');
         const chart = new Chart(ctx, {
@@ -207,7 +236,17 @@
                 labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                 datasets: [{
                     label: 'Finished',
-                    data: [50, 180, 130, 100, 150, 120, 160, 375, 280, 320, 250, 300],
+                    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, currentFinishedCount],
+                    borderColor: '#EC4899',
+                    backgroundColor: 'transparent',
+                    tension: 0.4,
+                    borderWidth: 3,
+                    pointRadius: 0,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: '#EC4899'
+                }, {
+                    label: 'Running',
+                    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, currentRunningCount],
                     borderColor: '#3B82F6',
                     backgroundColor: 'transparent',
                     tension: 0.4,
@@ -215,16 +254,6 @@
                     pointRadius: 0,
                     pointHoverRadius: 6,
                     pointBackgroundColor: '#3B82F6'
-                }, {
-                    label: 'Unfinish',
-                    data: [80, 200, 150, 180, 250, 200, 280, 220, 240, 200, 180, 160],
-                    borderColor: '#F9A8D4',
-                    backgroundColor: 'transparent',
-                    tension: 0.4,
-                    borderWidth: 3,
-                    pointRadius: 0,
-                    pointHoverRadius: 6,
-                    pointBackgroundColor: '#F9A8D4'
                 }]
             },
             options: {
@@ -243,15 +272,27 @@
                         padding: 12,
                         displayColors: true,
                         boxWidth: 8,
-                        boxHeight: 8
+                        boxHeight: 8,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += context.parsed.y;
+                                }
+                                return label;
+                            }
+                        }
                     }
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
-                        max: 400,
+                        max: Math.max(currentRunningCount, currentFinishedCount, 10) + 10,
                         ticks: {
-                            stepSize: 100,
+                            stepSize: Math.ceil(Math.max(currentRunningCount, currentFinishedCount, 10) / 5),
                             color: '#9CA3AF',
                             font: {
                                 size: 11
@@ -274,6 +315,76 @@
                         }
                     }
                 }
+            }
+        });
+
+        // Function untuk update chart data
+        function updateChartData(runningCount, finishedCount) {
+            // PERBAIKAN: Validasi input
+            runningCount = runningCount || 0;
+            finishedCount = finishedCount || 0;
+            
+            // Update data untuk semua bulan dengan data terbaru
+            chart.data.datasets[0].data = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, finishedCount];
+            chart.data.datasets[1].data = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, runningCount];
+            
+            // Update skala Y axis
+            const maxValue = Math.max(runningCount, finishedCount, 10) + 10;
+            chart.options.scales.y.max = maxValue;
+            chart.options.scales.y.ticks.stepSize = Math.ceil(maxValue / 5);
+            
+            // Update chart
+            chart.update();
+            
+            // Simpan nilai terbaru
+            currentRunningCount = runningCount;
+            currentFinishedCount = finishedCount;
+        }
+
+        // Real-time functionality untuk update status Running dan Finished
+        try {
+            const pusher = new Pusher('{{ config('broadcasting.connections.pusher.key', 'local') }}', {
+                cluster: '{{ config('broadcasting.connections.pusher.options.cluster', 'mt1') }}',
+                encrypted: true
+            });
+
+            const channel = pusher.subscribe('code-stemi-dashboard');
+
+            // Listen for real-time updates
+            channel.bind('status.updated', function(data) {
+                // PERBAIKAN: Validasi data sebelum update
+                if (data && typeof data.runningCount !== 'undefined' && typeof data.finishedCount !== 'undefined') {
+                    // Update running count
+                    document.getElementById('runningCount').textContent = data.runningCount;
+                    
+                    // Update finished count
+                    document.getElementById('finishedCount').textContent = data.finishedCount;
+                    
+                    // Update chart dengan data real-time
+                    updateChartData(data.runningCount, data.finishedCount);
+                    
+                    console.log('Real-time update received:', data);
+                }
+            });
+
+        } catch (error) {
+            console.log('Pusher not configured or error:', error);
+        }
+
+        // Initial chart update dengan data saat ini
+        updateChartData(currentRunningCount, currentFinishedCount);
+
+        // PERBAIKAN: Fallback untuk kasus variabel tidak terdefinisi
+        document.addEventListener('DOMContentLoaded', function() {
+            // Pastikan elemen ada sebelum memanipulasi
+            const runningCountEl = document.getElementById('runningCount');
+            const finishedCountEl = document.getElementById('finishedCount');
+            
+            if (runningCountEl && runningCountEl.textContent === '') {
+                runningCountEl.textContent = '0';
+            }
+            if (finishedCountEl && finishedCountEl.textContent === '') {
+                finishedCountEl.textContent = '0';
             }
         });
     </script>
