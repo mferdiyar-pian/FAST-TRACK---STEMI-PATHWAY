@@ -8,16 +8,35 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+<style>
+        .bg-cyan-light {
+            background-color: #E0F7FA;
+        }
+        .filter-dropdown {
+            display: none;
+        }
+        .filter-dropdown.show {
+            display: block;
+        }
+        .pagination-active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .pagination-disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+    </style>
+</head>
 
 <body class="bg-gray-50">
     <div class="flex h-screen">
-        {{-- Sidebar --}}
+       {{-- Sidebar --}}
         <aside class="w-64 bg-white shadow-sm">
             <div class="p-6">
                 <div class="flex items-center gap-3">
-                    {{-- Logo Image (tanpa text) --}}
-                    <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway" class="h-16 w-16 object-contain">
-                    
+                    <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway" class="h-14 w-14 object-contain">
                     <div>
                         <h1 class="text-blue-600 font-bold text-sm leading-tight">FAST</h1>
                         <h1 class="text-blue-600 font-bold text-sm leading-tight">TRACK</h1>
@@ -28,49 +47,42 @@
             </div>
 
             <nav class="mt-8">
-                <a href="{{ route('dashboard.index') }}"
-                    class="flex items-center gap-3 px-6 py-3 text-gray-500 hover:bg-gray-50">
-                    <i class="fas fa-th-large"></i>
-                    <span class="font-medium">Dashboard</span>
+                <a href="{{ route('dashboard.index') }}" class="flex items-center gap-3 px-6 py-3 text-gray-500 hover:bg-gray-50">
+                    <i class="fas fa-th-large w-5"></i><span class="font-medium">Dashboard</span>
                 </a>
-                <a href="{{ route('data-nakes.index') }}"
-                    class="flex items-center gap-3 px-6 py-3 text-gray-500 hover:bg-gray-50">
-                    <i class="fas fa-briefcase"></i>
-                    <span class="font-medium">Data Nakes</span>
+                <a href="{{ route('data-nakes.index') }}" class="flex items-center gap-3 px-6 py-3 text-gray-500 hover:bg-gray-50">
+                    <i class="fas fa-user-md w-5"></i><span class="font-medium">Data Nakes</span>
                 </a>
-                <a href="{{ route('code-stemi.index') }}"
-                    class="flex items-center gap-3 px-6 py-3 text-gray-500 hover:bg-gray-50">
-                    <i class="fas fa-file-alt"></i>
-                    <span class="font-medium">Code STEMI</span>
+                <a href="{{ route('code-stemi.index') }}" class="flex items-center gap-3 px-6 py-3 text-gray-500 hover:bg-gray-50">
+                    <i class="fas fa-file-medical-alt w-5"></i><span class="font-medium">Code STEMI</span>
                 </a>
-                <a href="{{ route('setting.index') }}"
-                    class="flex items-center gap-3 px-6 py-3 bg-blue-50 text-blue-600 border-l-4 border-blue-600">
-                    <i class="fas fa-cog"></i>
-                    <span class="font-medium">Setting</span>
+                <a href="{{ route('setting.index') }}" class="flex items-center gap-3 px-6 py-3 bg-blue-50 text-blue-600 border-l-4 border-blue-600">
+                    <i class="fas fa-cog w-5"></i><span class="font-medium">Setting</span>
                 </a>
             </nav>
         </aside>
 
         {{-- Main Content --}}
         <main class="flex-1 overflow-y-auto">
-            {{-- Header --}}
             <header class="bg-white shadow-sm px-8 py-4">
                 <div class="flex items-center justify-between">
                     <div></div>
-
                     <div class="flex items-center gap-6">
-                        <div class="relative">
-                            <input type="text" placeholder="Search type of keywords"
-                                class="w-80 pl-4 pr-10 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500">
-                            <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
-                        </div>
+                        <form id="searchForm" method="GET" action="{{ route('code-stemi.index') }}" class="relative">
+                            <input type="text" name="search" id="searchInput" placeholder="Search type of keywords" 
+                                value="{{ request('search') }}"
+                                class="w-80 pl-4 pr-10 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
+                            <button type="submit" class="absolute right-3 top-3 text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </form>
                         <button class="relative">
                             <i class="fas fa-bell text-gray-500 text-xl"></i>
                             <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                         </button>
                         <div class="flex items-center gap-3">
-                            <span class="text-gray-700 font-medium">dr. Muhammad Zaky, Sp.JP</span>
-                            <i class="fas fa-chevron-down text-gray-400"></i>
+                            <span class="text-gray-700 font-medium text-sm">dr. Muhammad Zaky, Sp.JP</span>
+                            <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
                         </div>
                     </div>
                 </div>
