@@ -115,61 +115,113 @@
                         <button onclick="openModal('add')" class="flex items-center gap-2 px-5 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition font-medium text-sm">
                             <i class="fas fa-plus"></i>Add Data
                         </button>
-                        <button onclick="openFilterModal()" class="flex items-center gap-2 px-5 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-sm">
-                            <i class="fas fa-sliders-h"></i>Filter
-                        </button>
+                        
+                        <!-- Tombol Filter dengan Dropdown -->
+                        <div class="relative">
+                            <button onclick="toggleFilterDropdown()" class="flex items-center gap-2 px-5 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-sm">
+                                <i class="fas fa-sliders-h"></i>Filter
+                                <i class="fas fa-chevron-down text-xs ml-1"></i>
+                            </button>
+                            
+                            <!-- Dropdown Filter -->
+                            <div id="filterDropdown" class="filter-dropdown absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-10">
+                                <div class="p-4">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Filter Data Nakes</h3>
+                                    
+                                    <form id="filterForm" class="space-y-4">
+                                        <!-- Status Filter -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                                            <select name="status" id="filterStatus" 
+                                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                                                <option value="">Semua Status</option>
+                                                <option value="Dokter" {{ request('status') == 'Dokter' ? 'selected' : '' }}>Dokter</option>
+                                                <option value="Perawat" {{ request('status') == 'Perawat' ? 'selected' : '' }}>Perawat</option>
+                                                <option value="Laboran" {{ request('status') == 'Laboran' ? 'selected' : '' }}>Laboran</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <!-- Date Range Filter -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Rentang Tanggal</label>
+                                            <div class="grid grid-cols-2 gap-2">
+                                                <div>
+                                                    <input type="date" name="start_date" id="filterStartDate" 
+                                                        value="{{ request('start_date') }}"
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                                                    <label class="text-xs text-gray-500 mt-1">Dari Tanggal</label>
+                                                </div>
+                                                <div>
+                                                    <input type="date" name="end_date" id="filterEndDate" 
+                                                        value="{{ request('end_date') }}"
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                                                    <label class="text-xs text-gray-500 mt-1">Sampai Tanggal</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Search Filter -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Pencarian Nama</label>
+                                            <input type="text" name="search" id="filterSearch" 
+                                                value="{{ request('search') }}"
+                                                placeholder="Cari berdasarkan nama..."
+                                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                                        </div>
+                                        
+                                        <!-- Action Buttons -->
+                                        <div class="flex gap-2 pt-2">
+                                            <button type="button" onclick="applyFilter()" 
+                                                class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition font-medium text-sm">
+                                                Terapkan Filter
+                                            </button>
+                                            <button type="button" onclick="resetFilter()" 
+                                                class="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition font-medium text-sm">
+                                                Reset
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {{-- Filter Active Badges --}}
-                @if(request()->hasAny(['status', 'start_date', 'end_date', 'search']))
-                <div class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-4">
-                            <span class="text-sm font-medium text-blue-800">Filter Aktif:</span>
-                            
-                            @if(request('status'))
-                            <span class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                                Status: {{ request('status') }}
-                                <a href="{{ request()->fullUrlWithQuery(['status' => null]) }}" class="ml-2 text-blue-600 hover:text-blue-800">
-                                    <i class="fas fa-times"></i>
-                                </a>
-                            </span>
-                            @endif
-                            
-                            @if(request('start_date'))
-                            <span class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                                Dari: {{ request('start_date') }}
-                                <a href="{{ request()->fullUrlWithQuery(['start_date' => null]) }}" class="ml-2 text-blue-600 hover:text-blue-800">
-                                    <i class="fas fa-times"></i>
-                                </a>
-                            </span>
-                            @endif
-                            
-                            @if(request('end_date'))
-                            <span class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                                Sampai: {{ request('end_date') }}
-                                <a href="{{ request()->fullUrlWithQuery(['end_date' => null]) }}" class="ml-2 text-blue-600 hover:text-blue-800">
-                                    <i class="fas fa-times"></i>
-                                </a>
-                            </span>
-                            @endif
-                            
-                            @if(request('search'))
-                            <span class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                                Pencarian: "{{ request('search') }}"
-                                <a href="{{ request()->fullUrlWithQuery(['search' => null]) }}" class="ml-2 text-blue-600 hover:text-blue-800">
-                                    <i class="fas fa-times"></i>
-                                </a>
-                            </span>
-                            @endif
-                        </div>
-                        <a href="{{ route('data-nakes.index') }}" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
-                            Hapus Semua Filter
-                        </a>
-                    </div>
+                <!-- Filter Active Badges -->
+                <div id="activeFilters" class="mb-6 flex flex-wrap gap-2">
+                    @if(request('status'))
+                        <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full flex items-center gap-1">
+                            Status: {{ request('status') }}
+                            <button onclick="removeFilter('status')" class="text-blue-600 hover:text-blue-800">
+                                <i class="fas fa-times text-xs"></i>
+                            </button>
+                        </span>
+                    @endif
+                    @if(request('start_date'))
+                        <span class="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full flex items-center gap-1">
+                            Dari: {{ request('start_date') }}
+                            <button onclick="removeFilter('start_date')" class="text-green-600 hover:text-green-800">
+                                <i class="fas fa-times text-xs"></i>
+                            </button>
+                        </span>
+                    @endif
+                    @if(request('end_date'))
+                        <span class="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full flex items-center gap-1">
+                            Sampai: {{ request('end_date') }}
+                            <button onclick="removeFilter('end_date')" class="text-green-600 hover:text-green-800">
+                                <i class="fas fa-times text-xs"></i>
+                            </button>
+                        </span>
+                    @endif
+                    @if(request('search'))
+                        <span class="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full flex items-center gap-1">
+                            Pencarian: "{{ request('search') }}"
+                            <button onclick="removeFilter('search')" class="text-purple-600 hover:text-purple-800">
+                                <i class="fas fa-times text-xs"></i>
+                            </button>
+                        </span>
+                    @endif
                 </div>
-                @endif
 
                 <div class="bg-white rounded-xl shadow-sm overflow-hidden">
                     <table class="w-full">
@@ -323,67 +375,6 @@
                 </div>
             </div>
         </main>
-    </div>
-
-    {{-- Modal Filter --}}
-    <div id="filterModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md transform transition-all">
-            <div class="flex items-center justify-between p-4 border-b border-gray-200">
-                <h3 class="text-lg font-bold text-gray-800">Filter Data Nakes</h3>
-                <button onclick="closeFilterModal()" class="text-gray-400 hover:text-gray-600 transition">
-                    <i class="fas fa-times text-lg"></i>
-                </button>
-            </div>
-
-            <form action="{{ route('data-nakes.index') }}" method="GET" id="filterForm">
-                <div class="p-5 space-y-4">
-                    {{-- Status Filter --}}
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-800 mb-2">Status</label>
-                        <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
-                            <option value="">Semua Status</option>
-                            <option value="Dokter" {{ request('status') == 'Dokter' ? 'selected' : '' }}>Dokter</option>
-                            <option value="Perawat" {{ request('status') == 'Perawat' ? 'selected' : '' }}>Perawat</option>
-                            <option value="Laboran" {{ request('status') == 'Laboran' ? 'selected' : '' }}>Laboran</option>
-                        </select>
-                    </div>
-
-                    {{-- Date Range --}}
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-800 mb-2">Dari Tanggal</label>
-                            <input type="date" name="start_date" value="{{ request('start_date') }}" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-800 mb-2">Sampai Tanggal</label>
-                            <input type="date" name="end_date" value="{{ request('end_date') }}" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
-                        </div>
-                    </div>
-
-                    {{-- Search --}}
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-800 mb-2">Pencarian</label>
-                        <input type="text" name="search" value="{{ request('search') }}" 
-                               placeholder="Cari berdasarkan nama atau kontak..."
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
-                    </div>
-
-                    {{-- Action Buttons --}}
-                    <div class="flex gap-3 pt-2">
-                        <button type="button" onclick="resetFilter()" 
-                                class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium text-sm">
-                            Reset
-                        </button>
-                        <button type="submit" 
-                                class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm">
-                            Terapkan Filter
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
     </div>
 
     {{-- Context Menu --}}
@@ -546,10 +537,10 @@
         }
 
         function resetFilter() {
-            // Reset form values
+            // Reset form
             document.getElementById('filterForm').reset();
-            // Submit form ke URL tanpa parameter
-            window.location.href = "{{ route('data-nakes.index') }}";
+            // Redirect without parameters
+            window.location.href = '{{ route('data-nakes.index') }}';
         }
 
         function removeFilter(filterName) {
@@ -684,7 +675,6 @@
             }
         });
 
-        // Close modals when clicking outside
         document.getElementById('dataModal').addEventListener('click', function(e) {
             if (e.target === this) closeModal();
         });
@@ -693,21 +683,15 @@
             if (e.target === this) closeDeleteModal();
         });
 
-        document.getElementById('filterModal').addEventListener('click', function(e) {
-            if (e.target === this) closeFilterModal();
-        });
-
-        // Escape key handler
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeModal();
                 closeDeleteModal();
-                closeFilterModal();
                 document.getElementById('contextMenu').classList.add('hidden');
+                document.getElementById('filterDropdown').classList.remove('show');
             }
         });
 
-        // Form submission handler
         document.getElementById('dataNakesForm').addEventListener('submit', function(e) {
             const submitBtn = this.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerHTML;
@@ -715,14 +699,12 @@
             submitBtn.disabled = true;
         });
 
-        // Auto-hide alerts after 5 seconds
         setTimeout(() => {
             document.querySelectorAll('[role="alert"]').forEach(message => {
                 message.style.display = 'none';
             });
         }, 5000);
 
-        // Phone number input formatting
         document.getElementById('contact').addEventListener('input', function(e) {
             this.value = this.value.replace(/[^0-9]/g, '');
         });
