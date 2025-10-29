@@ -41,7 +41,32 @@ Route::prefix('code-stemi')->group(function () {
     Route::post('/{id}/checklist', [CodeStemiController::class, 'updateChecklist'])->name('code-stemi.update-checklist');
 });
 
-Route::get('/setting', [SettingController::class, 'index'])->name('setting.index');
+// ROUTES SETTING
+Route::prefix('setting')->group(function () {
+    // Route utama untuk menampilkan halaman setting
+    Route::get('/', [SettingController::class, 'index'])->name('setting.index');
+    
+    // Route untuk update profile information
+    Route::post('/profile', [SettingController::class, 'updateProfile'])->name('setting.profile.update');
+    
+    // Route untuk update password
+    Route::post('/password', [SettingController::class, 'updatePassword'])->name('setting.password.update');
+    
+    // Route untuk update notification settings
+    Route::post('/notifications', [SettingController::class, 'updateNotifications'])->name('setting.notifications.update');
+    
+    // Route untuk upload profile picture
+    Route::post('/photo/upload', [SettingController::class, 'uploadPhoto'])->name('setting.photo.upload');
+    
+    // Route untuk remove profile picture
+    Route::post('/photo/remove', [SettingController::class, 'removePhoto'])->name('setting.photo.remove');
+    
+    // Route untuk deactivate account
+    Route::post('/account/deactivate', [SettingController::class, 'deactivateAccount'])->name('setting.account.deactivate');
+    
+    // Route untuk delete account
+    Route::post('/account/delete', [SettingController::class, 'deleteAccount'])->name('setting.account.delete');
+});
 
 // TAMBAHAN ROUTES UNTUK CRUD DATA NAKES
 Route::prefix('data-nakes')->group(function () {
@@ -64,5 +89,3 @@ Route::prefix('data-nakes')->group(function () {
     Route::delete('/{id}', [DataNakesController::class, 'destroy'])->name('data-nakes.destroy');
 });
 
-Route::get('/broadcast', [BroadcastController::class, 'index'])->name('broadcast.index');
-Route::post('/broadcast/send', [BroadcastController::class, 'send'])->name('broadcast.send');

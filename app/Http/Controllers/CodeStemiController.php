@@ -11,11 +11,39 @@ use Carbon\Carbon;
 class CodeStemiController extends Controller
 {
     /**
-     * Tampilkan halaman utama Code STEMI.
+     * Tampilkan halaman utama Code STEMI dengan filter.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $data = CodeStemi::latest()->get();
+        $query = CodeStemi::query();
+        
+        // Filter berdasarkan status
+        if ($request->has('status') && $request->status != '') {
+            $query->where('status', $request->status);
+        }
+        
+        // Filter berdasarkan tanggal mulai
+        if ($request->has('start_date') && $request->start_date != '') {
+            $query->whereDate('start_time', '>=', $request->start_date);
+        }
+        
+        // Filter berdasarkan tanggal akhir
+        if ($request->has('end_date') && $request->end_date != '') {
+            $query->whereDate('start_time', '<=', $request->end_date);
+        }
+        
+        // Filter berdasarkan pencarian
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('custom_message', 'like', "%{$search}%")
+                  ->orWhere('status', 'like', "%{$search}%")
+                  ->orWhere('duration', 'like', "%{$search}%");
+            });
+        }
+
+        $data = $query->orderBy('start_time', 'desc')->paginate(10);
+        
         return view('code-stemi.index', compact('data'));
     }
 
@@ -254,5 +282,14 @@ class CodeStemiController extends Controller
             
             $codeStemi->update(['duration' => $duration]);
         }
+    }
+
+    /**
+     * Export data Code STEMI (opsional - untuk tombol export)
+     */
+    public function export(Request $request)
+    {
+        // Implementasi export data bisa ditambahkan di sini
+        return back()->with('info', 'Fitur export akan segera tersedia.');
     }
 }
