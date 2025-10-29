@@ -207,64 +207,62 @@
                         </tbody>
                     </table>
 
-                    {{-- Pagination --}}
-                    @if(is_object($data_nakes) && method_exists($data_nakes, 'lastPage') && $data_nakes->lastPage() > 1)
-                        <div class="border-t border-gray-200 px-6 py-4">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-1">
-                                    {{-- Previous --}}
-                                    @if ($data_nakes->onFirstPage())
-                                        <button disabled class="px-3 py-2 text-gray-400 cursor-not-allowed text-sm flex items-center gap-1">
-                                            <i class="fas fa-chevron-left"></i>Previous
-                                        </button>
-                                    @else
-                                        <a href="{{ $data_nakes->previousPageUrl() }}" class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm flex items-center gap-1">
-                                            <i class="fas fa-chevron-left"></i>Previous
-                                        </a>
-                                    @endif
+                   {{-- Pagination --}}
+                    <div class="border-t border-gray-200 px-6 py-4">
+                        <div class="flex items-center justify-between">
+                            {{-- Left: Pagination Navigation --}}
+                            <div class="flex items-center gap-1">
+                                {{-- Previous Button --}}
+                                <button class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm flex items-center gap-2">
+                                    <i class="fas fa-chevron-left text-xs"></i>Previous
+                                </button>
 
-                                    {{-- Page Numbers --}}
-                                    @php
-                                        $currentPage = $data_nakes->currentPage();
-                                        $lastPage = $data_nakes->lastPage();
-                                    @endphp
+                                {{-- Page Numbers --}}
+                                <button class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm min-w-[40px] text-center">1</button>
+                                <button class="px-3 py-2 bg-blue-500 text-white rounded font-medium text-sm min-w-[40px]">2</button>
+                                <button class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm min-w-[40px] text-center">3</button>
+                                <button class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm min-w-[40px] text-center">4</button>
+                                <span class="px-2 text-gray-400 text-sm">...</span>
+                                <button class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm min-w-[40px] text-center">10</button>
 
-                                    @for ($i = 1; $i <= min(5, $lastPage); $i++)
-                                        @if ($i == $currentPage)
-                                            <button class="px-3 py-2 bg-blue-500 text-white rounded font-medium text-sm min-w-[40px]">{{ $i }}</button>
-                                        @else
-                                            <a href="{{ $data_nakes->url($i) }}" class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm min-w-[40px] text-center">{{ $i }}</a>
-                                        @endif
-                                    @endfor
+                                {{-- Next Button --}}
+                                <button class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm flex items-center gap-2">
+                                    Next<i class="fas fa-chevron-right text-xs"></i>
+                                </button>
+                            </div>
 
-                                    @if ($lastPage > 5)
-                                        <span class="px-2 text-gray-400 text-sm">...</span>
-                                        <a href="{{ $data_nakes->url($lastPage) }}" class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm">{{ $lastPage }}</a>
-                                    @endif
-
-                                    {{-- Next --}}
-                                    @if ($data_nakes->hasMorePages())
-                                        <a href="{{ $data_nakes->nextPageUrl() }}" class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm flex items-center gap-1">
-                                            Next<i class="fas fa-chevron-right"></i>
-                                        </a>
-                                    @else
-                                        <button disabled class="px-3 py-2 text-gray-400 cursor-not-allowed text-sm flex items-center gap-1">
-                                            Next<i class="fas fa-chevron-right"></i>
-                                        </button>
-                                    @endif
-                                </div>
-
-                                <div class="flex items-center gap-4">
-                                    <button class="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 transition font-medium text-sm">
-                                        <i class="fas fa-download"></i>Export
-                                    </button>
-                                    <span class="text-sm text-gray-600">
-                                        Page <span class="font-semibold">{{ $data_nakes->currentPage() }}</span> <span class="text-gray-400">of</span> <span class="font-semibold">{{ $data_nakes->lastPage() }}</span>
-                                    </span>
+                            {{-- Right: Export and Page Info --}}
+                            <div class="flex items-center gap-4">
+                                {{-- Export Button --}}
+                                <button class="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 transition font-medium text-sm">
+                                    <i class="fas fa-download"></i>Export
+                                </button>
+                                
+                                {{-- Page Info --}}
+                                <div class="flex items-center gap-2 text-sm text-gray-600">
+                                    <span>Page</span>
+                                    <div class="relative">
+                                        <select class="appearance-none bg-white border border-gray-300 rounded px-3 py-1 text-sm focus:outline-none focus:border-blue-500">
+                                            <option value="1">1</option>
+                                            <option value="2" selected>2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                            <option value="6">6</option>
+                                            <option value="7">7</option>
+                                            <option value="8">8</option>
+                                            <option value="9">9</option>
+                                            <option value="10">10</option>
+                                        </select>
+                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                            <i class="fas fa-chevron-down text-xs"></i>
+                                        </div>
+                                    </div>
+                                    <span>of 10</span>
                                 </div>
                             </div>
                         </div>
-                    @endif
+                    </div>
                 </div>
             </div>
         </main>
