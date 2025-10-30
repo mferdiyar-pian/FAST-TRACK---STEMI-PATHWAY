@@ -7,9 +7,67 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Pusher untuk real-time -->
     <script src="https://js.pusher.com/7.2/pusher.min.js"></script>
     <style>
+        /* Font Settings */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-weight: 400;
+            line-height: 1.5;
+            letter-spacing: -0.011em;
+        }
+        
+        /* Font Weight Adjustments */
+        .font-semibold {
+            font-weight: 600;
+        }
+        
+        .font-bold {
+            font-weight: 700;
+        }
+        
+        .font-medium {
+            font-weight: 500;
+        }
+        
+        /* Text Size Adjustments */
+        .text-xs {
+            font-size: 0.75rem;
+            line-height: 1rem;
+        }
+        
+        .text-sm {
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+        }
+        
+        .text-lg {
+            font-size: 1.125rem;
+            line-height: 1.75rem;
+        }
+        
+        .text-xl {
+            font-size: 1.25rem;
+            line-height: 1.75rem;
+        }
+        
+        .text-2xl {
+            font-size: 1.5rem;
+            line-height: 2rem;
+        }
+        
+        .text-3xl {
+            font-size: 1.875rem;
+            line-height: 2.25rem;
+        }
+        
+        .text-4xl {
+            font-size: 2.25rem;
+            line-height: 2.5rem;
+        }
+
         .bg-cyan-light {
             background-color: #E0F7FA;
         }
@@ -28,6 +86,27 @@
             cursor: not-allowed;
             pointer-events: none;
         }
+        
+        /* Letter Spacing untuk judul FAST TRACK */
+        .tracking-tight {
+            letter-spacing: -0.025em;
+        }
+        
+        /* Logo text styling */
+        .logo-text {
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+        
+        /* Button text styling */
+        button, .btn {
+            font-weight: 500;
+        }
+        
+        /* Chart text styling */
+        .chart-container {
+            font-family: 'Inter', sans-serif;
+        }
     </style>
 </head>
 
@@ -39,10 +118,10 @@
                 <div class="flex items-center gap-3">
                     <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway" class="h-14 w-14 object-contain">
                     <div>
-                        <h1 class="text-blue-600 font-bold text-sm leading-tight">FAST</h1>
-                        <h1 class="text-blue-600 font-bold text-sm leading-tight">TRACK</h1>
-                        <p class="text-teal-600 font-bold text-xs leading-tight">STEMI</p>
-                        <p class="text-teal-600 font-bold text-xs leading-tight">PATHWAY</p>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">FAST</h1>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">TRACK</h1>
+                        <p class="text-teal-600 font-bold text-xs leading-tight logo-text">STEMI</p>
+                        <p class="text-teal-600 font-bold text-xs leading-tight logo-text">PATHWAY</p>
                     </div>
                 </div>
             </div>
@@ -101,7 +180,7 @@
                             <div class="bg-white rounded-xl p-6 shadow-sm">
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <p class="text-gray-500 text-sm mb-2">Running</p>
+                                        <p class="text-gray-500 text-sm mb-2 font-medium">Running</p>
                                         {{-- PERBAIKAN: Gunakan null coalescing operator --}}
                                         <p id="runningCount" class="text-4xl font-bold text-gray-800">{{ $runningCount ?? 0 }}</p>
                                     </div>
@@ -114,7 +193,7 @@
                             <div class="bg-white rounded-xl p-6 shadow-sm">
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <p class="text-gray-500 text-sm mb-2">Finished</p>
+                                        <p class="text-gray-500 text-sm mb-2 font-medium">Finished</p>
                                         {{-- PERBAIKAN: Gunakan null coalescing operator --}}
                                         <p id="finishedCount" class="text-4xl font-bold text-gray-800">{{ $finishedCount ?? 0 }}</p>
                                     </div>
@@ -126,22 +205,22 @@
                         </div>
 
                         {{-- Chart --}}
-                        <div class="bg-white rounded-xl p-6 shadow-sm">
+                        <div class="bg-white rounded-xl p-6 shadow-sm chart-container">
                             <div class="flex items-center justify-between mb-6">
                                 <div>
                                     <h3 class="text-lg font-semibold text-gray-800 mb-2">Overview</h3>
                                     <div class="flex items-center gap-6 text-sm">
                                         <div class="flex items-center gap-2">
                                             <span class="w-3 h-3 bg-pink-500 rounded-full"></span>
-                                            <span class="text-gray-600">Finished</span>
+                                            <span class="text-gray-600 font-medium">Finished</span>
                                         </div>
                                         <div class="flex items-center gap-2">
                                             <span class="w-3 h-3 bg-blue-500 rounded-full"></span>
-                                            <span class="text-gray-600">Running</span>
+                                            <span class="text-gray-600 font-medium">Running</span>
                                         </div>
                                     </div>
                                 </div>
-                                <select class="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none">
+                                <select class="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none font-medium">
                                     <option>Monthly</option>
                                     <option>Weekly</option>
                                     <option>Yearly</option>
@@ -210,10 +289,10 @@
                                     @if($date['day'] == date('j'))
                                         <div class="w-10 h-10 flex items-center justify-center bg-blue-600 text-white rounded-lg font-medium text-sm">{{ $date['day'] }}</div>
                                     @else
-                                        <div class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-lg text-gray-700 text-sm cursor-pointer">{{ $date['day'] }}</div>
+                                        <div class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-lg text-gray-700 text-sm cursor-pointer font-medium">{{ $date['day'] }}</div>
                                     @endif
                                 @else
-                                    <div class="w-10 h-10 flex items-center justify-center text-gray-300 text-sm">{{ $date['day'] }}</div>
+                                    <div class="w-10 h-10 flex items-center justify-center text-gray-300 text-sm font-medium">{{ $date['day'] }}</div>
                                 @endif
                             @endforeach
                         </div>
@@ -273,6 +352,16 @@
                         displayColors: true,
                         boxWidth: 8,
                         boxHeight: 8,
+                        titleFont: {
+                            family: 'Inter',
+                            size: 12,
+                            weight: '500'
+                        },
+                        bodyFont: {
+                            family: 'Inter',
+                            size: 11,
+                            weight: '400'
+                        },
                         callbacks: {
                             label: function(context) {
                                 let label = context.dataset.label || '';
@@ -295,7 +384,9 @@
                             stepSize: Math.ceil(Math.max(currentRunningCount, currentFinishedCount, 10) / 5),
                             color: '#9CA3AF',
                             font: {
-                                size: 11
+                                family: 'Inter',
+                                size: 11,
+                                weight: '400'
                             }
                         },
                         grid: {
@@ -307,7 +398,9 @@
                         ticks: {
                             color: '#9CA3AF',
                             font: {
-                                size: 11
+                                family: 'Inter',
+                                size: 11,
+                                weight: '400'
                             }
                         },
                         grid: {

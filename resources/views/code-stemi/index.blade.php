@@ -7,7 +7,65 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        /* Font Settings */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-weight: 400;
+            line-height: 1.5;
+            letter-spacing: -0.011em;
+        }
+        
+        /* Font Weight Adjustments */
+        .font-semibold {
+            font-weight: 600;
+        }
+        
+        .font-bold {
+            font-weight: 700;
+        }
+        
+        .font-medium {
+            font-weight: 500;
+        }
+        
+        /* Text Size Adjustments */
+        .text-xs {
+            font-size: 0.75rem;
+            line-height: 1rem;
+        }
+        
+        .text-sm {
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+        }
+        
+        .text-lg {
+            font-size: 1.125rem;
+            line-height: 1.75rem;
+        }
+        
+        .text-xl {
+            font-size: 1.25rem;
+            line-height: 1.75rem;
+        }
+        
+        .text-2xl {
+            font-size: 1.5rem;
+            line-height: 2rem;
+        }
+        
+        .text-3xl {
+            font-size: 1.875rem;
+            line-height: 2.25rem;
+        }
+        
+        .text-4xl {
+            font-size: 2.25rem;
+            line-height: 2.5rem;
+        }
+
         .bg-cyan-light {
             background-color: #E0F7FA;
         }
@@ -26,6 +84,51 @@
             cursor: not-allowed;
             pointer-events: none;
         }
+        
+        /* Letter Spacing untuk judul FAST TRACK */
+        .tracking-tight {
+            letter-spacing: -0.025em;
+        }
+        
+        /* Khusus untuk teks kecil agar lebih readable */
+        .text-micro {
+            font-size: 0.6875rem;
+            line-height: 0.875rem;
+        }
+        
+        /* Adjustments untuk tabel */
+        table {
+            font-size: 0.875rem;
+            font-weight: 400;
+        }
+        
+        th {
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+        
+        /* Logo text styling */
+        .logo-text {
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+        
+        /* Button text styling */
+        button, .btn {
+            font-weight: 500;
+        }
+        
+        /* Status badge styling */
+        .status-badge {
+            font-weight: 500;
+            font-size: 0.75rem;
+        }
+        
+        /* Timer text styling */
+        .timer-text {
+            font-weight: 600;
+            letter-spacing: 0.025em;
+        }
     </style>
 </head>
 
@@ -37,10 +140,10 @@
                 <div class="flex items-center gap-3">
                     <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway" class="h-14 w-14 object-contain">
                     <div>
-                        <h1 class="text-blue-600 font-bold text-sm leading-tight">FAST</h1>
-                        <h1 class="text-blue-600 font-bold text-sm leading-tight">TRACK</h1>
-                        <p class="text-teal-600 font-bold text-xs leading-tight">STEMI</p>
-                        <p class="text-teal-600 font-bold text-xs leading-tight">PATHWAY</p>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">FAST</h1>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">TRACK</h1>
+                        <p class="text-teal-600 font-bold text-xs leading-tight logo-text">STEMI</p>
+                        <p class="text-teal-600 font-bold text-xs leading-tight logo-text">PATHWAY</p>
                     </div>
                 </div>
             </div>
@@ -93,13 +196,13 @@
             <div class="p-8">
                 {{-- Notifikasi --}}
                 @if(session('success'))
-                    <div class="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+                    <div class="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm">
                         {{ session('success') }}
                     </div>
                 @endif
 
                 @if(session('error'))
-                    <div class="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                    <div class="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
                         {{ session('error') }}
                     </div>
                 @endif
@@ -238,13 +341,13 @@
                                         data-end-time="{{ $item->end_time ? $item->end_time->toISOString() : '' }}">
                                         <td class="px-6 py-4 text-sm text-gray-700">{{ $item->formatted_date }}</td>
                                         <td class="px-6 py-4">
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium status-badge
                                                 {{ $item->status === 'Running' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
                                                 {{ $item->status }}
                                             </span>
                                         </td>
                                         <td class="px-6 py-4">
-                                            <span id="time-{{ $item->id }}" class="text-sm font-semibold {{ $item->status === 'Finished' ? 'text-red-600' : 'text-blue-600' }}">
+                                            <span id="time-{{ $item->id }}" class="text-sm font-semibold timer-text {{ $item->status === 'Finished' ? 'text-red-600' : 'text-blue-600' }}">
                                                 {{ $item->door_to_balloon_time }}
                                             </span>
                                         </td>
@@ -407,10 +510,10 @@
                 <div class="flex items-center gap-3">
                     <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway" class="h-10 object-contain">
                     <div>
-                        <h1 class="text-blue-600 font-bold text-sm leading-tight">FAST</h1>
-                        <h1 class="text-blue-600 font-bold text-sm leading-tight">TRACK</h1>
-                        <p class="text-teal-600 font-bold text-xs leading-tight">STEMI</p>
-                        <p class="text-teal-600 font-bold text-xs leading-tight">PATHWAY</p>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">FAST</h1>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">TRACK</h1>
+                        <p class="text-teal-600 font-bold text-xs leading-tight logo-text">STEMI</p>
+                        <p class="text-teal-600 font-bold text-xs leading-tight logo-text">PATHWAY</p>
                     </div>
                     <button onclick="closeAddModal()" class="text-gray-400 hover:text-gray-600 transition">
                         <i class="fas fa-times text-lg"></i>
@@ -536,10 +639,10 @@
                     <div class="flex items-center gap-3">
                         <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway" class="h-12 object-contain">
                         <div>
-                            <h1 class="text-blue-600 font-bold text-sm leading-tight">FAST</h1>
-                            <h1 class="text-blue-600 font-bold text-sm leading-tight">TRACK</h1>
-                            <p class="text-teal-600 font-bold text-xs leading-tight">STEMI</p>
-                            <p class="text-teal-600 font-bold text-xs leading-tight">PATHWAY</p>
+                            <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">FAST</h1>
+                            <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">TRACK</h1>
+                            <p class="text-teal-600 font-bold text-xs leading-tight logo-text">STEMI</p>
+                            <p class="text-teal-600 font-bold text-xs leading-tight logo-text">PATHWAY</p>
                         </div>
                     </div>
                 </div>
@@ -567,10 +670,10 @@
                 <div class="flex items-center gap-3">
                     <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway" class="h-10 object-contain">
                    <div>
-                        <h1 class="text-blue-600 font-bold text-sm leading-tight">FAST</h1>
-                        <h1 class="text-blue-600 font-bold text-sm leading-tight">TRACK</h1>
-                        <p class="text-teal-600 font-bold text-xs leading-tight">STEMI</p>
-                        <p class="text-teal-600 font-bold text-xs leading-tight">PATHWAY</p>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">FAST</h1>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">TRACK</h1>
+                        <p class="text-teal-600 font-bold text-xs leading-tight logo-text">STEMI</p>
+                        <p class="text-teal-600 font-bold text-xs leading-tight logo-text">PATHWAY</p>
                     </div>
                     <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 transition">
                         <i class="fas fa-times text-lg"></i>
@@ -645,10 +748,10 @@
                 <div class="flex items-center gap-3">
                     <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway" class="h-10 object-contain">
                      <div>
-                        <h1 class="text-blue-600 font-bold text-sm leading-tight">FAST</h1>
-                        <h1 class="text-blue-600 font-bold text-sm leading-tight">TRACK</h1>
-                        <p class="text-teal-600 font-bold text-xs leading-tight">STEMI</p>
-                        <p class="text-teal-600 font-bold text-xs leading-tight">PATHWAY</p>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">FAST</h1>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">TRACK</h1>
+                        <p class="text-teal-600 font-bold text-xs leading-tight logo-text">STEMI</p>
+                        <p class="text-teal-600 font-bold text-xs leading-tight logo-text">PATHWAY</p>
                     </div>
                     <button onclick="closeDetailModal()" class="text-gray-400 hover:text-gray-600 transition">
                         <i class="fas fa-times text-lg"></i>
@@ -1089,7 +1192,7 @@
 
                     <div class="bg-white border border-gray-200 rounded-lg p-4 text-center">
                         <p class="text-sm font-semibold text-gray-800 mb-2">DOOR TO BALLOON TIME</p>
-                        <div id="detail-time-${data.id}" class="text-3xl font-bold text-blue-600 tracking-wider">${data.door_to_balloon_time}</div>
+                        <div id="detail-time-${data.id}" class="text-3xl font-bold text-blue-600 tracking-wider timer-text">${data.door_to_balloon_time}</div>
                     </div>
 
                     ${data.status === 'Running' ? `

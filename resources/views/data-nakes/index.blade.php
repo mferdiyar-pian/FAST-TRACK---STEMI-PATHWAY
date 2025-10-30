@@ -1,4 +1,3 @@
-{{-- resources/views/data-nakes/index.blade.php --}}
 <!DOCTYPE html>
 <html lang="id">
 
@@ -10,8 +9,66 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
+        /* Font Settings */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-weight: 400;
+            line-height: 1.5;
+            letter-spacing: -0.011em;
+        }
+        
+        /* Font Weight Adjustments */
+        .font-semibold {
+            font-weight: 600;
+        }
+        
+        .font-bold {
+            font-weight: 700;
+        }
+        
+        .font-medium {
+            font-weight: 500;
+        }
+        
+        /* Text Size Adjustments */
+        .text-xs {
+            font-size: 0.75rem;
+            line-height: 1rem;
+        }
+        
+        .text-sm {
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+        }
+        
+        .text-lg {
+            font-size: 1.125rem;
+            line-height: 1.75rem;
+        }
+        
+        .text-xl {
+            font-size: 1.25rem;
+            line-height: 1.75rem;
+        }
+        
+        .text-2xl {
+            font-size: 1.5rem;
+            line-height: 2rem;
+        }
+        
+        .text-3xl {
+            font-size: 1.875rem;
+            line-height: 2.25rem;
+        }
+        
+        .text-4xl {
+            font-size: 2.25rem;
+            line-height: 2.5rem;
+        }
+
         .bg-cyan-light {
             background-color: #E0F7FA;
         }
@@ -34,6 +91,44 @@
             cursor: not-allowed;
             pointer-events: none;
         }
+        
+        /* Letter Spacing untuk judul FAST TRACK */
+        .tracking-tight {
+            letter-spacing: -0.025em;
+        }
+        
+        /* Logo text styling */
+        .logo-text {
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+        
+        /* Button text styling */
+        button, .btn {
+            font-weight: 500;
+        }
+        
+        /* Status badge styling */
+        .status-badge {
+            font-weight: 500;
+            font-size: 0.75rem;
+        }
+        
+        /* Table styling */
+        table {
+            font-size: 0.875rem;
+            font-weight: 400;
+        }
+        
+        th {
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+        
+        /* Form styling */
+        input, select, textarea {
+            font-family: 'Inter', sans-serif;
+        }
     </style>
 </head>
 
@@ -46,10 +141,10 @@
                     <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway"
                         class="h-14 w-14 object-contain">
                     <div>
-                        <h1 class="text-blue-600 font-bold text-sm leading-tight">FAST</h1>
-                        <h1 class="text-blue-600 font-bold text-sm leading-tight">TRACK</h1>
-                        <p class="text-teal-600 font-bold text-xs leading-tight">STEMI</p>
-                        <p class="text-teal-600 font-bold text-xs leading-tight">PATHWAY</p>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">FAST</h1>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">TRACK</h1>
+                        <p class="text-teal-600 font-bold text-xs leading-tight logo-text">STEMI</p>
+                        <p class="text-teal-600 font-bold text-xs leading-tight logo-text">PATHWAY</p>
                     </div>
                 </div>
             </div>
@@ -103,7 +198,7 @@
 
             <div class="p-8">
                 @if (session('success'))
-                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6"
+                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6 text-sm"
                         role="alert">
                         <span class="block sm:inline">{{ session('success') }}</span>
                         <button onclick="this.parentElement.style.display='none'"
@@ -114,7 +209,7 @@
                 @endif
 
                 @if (session('error'))
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6"
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6 text-sm"
                         role="alert">
                         <span class="block sm:inline">{{ session('error') }}</span>
                         <button onclick="this.parentElement.style.display='none'"
@@ -278,8 +373,14 @@
                                     <td class="px-6 py-4 text-sm text-gray-700">
                                         {{ \Carbon\Carbon::parse($item->admitted_date)->format('d M, Y') }}
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-800">{{ $item->nama }}</td>
-                                    <td class="px-6 py-4 text-sm text-gray-700">{{ $item->status }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-800 font-medium">{{ $item->nama }}</td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium status-badge
+                                            {{ $item->status === 'Dokter' ? 'bg-blue-100 text-blue-800' : 
+                                               ($item->status === 'Perawat' ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800') }}">
+                                            {{ $item->status }}
+                                        </span>
+                                    </td>
                                     <td class="px-6 py-4">
                                         <div class="flex items-center gap-3">
                                             <span class="inline-flex items-center gap-2 text-sm text-gray-700">
@@ -441,10 +542,10 @@
                     <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway"
                         class="h-12 w-12 object-contain">
                     <div>
-                        <h1 class="text-blue-600 font-bold text-sm leading-tight">FAST</h1>
-                        <h1 class="text-blue-600 font-bold text-sm leading-tight">TRACK</h1>
-                        <p class="text-teal-600 font-bold text-xs leading-tight">STEMI</p>
-                        <p class="text-teal-600 font-bold text-xs leading-tight">PATHWAY</p>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">FAST</h1>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">TRACK</h1>
+                        <p class="text-teal-600 font-bold text-xs leading-tight logo-text">STEMI</p>
+                        <p class="text-teal-600 font-bold text-xs leading-tight logo-text">PATHWAY</p>
                     </div>
                 </div>
                 <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 transition">
@@ -461,18 +562,18 @@
                     <input type="hidden" id="dataNakesId" name="id">
 
                     <div>
-                        <label class="block text-sm text-gray-600 mb-2">Nama <span
+                        <label class="block text-sm text-gray-600 mb-2 font-medium">Nama <span
                                 class="text-red-500">*</span></label>
                         <input type="text" id="nama" name="nama" placeholder="Masukkan nama lengkap"
-                            class="w-full px-4 py-3 bg-blue-50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                            class="w-full px-4 py-3 bg-blue-50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 text-sm"
                             required>
                     </div>
 
                     <div>
-                        <label class="block text-sm text-gray-600 mb-2">Status <span
+                        <label class="block text-sm text-gray-600 mb-2 font-medium">Status <span
                                 class="text-red-500">*</span></label>
                         <select id="status" name="status"
-                            class="w-full px-4 py-3 bg-blue-50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-500"
+                            class="w-full px-4 py-3 bg-blue-50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700 text-sm"
                             required>
                             <option value="" selected disabled>Pilih Status</option>
                             <option value="Dokter">Dokter</option>
@@ -482,16 +583,16 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm text-gray-600 mb-2">Kontak (WhatsApp) <span
+                        <label class="block text-sm text-gray-600 mb-2 font-medium">Kontak (WhatsApp) <span
                                 class="text-red-500">*</span></label>
                         <input type="tel" id="contact" name="contact" placeholder="081234567890"
-                            class="w-full px-4 py-3 bg-blue-50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                            class="w-full px-4 py-3 bg-blue-50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 text-sm"
                             required pattern="[0-9]{10,13}">
                         <p class="text-xs text-gray-500 mt-1">Format: 08xxxxxxxxxx</p>
                     </div>
 
                     <button type="submit"
-                        class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition mt-6">
+                        class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition mt-6 text-sm">
                         <i class="fas fa-save mr-2"></i>SIMPAN
                     </button>
                 </form>
@@ -507,18 +608,18 @@
                     <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
                 </div>
                 <h3 class="text-xl font-bold text-gray-800 text-center mb-2">Konfirmasi Hapus</h3>
-                <p class="text-gray-600 text-center mb-6">Apakah Anda yakin ingin menghapus data nakes ini?</p>
+                <p class="text-gray-600 text-center mb-6 text-sm">Apakah Anda yakin ingin menghapus data nakes ini?</p>
 
                 <div class="flex gap-3">
                     <button onclick="closeDeleteModal()"
-                        class="flex-1 py-3 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition">
+                        class="flex-1 py-3 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition text-sm">
                         <i class="fas fa-times mr-2"></i>BATAL
                     </button>
                     <form id="deleteForm" method="POST" class="flex-1">
                         @csrf
                         @method('DELETE')
                         <button type="submit"
-                            class="w-full py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition">
+                            class="w-full py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition text-sm">
                             <i class="fas fa-trash mr-2"></i>HAPUS
                         </button>
                     </form>
