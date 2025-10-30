@@ -7,8 +7,65 @@
     <title>Fast Track STEMI Pathway - Setting</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Font Settings */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-weight: 400;
+            line-height: 1.5;
+            letter-spacing: -0.011em;
+        }
+        
+        /* Font Weight Adjustments */
+        .font-semibold {
+            font-weight: 600;
+        }
+        
+        .font-bold {
+            font-weight: 700;
+        }
+        
+        .font-medium {
+            font-weight: 500;
+        }
+        
+        /* Text Size Adjustments */
+        .text-xs {
+            font-size: 0.75rem;
+            line-height: 1rem;
+        }
+        
+        .text-sm {
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+        }
+        
+        .text-lg {
+            font-size: 1.125rem;
+            line-height: 1.75rem;
+        }
+        
+        .text-xl {
+            font-size: 1.25rem;
+            line-height: 1.75rem;
+        }
+        
+        .text-2xl {
+            font-size: 1.5rem;
+            line-height: 2rem;
+        }
+        
+        .text-3xl {
+            font-size: 1.875rem;
+            line-height: 2.25rem;
+        }
+        
+        .text-4xl {
+            font-size: 2.25rem;
+            line-height: 2.5rem;
+        }
+
         .bg-cyan-light {
             background-color: #E0F7FA;
         }
@@ -27,6 +84,36 @@
             cursor: not-allowed;
             pointer-events: none;
         }
+        
+        /* Letter Spacing untuk judul FAST TRACK */
+        .tracking-tight {
+            letter-spacing: -0.025em;
+        }
+        
+        /* Logo text styling */
+        .logo-text {
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+        
+        /* Button text styling */
+        button, .btn {
+            font-weight: 500;
+        }
+        
+        /* Form styling */
+        input, select, textarea {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Toggle switch styling */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #3b82f6;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #3b82f6;
+        }
     </style>
 </head>
 
@@ -38,10 +125,10 @@
                 <div class="flex items-center gap-3">
                     <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway" class="h-14 w-14 object-contain">
                     <div>
-                        <h1 class="text-blue-600 font-bold text-sm leading-tight">FAST</h1>
-                        <h1 class="text-blue-600 font-bold text-sm leading-tight">TRACK</h1>
-                        <p class="text-teal-600 font-bold text-xs leading-tight">STEMI</p>
-                        <p class="text-teal-600 font-bold text-xs leading-tight">PATHWAY</p>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">FAST</h1>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">TRACK</h1>
+                        <p class="text-teal-600 font-bold text-xs leading-tight logo-text">STEMI</p>
+                        <p class="text-teal-600 font-bold text-xs leading-tight logo-text">PATHWAY</p>
                     </div>
                 </div>
             </div>
@@ -109,12 +196,12 @@
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
                                         <input type="text" value="dr. Muhammad Zaky, Sp.JP"
-                                            class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500">
+                                            class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
                                         <input type="email" value="mzaky@hospital.com"
-                                            class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500">
+                                            class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
                                     </div>
                                 </div>
 
@@ -122,12 +209,12 @@
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
                                         <input type="tel" value="+62 812 3456 7890"
-                                            class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500">
+                                            class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
                                         <select
-                                            class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500">
+                                            class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
                                             <option>Dokter Spesialis</option>
                                             <option>Dokter Umum</option>
                                             <option>Perawat</option>
@@ -139,13 +226,13 @@
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Hospital</label>
                                     <input type="text" value="Rumah Sakit Umum Pusat Nasional"
-                                        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500">
+                                        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
                                 </div>
                             </div>
 
                             <div class="flex justify-end mt-6">
                                 <button
-                                    class="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+                                    class="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm">
                                     Save Changes
                                 </button>
                             </div>
@@ -159,27 +246,27 @@
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
                                     <input type="password" placeholder="Enter current password"
-                                        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500">
+                                        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
                                 </div>
 
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
                                         <input type="password" placeholder="Enter new password"
-                                            class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500">
+                                            class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Confirm
                                             Password</label>
                                         <input type="password" placeholder="Confirm new password"
-                                            class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500">
+                                            class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
                                     </div>
                                 </div>
                             </div>
 
                             <div class="flex justify-end mt-6">
                                 <button
-                                    class="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+                                    class="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm">
                                     Update Password
                                 </button>
                             </div>
@@ -192,8 +279,8 @@
                             <div class="space-y-4">
                                 <div class="flex items-center justify-between py-3 border-b border-gray-100">
                                     <div>
-                                        <p class="font-medium text-gray-800">Email Notifications</p>
-                                        <p class="text-sm text-gray-500">Receive notifications via email</p>
+                                        <p class="font-medium text-gray-800 text-sm">Email Notifications</p>
+                                        <p class="text-xs text-gray-500">Receive notifications via email</p>
                                     </div>
                                     <label class="relative inline-flex items-center cursor-pointer">
                                         <input type="checkbox" checked class="sr-only peer">
@@ -205,8 +292,8 @@
 
                                 <div class="flex items-center justify-between py-3 border-b border-gray-100">
                                     <div>
-                                        <p class="font-medium text-gray-800">SMS Notifications</p>
-                                        <p class="text-sm text-gray-500">Receive notifications via SMS</p>
+                                        <p class="font-medium text-gray-800 text-sm">SMS Notifications</p>
+                                        <p class="text-xs text-gray-500">Receive notifications via SMS</p>
                                     </div>
                                     <label class="relative inline-flex items-center cursor-pointer">
                                         <input type="checkbox" checked class="sr-only peer">
@@ -218,8 +305,8 @@
 
                                 <div class="flex items-center justify-between py-3">
                                     <div>
-                                        <p class="font-medium text-gray-800">Emergency Alerts</p>
-                                        <p class="text-sm text-gray-500">Receive critical emergency notifications</p>
+                                        <p class="font-medium text-gray-800 text-sm">Emergency Alerts</p>
+                                        <p class="text-xs text-gray-500">Receive critical emergency notifications</p>
                                     </div>
                                     <label class="relative inline-flex items-center cursor-pointer">
                                         <input type="checkbox" checked class="sr-only peer">
@@ -247,7 +334,7 @@
                                     class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition font-medium mb-2">
                                     Upload Photo
                                 </button>
-                                <button class="px-4 py-2 text-red-600 text-sm hover:bg-red-50 rounded-lg transition">
+                                <button class="px-4 py-2 text-red-600 text-sm hover:bg-red-50 rounded-lg transition font-medium">
                                     Remove Photo
                                 </button>
                             </div>
@@ -259,19 +346,19 @@
 
                             <div class="space-y-4">
                                 <div class="flex justify-between items-center">
-                                    <span class="text-sm text-gray-600">Cases Handled</span>
+                                    <span class="text-sm text-gray-600 font-medium">Cases Handled</span>
                                     <span class="font-semibold text-gray-800">375</span>
                                 </div>
                                 <div class="flex justify-between items-center">
-                                    <span class="text-sm text-gray-600">Active Cases</span>
+                                    <span class="text-sm text-gray-600 font-medium">Active Cases</span>
                                     <span class="font-semibold text-gray-800">20</span>
                                 </div>
                                 <div class="flex justify-between items-center">
-                                    <span class="text-sm text-gray-600">Success Rate</span>
+                                    <span class="text-sm text-gray-600 font-medium">Success Rate</span>
                                     <span class="font-semibold text-green-600">98.5%</span>
                                 </div>
                                 <div class="flex justify-between items-center">
-                                    <span class="text-sm text-gray-600">Member Since</span>
+                                    <span class="text-sm text-gray-600 font-medium">Member Since</span>
                                     <span class="font-semibold text-gray-800">Jan 2023</span>
                                 </div>
                             </div>
@@ -297,6 +384,75 @@
             </div>
         </main>
     </div>
+
+    <script>
+        // Tambahkan event listener untuk form submission
+        document.addEventListener('DOMContentLoaded', function() {
+            // Profile form submission
+            const profileForm = document.querySelector('.bg-white.rounded-xl.shadow-sm.p-6:first-child form');
+            if (profileForm) {
+                profileForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    // Simpan perubahan profile
+                    alert('Profile changes saved successfully!');
+                });
+            }
+
+            // Password form submission
+            const passwordForm = document.querySelector('.bg-white.rounded-xl.shadow-sm.p-6:nth-child(2) form');
+            if (passwordForm) {
+                passwordForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    // Update password
+                    alert('Password updated successfully!');
+                });
+            }
+
+            // Upload photo button
+            const uploadButton = document.querySelector('button:contains("Upload Photo")');
+            if (uploadButton) {
+                uploadButton.addEventListener('click', function() {
+                    // Simulate file upload
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.click();
+                });
+            }
+
+            // Remove photo button
+            const removeButton = document.querySelector('button:contains("Remove Photo")');
+            if (removeButton) {
+                removeButton.addEventListener('click', function() {
+                    if (confirm('Are you sure you want to remove your profile photo?')) {
+                        // Remove profile photo logic
+                        alert('Profile photo removed!');
+                    }
+                });
+            }
+
+            // Danger zone buttons
+            const deactivateButton = document.querySelector('button:contains("Deactivate Account")');
+            if (deactivateButton) {
+                deactivateButton.addEventListener('click', function() {
+                    if (confirm('Are you sure you want to deactivate your account? This action can be reversed.')) {
+                        // Deactivate account logic
+                        alert('Account deactivated!');
+                    }
+                });
+            }
+
+            const deleteButton = document.querySelector('button:contains("Delete Account")');
+            if (deleteButton) {
+                deleteButton.addEventListener('click', function() {
+                    if (confirm('WARNING: This will permanently delete your account and all associated data. This action cannot be undone. Are you sure?')) {
+                        // Delete account logic
+                        alert('Account deleted!');
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>
