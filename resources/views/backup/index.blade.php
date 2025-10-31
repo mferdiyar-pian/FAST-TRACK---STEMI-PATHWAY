@@ -3,58 +3,208 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fast Track STEMI Pathway - Code STEMI</title>
+    <title>Fast Track STEMI Pathway - Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Pusher untuk real-time -->
+    <script src="https://js.pusher.com/7.2/pusher.min.js"></script>
     <style>
+        /* Font Settings */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-weight: 400;
+            line-height: 1.5;
+            letter-spacing: -0.011em;
+        }
+        
+        /* Font Weight Adjustments */
+        .font-semibold {
+            font-weight: 600;
+        }
+        
+        .font-bold {
+            font-weight: 700;
+        }
+        
+        .font-medium {
+            font-weight: 500;
+        }
+        
+        /* Text Size Adjustments */
+        .text-xs {
+            font-size: 0.75rem;
+            line-height: 1rem;
+        }
+        
+        .text-sm {
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+        }
+        
+        .text-lg {
+            font-size: 1.125rem;
+            line-height: 1.75rem;
+        }
+        
+        .text-xl {
+            font-size: 1.25rem;
+            line-height: 1.75rem;
+        }
+        
+        .text-2xl {
+            font-size: 1.5rem;
+            line-height: 2rem;
+        }
+        
+        .text-3xl {
+            font-size: 1.875rem;
+            line-height: 2.25rem;
+        }
+        
+        .text-4xl {
+            font-size: 2.25rem;
+            line-height: 2.5rem;
+        }
+
         .bg-cyan-light {
             background-color: #E0F7FA;
+        }
+        .filter-dropdown {
+            display: none;
+        }
+        .filter-dropdown.show {
+            display: block;
+        }
+        .pagination-active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .pagination-disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        
+        /* Letter Spacing untuk judul FAST TRACK */
+        .tracking-tight {
+            letter-spacing: -0.025em;
+        }
+        
+        /* Logo text styling */
+        .logo-text {
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+        
+        /* Button text styling */
+        button, .btn {
+            font-weight: 500;
+        }
+        
+        /* Chart text styling */
+        .chart-container {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Calendar Styles */
+        .calendar-day {
+            transition: all 0.2s ease;
+        }
+        
+        .calendar-day:hover {
+            background-color: #3b82f6 !important;
+            color: white !important;
+        }
+        
+        .calendar-day.selected {
+            background-color: #1d4ed8 !important;
+            color: white !important;
+        }
+        
+        .calendar-day.has-events {
+            position: relative;
+        }
+        
+        .calendar-day.has-events::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background-color: #3b82f6;
+            border-radius: 50%;
+        }
+        
+        .calendar-day.has-events.selected::after {
+            background-color: white;
+        }
+        
+        /* Sidebar active state */
+        .sidebar-active {
+            background-color: #eff6ff;
+            color: #2563eb;
+            border-left: 4px solid #2563eb;
+        }
+        
+        .sidebar-item:hover {
+            background-color: #f9fafb;
         }
     </style>
 </head>
 
 <body class="bg-gray-50">
     <div class="flex h-screen">
-        {{-- Sidebar --}}
+        <!-- Sidebar -->
         <aside class="w-64 bg-white shadow-sm">
             <div class="p-6">
                 <div class="flex items-center gap-3">
-                    <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway" class="h-14 w-14 object-contain">
+                    <!-- Logo placeholder -->
+                    <div class="h-14 w-14 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-heartbeat text-blue-600 text-xl"></i>
+                    </div>
                     <div>
-                        <h1 class="text-blue-600 font-bold text-sm leading-tight">FAST</h1>
-                        <h1 class="text-blue-600 font-bold text-sm leading-tight">TRACK</h1>
-                        <p class="text-teal-600 font-bold text-xs leading-tight">STEMI</p>
-                        <p class="text-teal-600 font-bold text-xs leading-tight">PATHWAY</p>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">FAST</h1>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">TRACK</h1>
+                        <p class="text-teal-600 font-bold text-xs leading-tight logo-text">STEMI</p>
+                        <p class="text-teal-600 font-bold text-xs leading-tight logo-text">PATHWAY</p>
                     </div>
                 </div>
             </div>
 
             <nav class="mt-8">
-                <a href="{{ route('dashboard.index') }}" class="flex items-center gap-3 px-6 py-3 text-gray-500 hover:bg-gray-50">
+                <a href="{{ route('dashboard.index') }}" class="flex items-center gap-3 px-6 py-3 sidebar-active">
                     <i class="fas fa-th-large w-5"></i><span class="font-medium">Dashboard</span>
                 </a>
-                <a href="{{ route('data-nakes.index') }}" class="flex items-center gap-3 px-6 py-3 text-gray-500 hover:bg-gray-50">
+                <a href="{{ route('data-nakes.index') }}" class="flex items-center gap-3 px-6 py-3 text-gray-500 sidebar-item">
                     <i class="fas fa-user-md w-5"></i><span class="font-medium">Data Nakes</span>
                 </a>
-                <a href="{{ route('code-stemi.index') }}" class="flex items-center gap-3 px-6 py-3 bg-blue-50 text-blue-600 border-l-4 border-blue-600">
+                <a href="{{ route('code-stemi.index') }}" class="flex items-center gap-3 px-6 py-3 text-gray-500 sidebar-item">
                     <i class="fas fa-file-medical-alt w-5"></i><span class="font-medium">Code STEMI</span>
                 </a>
-                <a href="{{ route('setting.index') }}" class="flex items-center gap-3 px-6 py-3 text-gray-500 hover:bg-gray-50">
+                <a href="{{ route('setting.index') }}" class="flex items-center gap-3 px-6 py-3 text-gray-500 sidebar-item">
                     <i class="fas fa-cog w-5"></i><span class="font-medium">Setting</span>
                 </a>
             </nav>
         </aside>
 
-        {{-- Main Content --}}
+        <!-- Main Content -->
         <main class="flex-1 overflow-y-auto">
             <header class="bg-white shadow-sm px-8 py-4">
                 <div class="flex items-center justify-between">
                     <div></div>
                     <div class="flex items-center gap-6">
-                        <div class="relative">
-                            <input type="text" placeholder="Search type of keywords" class="w-80 pl-4 pr-10 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
-                            <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
-                        </div>
+                        <form class="relative flex items-center">
+                            <input type="text" placeholder="Search type of keywords"
+                                class="w-80 pl-4 pr-10 py-2 border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm transition-all duration-200" />
+                            <button type="submit"
+                                class="absolute right-3 text-gray-400 hover:text-blue-600 transition-all duration-150">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </form>
                         <button class="relative">
                             <i class="fas fa-bell text-gray-500 text-xl"></i>
                             <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
@@ -67,471 +217,510 @@
                 </div>
             </header>
 
-            {{-- Code STEMI Content --}}
+            <!-- Dashboard Content -->
             <div class="p-8">
-                {{-- Notifikasi --}}
-                @if(session('success'))
-                    <div class="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                @if(session('error'))
-                    <div class="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-                        {{ session('error') }}
-                    </div>
-                @endif
-
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Code STEMI</h2>
-                    <div class="flex gap-3">
-                        <button onclick="openAddModal()" class="flex items-center gap-2 px-5 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition font-medium text-sm">
-                            <i class="fas fa-plus"></i>Add Data
-                        </button>
-                        <button onclick="openFilterModal()" class="flex items-center gap-2 px-5 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-sm">
-                            <i class="fas fa-sliders-h"></i>Filter
-                        </button>
-                    </div>
-                </div>
-
-                {{-- Filter Status --}}
-                @if(request()->hasAny(['status', 'start_date', 'end_date', 'search']))
-                <div class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-4">
-                            <span class="text-sm font-medium text-blue-800">Filter Aktif:</span>
-                            
-                            @if(request('status'))
-                            <span class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                                Status: {{ request('status') }}
-                                <a href="{{ request()->fullUrlWithQuery(['status' => null]) }}" class="ml-2 text-blue-600 hover:text-blue-800">
-                                    <i class="fas fa-times"></i>
-                                </a>
-                            </span>
-                            @endif
-                            
-                            @if(request('start_date'))
-                            <span class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                                Dari: {{ request('start_date') }}
-                                <a href="{{ request()->fullUrlWithQuery(['start_date' => null]) }}" class="ml-2 text-blue-600 hover:text-blue-800">
-                                    <i class="fas fa-times"></i>
-                                </a>
-                            </span>
-                            @endif
-                            
-                            @if(request('end_date'))
-                            <span class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                                Sampai: {{ request('end_date') }}
-                                <a href="{{ request()->fullUrlWithQuery(['end_date' => null]) }}" class="ml-2 text-blue-600 hover:text-blue-800">
-                                    <i class="fas fa-times"></i>
-                                </a>
-                            </span>
-                            @endif
-                            
-                            @if(request('search'))
-                            <span class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                                Pencarian: "{{ request('search') }}"
-                                <a href="{{ request()->fullUrlWithQuery(['search' => null]) }}" class="ml-2 text-blue-600 hover:text-blue-800">
-                                    <i class="fas fa-times"></i>
-                                </a>
-                            </span>
-                            @endif
-                        </div>
-                        <a href="{{ route('code-stemi.index') }}" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
-                            Hapus Semua Filter
-                        </a>
-                    </div>
-                </div>
-                @endif
-
-                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                    @if(isset($data) && $data->count() > 0)
-                        <table class="w-full">
-                            <thead>
-                                <tr class="bg-white">
-                                    <th class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">ADMITTED</th>
-                                    <th class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">STATUS</th>
-                                    <th class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">DOOR TO BALLOON TIME</th>
-                                    <th class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">ACTION</th>
-                                    <th class="px-6 py-3"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="codeStemiTableBody">
-                                @foreach ($data as $index => $item)
-                                    <tr class="border-t border-gray-100 {{ $index % 2 == 0 ? 'bg-cyan-light' : 'bg-white' }}" 
-                                        data-id="{{ $item->id }}" 
-                                        data-start-time="{{ $item->start_time->toISOString() }}" 
-                                        data-status="{{ $item->status }}" 
-                                        data-end-time="{{ $item->end_time ? $item->end_time->toISOString() : '' }}">
-                                        <td class="px-6 py-4 text-sm text-gray-700">{{ $item->formatted_date }}</td>
-                                        <td class="px-6 py-4">
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                                                {{ $item->status === 'Running' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
-                                                {{ $item->status }}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <span id="time-{{ $item->id }}" class="text-sm font-semibold {{ $item->status === 'Finished' ? 'text-red-600' : 'text-blue-600' }}">
-                                                {{ $item->door_to_balloon_time }}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <div class="flex items-center gap-2">
-                                                <button onclick="openDetailModal({{ $item->id }})" class="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition font-medium">Detail</button>
-                                                @if ($item->status === 'Running')
-                                                    <form action="{{ route('code-stemi.finish', $item->id) }}" method="POST" class="inline">
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <button type="submit" class="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition font-medium whitespace-nowrap" 
-                                                                onclick="return confirm('Apakah Anda yakin ingin menyelesaikan Code STEMI ini?')">
-                                                            Aktivasi Code Stemi Selesai
-                                                        </button>
-                                                    </form>
-                                                @endif
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <div class="flex items-center justify-end">
-                                                <button onclick="openContextMenu(event, {{ $item->id }})" 
-                                                    class="text-gray-400 hover:text-gray-600 transition p-2">
-                                                    <i class="fas fa-ellipsis-v"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-
-                        {{-- Pagination --}}
-                        @if(isset($data) && method_exists($data, 'lastPage') && $data->lastPage() > 1)
-                            <div class="border-t border-gray-200 px-6 py-4">
+                <div class="grid grid-cols-3 gap-6">
+                    <!-- Left Section: Stats & Chart -->
+                    <div class="col-span-2 space-y-6">
+                        <!-- Stats Cards -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-white rounded-xl p-6 shadow-sm">
                                 <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-1">
-                                        {{-- Previous --}}
-                                        @if ($data->onFirstPage())
-                                            <button disabled class="px-3 py-2 text-gray-400 cursor-not-allowed text-sm flex items-center gap-1">
-                                                <i class="fas fa-chevron-left"></i>Previous
-                                            </button>
-                                        @else
-                                            <a href="{{ $data->previousPageUrl() }}" class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm flex items-center gap-1">
-                                                <i class="fas fa-chevron-left"></i>Previous
-                                            </a>
-                                        @endif
-
-                                        {{-- Page Numbers --}}
-                                        @php
-                                            $currentPage = $data->currentPage();
-                                            $lastPage = $data->lastPage();
-                                        @endphp
-
-                                        @for ($i = 1; $i <= min(5, $lastPage); $i++)
-                                            @if ($i == $currentPage)
-                                                <button class="px-3 py-2 bg-blue-500 text-white rounded font-medium text-sm min-w-[40px]">{{ $i }}</button>
-                                            @else
-                                                <a href="{{ $data->url($i) }}" class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm min-w-[40px] text-center">{{ $i }}</a>
-                                            @endif
-                                        @endfor
-
-                                        @if ($lastPage > 5)
-                                            <span class="px-2 text-gray-400 text-sm">...</span>
-                                            <a href="{{ $data->url($lastPage) }}" class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm">{{ $lastPage }}</a>
-                                        @endif
-
-                                        {{-- Next --}}
-                                        @if ($data->hasMorePages())
-                                            <a href="{{ $data->nextPageUrl() }}" class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm flex items-center gap-1">
-                                                Next<i class="fas fa-chevron-right"></i>
-                                            </a>
-                                        @else
-                                            <button disabled class="px-3 py-2 text-gray-400 cursor-not-allowed text-sm flex items-center gap-1">
-                                                Next<i class="fas fa-chevron-right"></i>
-                                            </button>
-                                        @endif
+                                    <div>
+                                        <p class="text-gray-500 text-sm mb-2 font-medium">Running</p>
+                                        <p id="runningCount" class="text-4xl font-bold text-gray-800">0</p>
+                                        <p id="dateIndicator" class="text-xs text-gray-400 mt-1">All time data</p>
                                     </div>
-
-                                    <div class="flex items-center gap-4">
-                                        <button class="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 transition font-medium text-sm">
-                                            <i class="fas fa-download"></i>Export
-                                        </button>
-                                        <span class="text-sm text-gray-600">
-                                            Page <span class="font-semibold">{{ $data->currentPage() }}</span> <span class="text-gray-400">of</span> <span class="font-semibold">{{ $data->lastPage() }}</span>
-                                        </span>
+                                    <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-running text-blue-500 text-xl"></i>
                                     </div>
                                 </div>
                             </div>
-                        @endif
-                    @else
-                        <div class="text-center py-12">
-                            <i class="fas fa-file-alt text-4xl text-gray-300 mb-4"></i>
-                            <p class="text-gray-500 text-lg">Belum ada data Code STEMI</p>
-                            <button onclick="openAddModal()" class="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                                <i class="fas fa-plus"></i> Aktivasi Code STEMI Pertama
-                            </button>
+
+                            <div class="bg-white rounded-xl p-6 shadow-sm">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-gray-500 text-sm mb-2 font-medium">Finished</p>
+                                        <p id="finishedCount" class="text-4xl font-bold text-gray-800">0</p>
+                                        <p id="dateIndicatorFinished" class="text-xs text-gray-400 mt-1">All time data</p>
+                                    </div>
+                                    <div class="w-12 h-12 bg-pink-50 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-user-check text-pink-500 text-xl"></i>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    @endif
+
+                        <!-- Chart -->
+                        <div class="bg-white rounded-xl p-6 shadow-sm chart-container">
+                            <div class="flex items-center justify-between mb-6">
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Overview</h3>
+                                    <div class="flex items-center gap-6 text-sm">
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-3 h-3 bg-pink-500 rounded-full"></span>
+                                            <span class="text-gray-600 font-medium">Finished</span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-3 h-3 bg-blue-500 rounded-full"></span>
+                                            <span class="text-gray-600 font-medium">Running</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button id="resetFilter" class="bg-blue-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-blue-600 transition-colors hidden">
+                                        Reset Filter
+                                    </button>
+                                    <select id="timeRange" class="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none font-medium">
+                                        <option value="monthly">Monthly</option>
+                                        <option value="weekly">Weekly</option>
+                                        <option value="yearly">Yearly</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="relative">
+                                <canvas id="overviewChart" height="80"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Section: Calendar -->
+                    <div class="bg-white rounded-xl p-6 shadow-sm">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-bold text-gray-800" id="currentMonth">{{ date('F, Y') }}</h3>
+                            <div class="flex gap-2">
+                                <button id="prevMonth" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded">
+                                    <i class="fas fa-chevron-left text-gray-400"></i>
+                                </button>
+                                <button id="nextMonth" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded">
+                                    <i class="fas fa-chevron-right text-gray-400"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-7 gap-2 text-center" id="calendarGrid">
+                            <!-- Calendar akan di-generate oleh JavaScript -->
+                        </div>
+                        
+                        <div class="mt-4 p-3 bg-blue-50 rounded-lg hidden" id="selectedDateInfo">
+                            <p class="text-sm text-blue-700 font-medium">
+                                <i class="fas fa-calendar-day mr-2"></i>
+                                <span id="selectedDateText"></span>
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
     </div>
 
-    {{-- Modal Filter --}}
-    <div id="filterModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md transform transition-all">
-            <div class="flex items-center justify-between p-4 border-b border-gray-200">
-                <h3 class="text-lg font-bold text-gray-800">Filter Data</h3>
-                <button onclick="closeFilterModal()" class="text-gray-400 hover:text-gray-600 transition">
-                    <i class="fas fa-times text-lg"></i>
-                </button>
-            </div>
-
-            <form action="{{ route('code-stemi.index') }}" method="GET" id="filterForm">
-                <div class="p-5 space-y-4">
-                    {{-- Status Filter --}}
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-800 mb-2">Status</label>
-                        <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
-                            <option value="">Semua Status</option>
-                            <option value="Running" {{ request('status') == 'Running' ? 'selected' : '' }}>Running</option>
-                            <option value="Finished" {{ request('status') == 'Finished' ? 'selected' : '' }}>Finished</option>
-                        </select>
-                    </div>
-
-                    {{-- Date Range --}}
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-800 mb-2">Dari Tanggal</label>
-                            <input type="date" name="start_date" value="{{ request('start_date') }}" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-800 mb-2">Sampai Tanggal</label>
-                            <input type="date" name="end_date" value="{{ request('end_date') }}" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
-                        </div>
-                    </div>
-
-                    {{-- Search --}}
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-800 mb-2">Pencarian</label>
-                        <input type="text" name="search" value="{{ request('search') }}" 
-                               placeholder="Cari berdasarkan pesan atau status..."
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
-                    </div>
-
-                    {{-- Action Buttons --}}
-                    <div class="flex gap-3 pt-2">
-                        <button type="button" onclick="resetFilter()" 
-                                class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium text-sm">
-                            Reset
-                        </button>
-                        <button type="submit" 
-                                class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm">
-                            Terapkan Filter
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    {{-- Context Menu dan Modal lainnya (Add, Edit, Detail) tetap sama seperti sebelumnya --}}
-    <div id="contextMenu" class="fixed hidden bg-white shadow-lg rounded-lg py-2 z-50 border border-gray-200" style="min-width: 140px;">
-        <button onclick="editFromMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-700 flex items-center gap-2">
-            <i class="fas fa-edit text-blue-500 w-4"></i>Edit
-        </button>
-        <button onclick="deleteFromMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-700 flex items-center gap-2">
-            <i class="fas fa-trash-alt text-red-500 w-4"></i>Hapus
-        </button>
-    </div>
-
-    {{-- Modal Add Data --}}
-    <div id="addCodeStemiModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-        <!-- Isi modal add sama seperti sebelumnya -->
-    </div>
-
-    {{-- Modal Edit Data --}}
-    <div id="editCodeStemiModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-        <!-- Isi modal edit sama seperti sebelumnya -->
-    </div>
-
-    {{-- Modal Detail Data --}}
-    <div id="detailCodeStemiModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-        <!-- Isi modal detail sama seperti sebelumnya -->
-    </div>
-
     <script>
-        // Fungsi untuk Filter Modal
-        function openFilterModal() {
-            const modal = document.getElementById('filterModal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            document.body.style.overflow = 'hidden';
-        }
+        // Variabel global
+        let currentDate = new Date();
+        let selectedDate = null;
+        let monthEvents = {};
+        let currentRunningCount = 0;
+        let currentFinishedCount = 0;
 
-        function closeFilterModal() {
-            const modal = document.getElementById('filterModal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-            document.body.style.overflow = 'auto';
-        }
-
-        function resetFilter() {
-            // Reset form values
-            document.getElementById('filterForm').reset();
-            // Submit form ke URL tanpa parameter
-            window.location.href = "{{ route('code-stemi.index') }}";
-        }
-
-        // Fungsi untuk search header
-        document.addEventListener('DOMContentLoaded', function() {
-            const searchInput = document.querySelector('header input[type="text"]');
-            const searchForm = document.createElement('form');
-            searchForm.method = 'GET';
-            searchForm.action = "{{ route('code-stemi.index') }}";
-            searchForm.style.display = 'none';
-            
-            // Tambahkan input hidden untuk parameter lainnya
-            @if(request('status'))
-            const statusInput = document.createElement('input');
-            statusInput.type = 'hidden';
-            statusInput.name = 'status';
-            statusInput.value = "{{ request('status') }}";
-            searchForm.appendChild(statusInput);
-            @endif
-            
-            @if(request('start_date'))
-            const startDateInput = document.createElement('input');
-            startDateInput.type = 'hidden';
-            startDateInput.name = 'start_date';
-            startDateInput.value = "{{ request('start_date') }}";
-            searchForm.appendChild(startDateInput);
-            @endif
-            
-            @if(request('end_date'))
-            const endDateInput = document.createElement('input');
-            endDateInput.type = 'hidden';
-            endDateInput.name = 'end_date';
-            endDateInput.value = "{{ request('end_date') }}";
-            searchForm.appendChild(endDateInput);
-            @endif
-
-            document.body.appendChild(searchForm);
-
-            searchInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    
-                    // Hapus input search sebelumnya jika ada
-                    const existingSearch = searchForm.querySelector('input[name="search"]');
-                    if (existingSearch) {
-                        existingSearch.remove();
-                    }
-                    
-                    // Tambahkan input search baru
-                    const searchValueInput = document.createElement('input');
-                    searchValueInput.type = 'hidden';
-                    searchValueInput.name = 'search';
-                    searchValueInput.value = this.value;
-                    searchForm.appendChild(searchValueInput);
-                    
-                    // Submit form
-                    searchForm.submit();
-                }
-            });
-        });
-
-        // Fungsi lainnya (timers, context menu, modals) tetap sama seperti sebelumnya
-        let timers = new Map();
-        let detailTimers = new Map();
-        let contextMenuItemId = null;
-
-        // ... (sisa kode JavaScript untuk timers, context menu, dan modal lainnya tetap sama)
-        
-        // Initialize timers
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeTimers();
-            
-            // Handle form submission edit
-            document.getElementById('editCodeStemiForm').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                
-                const form = this;
-                const formData = new FormData(form);
-                const url = form.action;
-                
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-                            'X-Requested-With': 'XMLHttpRequest'
+        // Chart.js Configuration
+        const ctx = document.getElementById('overviewChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [{
+                    label: 'Finished',
+                    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    borderColor: '#EC4899',
+                    backgroundColor: 'transparent',
+                    tension: 0.4,
+                    borderWidth: 3,
+                    pointRadius: 0,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: '#EC4899'
+                }, {
+                    label: 'Running',
+                    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    borderColor: '#3B82F6',
+                    backgroundColor: 'transparent',
+                    tension: 0.4,
+                    borderWidth: 3,
+                    pointRadius: 0,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: '#3B82F6'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'white',
+                        titleColor: '#374151',
+                        bodyColor: '#374151',
+                        borderColor: '#E5E7EB',
+                        borderWidth: 1,
+                        padding: 12,
+                        displayColors: true,
+                        boxWidth: 8,
+                        boxHeight: 8,
+                        titleFont: {
+                            family: 'Inter',
+                            size: 12,
+                            weight: '500'
                         },
-                        body: formData
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                        alert(result.message);
-                        closeEditModal();
-                        location.reload();
-                    } else {
-                        alert(result.message);
+                        bodyFont: {
+                            family: 'Inter',
+                            size: 11,
+                            weight: '400'
+                        },
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += context.parsed.y;
+                                }
+                                return label;
+                            }
+                        }
                     }
-                    
-                } catch (error) {
-                    console.error('Error updating data:', error);
-                    alert('Terjadi kesalahan saat mengupdate data');
-                }
-            });
-        });
-
-        function initializeTimers() {
-            const rows = document.querySelectorAll('tr[data-start-time]');
-            rows.forEach(row => {
-                const id = row.getAttribute('data-id');
-                const startTime = row.getAttribute('data-start-time');
-                const status = row.getAttribute('data-status');
-                
-                if (status === 'Running') {
-                    startTimer(id, startTime);
-                }
-            });
-        }
-
-        function startTimer(id, startTime) {
-            const start = new Date(startTime);
-            
-            function updateTimer() {
-                const now = new Date();
-                const diff = Math.max(0, now - start);
-                
-                const hours = Math.floor(diff / (1000 * 60 * 60));
-                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-                
-                const timeString = `${hours.toString().padStart(2, '0')}h : ${minutes.toString().padStart(2, '0')}m : ${seconds.toString().padStart(2, '0')}s`;
-                
-                const timeElement = document.getElementById(`time-${id}`);
-                if (timeElement) {
-                    timeElement.textContent = timeString;
-                }
-                
-                if (detailTimers.has(id)) {
-                    const detailTimeElement = document.getElementById(`detail-time-${id}`);
-                    if (detailTimeElement) {
-                        detailTimeElement.textContent = timeString;
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 10,
+                        ticks: {
+                            stepSize: 2,
+                            color: '#9CA3AF',
+                            font: {
+                                family: 'Inter',
+                                size: 11,
+                                weight: '400'
+                            }
+                        },
+                        grid: {
+                            color: '#F3F4F6',
+                            drawBorder: false
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#9CA3AF',
+                            font: {
+                                family: 'Inter',
+                                size: 11,
+                                weight: '400'
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
                     }
                 }
             }
+        });
+
+        // Function untuk generate kalender
+        function generateCalendar(year, month) {
+            const calendarGrid = document.getElementById('calendarGrid');
+            const currentMonthElement = document.getElementById('currentMonth');
             
-            updateTimer();
-            const timerId = setInterval(updateTimer, 1000);
-            timers.set(id, timerId);
+            // Update judul bulan
+            currentMonthElement.textContent = new Date(year, month).toLocaleString('en-US', { 
+                month: 'long', 
+                year: 'numeric' 
+            });
+
+            // Kosongkan grid
+            calendarGrid.innerHTML = '';
+
+            // Tambahkan header hari
+            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            days.forEach(day => {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'text-xs font-semibold text-blue-600 mb-2';
+                dayElement.textContent = day;
+                calendarGrid.appendChild(dayElement);
+            });
+
+            // Hitung hari dalam bulan
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDay = (firstDay.getDay() + 6) % 7; // Adjust for Monday start
+
+            // Tambahkan hari dari bulan sebelumnya
+            const prevMonthLastDay = new Date(year, month, 0).getDate();
+            for (let i = 0; i < startingDay; i++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'w-10 h-10 flex items-center justify-center text-gray-300 text-sm font-medium';
+                dayElement.textContent = prevMonthLastDay - startingDay + i + 1;
+                calendarGrid.appendChild(dayElement);
+            }
+
+            // Tambahkan hari bulan ini
+            const today = new Date();
+            const todayFormatted = today.toISOString().split('T')[0];
+            
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dayElement = document.createElement('div');
+                const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                const dateFormatted = new Date(dateString).toISOString().split('T')[0];
+                
+                let className = 'w-10 h-10 flex items-center justify-center rounded-lg text-sm cursor-pointer font-medium calendar-day ';
+                
+                // Cek jika hari ini
+                if (dateFormatted === todayFormatted) {
+                    className += 'bg-blue-600 text-white ';
+                } else {
+                    className += 'hover:bg-gray-100 text-gray-700 ';
+                }
+                
+                // Cek jika ada events (simulasi data acak untuk demo)
+                const hasEvents = Math.random() > 0.7; // 30% kemungkinan ada event
+                if (hasEvents) {
+                    className += 'has-events ';
+                }
+                
+                // Cek jika selected
+                if (selectedDate === dateFormatted) {
+                    className += 'selected';
+                }
+
+                dayElement.className = className;
+                dayElement.textContent = i;
+                dayElement.setAttribute('data-date', dateFormatted);
+                
+                dayElement.addEventListener('click', function() {
+                    handleDateClick(dateFormatted);
+                });
+                
+                calendarGrid.appendChild(dayElement);
+            }
+
+            // Tambahkan hari dari bulan berikutnya
+            const totalCells = 42; // 6 rows
+            const remainingCells = totalCells - (startingDay + daysInMonth);
+            for (let i = 1; i <= remainingCells; i++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'w-10 h-10 flex items-center justify-center text-gray-300 text-sm font-medium';
+                dayElement.textContent = i;
+                calendarGrid.appendChild(dayElement);
+            }
         }
 
-        // ... (sisa kode JavaScript untuk context menu dan modal lainnya)
+        // Function untuk handle klik tanggal
+        function handleDateClick(date) {
+            selectedDate = date;
+            
+            // Update tampilan kalender
+            document.querySelectorAll('.calendar-day').forEach(day => {
+                day.classList.remove('selected');
+                if (day.getAttribute('data-date') === date) {
+                    day.classList.add('selected');
+                }
+            });
+            
+            // Tampilkan info tanggal yang dipilih
+            const selectedDateInfo = document.getElementById('selectedDateInfo');
+            const selectedDateText = document.getElementById('selectedDateText');
+            const resetButton = document.getElementById('resetFilter');
+            
+            selectedDateText.textContent = `Selected: ${new Date(date).toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            })}`;
+            
+            selectedDateInfo.classList.remove('hidden');
+            resetButton.classList.remove('hidden');
+            
+            // Ambil data untuk tanggal yang dipilih (simulasi)
+            fetchDateData(date);
+        }
+
+        // Function untuk ambil data berdasarkan tanggal (simulasi)
+        function fetchDateData(date) {
+            // Simulasi data berdasarkan tanggal
+            const dateObj = new Date(date);
+            const dayOfMonth = dateObj.getDate();
+            
+            // Data acak untuk demo
+            const runningCount = Math.floor(Math.random() * 10) + 1;
+            const finishedCount = Math.floor(Math.random() * 5) + 1;
+            
+            // Update running count
+            document.getElementById('runningCount').textContent = runningCount;
+            document.getElementById('finishedCount').textContent = finishedCount;
+            
+            // Update date indicator
+            document.getElementById('dateIndicator').textContent = `Data for ${new Date(date).toLocaleDateString()}`;
+            document.getElementById('dateIndicatorFinished').textContent = `Data for ${new Date(date).toLocaleDateString()}`;
+            
+            // Update chart dengan data baru
+            updateChartData(runningCount, finishedCount);
+        }
+
+        // Function untuk reset filter
+        function resetFilter() {
+            selectedDate = null;
+            
+            // Reset tampilan kalender
+            document.querySelectorAll('.calendar-day').forEach(day => {
+                day.classList.remove('selected');
+            });
+            
+            // Sembunyikan info tanggal
+            document.getElementById('selectedDateInfo').classList.add('hidden');
+            document.getElementById('resetFilter').classList.add('hidden');
+            
+            // Reset ke data semua waktu
+            document.getElementById('runningCount').textContent = currentRunningCount;
+            document.getElementById('finishedCount').textContent = currentFinishedCount;
+            
+            document.getElementById('dateIndicator').textContent = 'All time data';
+            document.getElementById('dateIndicatorFinished').textContent = 'All time data';
+            
+            // Reset chart
+            updateChartData(currentRunningCount, currentFinishedCount);
+        }
+
+        // Function untuk update chart data
+        function updateChartData(runningCount, finishedCount) {
+            runningCount = runningCount || 0;
+            finishedCount = finishedCount || 0;
+            
+            // Update data chart untuk bulan Desember saja (untuk demo)
+            chart.data.datasets[0].data[11] = finishedCount;
+            chart.data.datasets[1].data[11] = runningCount;
+            
+            const maxValue = Math.max(runningCount, finishedCount, 10) + 10;
+            chart.options.scales.y.max = maxValue;
+            chart.options.scales.y.ticks.stepSize = Math.ceil(maxValue / 5);
+            
+            chart.update();
+            
+            currentRunningCount = runningCount;
+            currentFinishedCount = finishedCount;
+        }
+
+        // Function untuk ambil data events bulanan (simulasi)
+        function fetchMonthData(year, month) {
+            // Simulasi data bulanan
+            monthEvents = {};
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                // 30% kemungkinan ada event
+                if (Math.random() > 0.7) {
+                    monthEvents[dateString] = {
+                        running: Math.floor(Math.random() * 5),
+                        finished: Math.floor(Math.random() * 3)
+                    };
+                }
+            }
+            
+            generateCalendar(year, month);
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Generate kalender awal
+            const currentYear = currentDate.getFullYear();
+            const currentMonth = currentDate.getMonth();
+            fetchMonthData(currentYear, currentMonth);
+            
+            // Navigation bulan
+            document.getElementById('prevMonth').addEventListener('click', function() {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                fetchMonthData(currentDate.getFullYear(), currentDate.getMonth());
+            });
+            
+            document.getElementById('nextMonth').addEventListener('click', function() {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                fetchMonthData(currentDate.getFullYear(), currentDate.getMonth());
+            });
+            
+            // Reset filter
+            document.getElementById('resetFilter').addEventListener('click', resetFilter);
+            
+            // Time range selector
+            document.getElementById('timeRange').addEventListener('change', function() {
+                // Update chart berdasarkan time range yang dipilih
+                const timeRange = this.value;
+                // Implementasi update chart berdasarkan time range
+                console.log('Time range changed to:', timeRange);
+            });
+            
+            // Sidebar interactivity
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Remove active class from all items
+                    document.querySelectorAll('nav a').forEach(link => {
+                        link.classList.remove('sidebar-active');
+                        link.classList.remove('bg-blue-50');
+                        link.classList.remove('text-blue-600');
+                        link.classList.remove('border-l-4');
+                        link.classList.remove('border-blue-600');
+                        link.classList.add('text-gray-500');
+                    });
+                    
+                    // Add active class to clicked item
+                    this.classList.add('sidebar-active');
+                    this.classList.add('bg-blue-50');
+                    this.classList.add('text-blue-600');
+                    this.classList.add('border-l-4');
+                    this.classList.add('border-blue-600');
+                    this.classList.remove('text-gray-500');
+                });
+            });
+            
+            // Initialize with some data
+            currentRunningCount = 8;
+            currentFinishedCount = 5;
+            document.getElementById('runningCount').textContent = currentRunningCount;
+            document.getElementById('finishedCount').textContent = currentFinishedCount;
+            updateChartData(currentRunningCount, currentFinishedCount);
+        });
+
+        // Real-time functionality (opsional - untuk demo)
+        try {
+            // Simulasi real-time updates
+            setInterval(() => {
+                // Randomly update counts for demo
+                if (Math.random() > 0.7) {
+                    const change = Math.random() > 0.5 ? 1 : -1;
+                    currentRunningCount = Math.max(0, currentRunningCount + change);
+                    document.getElementById('runningCount').textContent = currentRunningCount;
+                    
+                    if (!selectedDate) {
+                        updateChartData(currentRunningCount, currentFinishedCount);
+                    }
+                }
+                
+                if (Math.random() > 0.8) {
+                    const change = Math.random() > 0.5 ? 1 : -1;
+                    currentFinishedCount = Math.max(0, currentFinishedCount + change);
+                    document.getElementById('finishedCount').textContent = currentFinishedCount;
+                    
+                    if (!selectedDate) {
+                        updateChartData(currentRunningCount, currentFinishedCount);
+                    }
+                }
+            }, 5000); // Update every 5 seconds
+        } catch (error) {
+            console.log('Real-time simulation error:', error);
+        }
     </script>
 </body>
 </html>

@@ -107,16 +107,65 @@
         .chart-container {
             font-family: 'Inter', sans-serif;
         }
+        
+        /* Calendar Styles */
+        .calendar-day {
+            transition: all 0.2s ease;
+        }
+        
+        .calendar-day:hover {
+            background-color: #3b82f6 !important;
+            color: white !important;
+        }
+        
+        .calendar-day.selected {
+            background-color: #1d4ed8 !important;
+            color: white !important;
+        }
+        
+        .calendar-day.has-events {
+            position: relative;
+        }
+        
+        .calendar-day.has-events::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background-color: #3b82f6;
+            border-radius: 50%;
+        }
+        
+        .calendar-day.has-events.selected::after {
+            background-color: white;
+        }
+        
+        /* Sidebar active state */
+        .sidebar-active {
+            background-color: #eff6ff;
+            color: #2563eb;
+            border-left: 4px solid #2563eb;
+        }
+        
+        .sidebar-item:hover {
+            background-color: #f9fafb;
+        }
     </style>
 </head>
 
 <body class="bg-gray-50">
     <div class="flex h-screen">
-       {{-- Sidebar --}}
+        <!-- Sidebar -->
         <aside class="w-64 bg-white shadow-sm">
             <div class="p-6">
                 <div class="flex items-center gap-3">
-                    <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway" class="h-14 w-14 object-contain">
+                    <!-- Logo placeholder -->
+                    <div class="h-14 w-14 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-heartbeat text-blue-600 text-xl"></i>
+                    </div>
                     <div>
                         <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">FAST</h1>
                         <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">TRACK</h1>
@@ -127,31 +176,29 @@
             </div>
 
             <nav class="mt-8">
-                <a href="{{ route('dashboard.index') }}" class="flex items-center gap-3 px-6 py-3 bg-blue-50 text-blue-600 border-l-4 border-blue-600">
+                <a href="{{ route('dashboard.index') }}" class="flex items-center gap-3 px-6 py-3 sidebar-active">
                     <i class="fas fa-th-large w-5"></i><span class="font-medium">Dashboard</span>
                 </a>
-                <a href="{{ route('data-nakes.index') }}" class="flex items-center gap-3 px-6 py-3 text-gray-500 hover:bg-gray-50">
+                <a href="{{ route('data-nakes.index') }}" class="flex items-center gap-3 px-6 py-3 text-gray-500 sidebar-item">
                     <i class="fas fa-user-md w-5"></i><span class="font-medium">Data Nakes</span>
                 </a>
-                <a href="{{ route('code-stemi.index') }}" class="flex items-center gap-3 px-6 py-3 text-gray-500 hover:bg-gray-50">
+                <a href="{{ route('code-stemi.index') }}" class="flex items-center gap-3 px-6 py-3 text-gray-500 sidebar-item">
                     <i class="fas fa-file-medical-alt w-5"></i><span class="font-medium">Code STEMI</span>
                 </a>
-                <a href="{{ route('setting.index') }}" class="flex items-center gap-3 px-6 py-3 text-gray-500 hover:bg-gray-50">
+                <a href="{{ route('setting.index') }}" class="flex items-center gap-3 px-6 py-3 text-gray-500 sidebar-item">
                     <i class="fas fa-cog w-5"></i><span class="font-medium">Setting</span>
                 </a>
             </nav>
         </aside>
 
-        {{-- Main Content --}}
+        <!-- Main Content -->
         <main class="flex-1 overflow-y-auto">
             <header class="bg-white shadow-sm px-8 py-4">
                 <div class="flex items-center justify-between">
                     <div></div>
                     <div class="flex items-center gap-6">
-                        <form id="searchForm" method="GET" action="{{ route('data-nakes.index') }}"
-                            class="relative flex items-center">
-                            <input type="text" name="search" id="searchInput" placeholder="Search type of keywords"
-                                value="{{ request('search') }}"
+                        <form class="relative flex items-center">
+                            <input type="text" placeholder="Search type of keywords"
                                 class="w-80 pl-4 pr-10 py-2 border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm transition-all duration-200" />
                             <button type="submit"
                                 class="absolute right-3 text-gray-400 hover:text-blue-600 transition-all duration-150">
@@ -170,19 +217,19 @@
                 </div>
             </header>
 
-            {{-- Dashboard Content --}}
+            <!-- Dashboard Content -->
             <div class="p-8">
                 <div class="grid grid-cols-3 gap-6">
-                    {{-- Left Section: Stats & Chart --}}
+                    <!-- Left Section: Stats & Chart -->
                     <div class="col-span-2 space-y-6">
-                        {{-- Stats Cards --}}
+                        <!-- Stats Cards -->
                         <div class="grid grid-cols-2 gap-4">
                             <div class="bg-white rounded-xl p-6 shadow-sm">
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <p class="text-gray-500 text-sm mb-2 font-medium">Running</p>
-                                        {{-- PERBAIKAN: Gunakan null coalescing operator --}}
-                                        <p id="runningCount" class="text-4xl font-bold text-gray-800">{{ $runningCount ?? 0 }}</p>
+                                        <p id="runningCount" class="text-4xl font-bold text-gray-800">0</p>
+                                        <p id="dateIndicator" class="text-xs text-gray-400 mt-1">All time data</p>
                                     </div>
                                     <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
                                         <i class="fas fa-running text-blue-500 text-xl"></i>
@@ -194,8 +241,8 @@
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <p class="text-gray-500 text-sm mb-2 font-medium">Finished</p>
-                                        {{-- PERBAIKAN: Gunakan null coalescing operator --}}
-                                        <p id="finishedCount" class="text-4xl font-bold text-gray-800">{{ $finishedCount ?? 0 }}</p>
+                                        <p id="finishedCount" class="text-4xl font-bold text-gray-800">0</p>
+                                        <p id="dateIndicatorFinished" class="text-xs text-gray-400 mt-1">All time data</p>
                                     </div>
                                     <div class="w-12 h-12 bg-pink-50 rounded-full flex items-center justify-center">
                                         <i class="fas fa-user-check text-pink-500 text-xl"></i>
@@ -204,7 +251,7 @@
                             </div>
                         </div>
 
-                        {{-- Chart --}}
+                        <!-- Chart -->
                         <div class="bg-white rounded-xl p-6 shadow-sm chart-container">
                             <div class="flex items-center justify-between mb-6">
                                 <div>
@@ -220,11 +267,16 @@
                                         </div>
                                     </div>
                                 </div>
-                                <select class="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none font-medium">
-                                    <option>Monthly</option>
-                                    <option>Weekly</option>
-                                    <option>Yearly</option>
-                                </select>
+                                <div class="flex items-center gap-2">
+                                    <button id="resetFilter" class="bg-blue-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-blue-600 transition-colors hidden">
+                                        Reset Filter
+                                    </button>
+                                    <select id="timeRange" class="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none font-medium">
+                                        <option value="monthly">Monthly</option>
+                                        <option value="weekly">Weekly</option>
+                                        <option value="yearly">Yearly</option>
+                                    </select>
+                                </div>
                             </div>
                             <div class="relative">
                                 <canvas id="overviewChart" height="80"></canvas>
@@ -232,69 +284,29 @@
                         </div>
                     </div>
 
-                    {{-- Right Section: Calendar --}}
+                    <!-- Right Section: Calendar -->
                     <div class="bg-white rounded-xl p-6 shadow-sm">
                         <div class="flex items-center justify-between mb-6">
-                            {{-- PERBAIKAN: Update bulan ke bulan saat ini --}}
                             <h3 class="text-xl font-bold text-gray-800" id="currentMonth">{{ date('F, Y') }}</h3>
                             <div class="flex gap-2">
-                                <button class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded">
+                                <button id="prevMonth" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded">
                                     <i class="fas fa-chevron-left text-gray-400"></i>
                                 </button>
-                                <button class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded">
+                                <button id="nextMonth" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded">
                                     <i class="fas fa-chevron-right text-gray-400"></i>
                                 </button>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-7 gap-2 text-center">
-                            <div class="text-xs font-semibold text-blue-600 mb-2">Mon</div>
-                            <div class="text-xs font-semibold text-blue-600 mb-2">Tue</div>
-                            <div class="text-xs font-semibold text-blue-600 mb-2">Wed</div>
-                            <div class="text-xs font-semibold text-blue-600 mb-2">Thu</div>
-                            <div class="text-xs font-semibold text-blue-600 mb-2">Fri</div>
-                            <div class="text-xs font-semibold text-blue-600 mb-2">Sat</div>
-                            <div class="text-xs font-semibold text-blue-600 mb-2">Sun</div>
-
-                            @php
-                                // PERBAIKAN: Generate tanggal dinamis berdasarkan bulan saat ini
-                                $firstDayOfMonth = date('N', strtotime(date('Y-m-01')));
-                                $daysInMonth = date('t');
-                                $dates = [];
-                                
-                                // Hari dari bulan sebelumnya
-                                $prevMonthDays = $firstDayOfMonth - 1;
-                                if ($prevMonthDays > 0) {
-                                    $prevMonthLastDay = date('t', strtotime('-1 month'));
-                                    for ($i = $prevMonthLastDay - $prevMonthDays + 1; $i <= $prevMonthLastDay; $i++) {
-                                        $dates[] = ['day' => $i, 'current' => false];
-                                    }
-                                }
-                                
-                                // Hari bulan ini
-                                for ($i = 1; $i <= $daysInMonth; $i++) {
-                                    $dates[] = ['day' => $i, 'current' => true];
-                                }
-                                
-                                // Hari dari bulan berikutnya
-                                $totalCells = 42; // 6 rows x 7 days
-                                $nextMonthDays = $totalCells - count($dates);
-                                for ($i = 1; $i <= $nextMonthDays; $i++) {
-                                    $dates[] = ['day' => $i, 'current' => false];
-                                }
-                            @endphp
-
-                            @foreach($dates as $date)
-                                @if($date['current'])
-                                    @if($date['day'] == date('j'))
-                                        <div class="w-10 h-10 flex items-center justify-center bg-blue-600 text-white rounded-lg font-medium text-sm">{{ $date['day'] }}</div>
-                                    @else
-                                        <div class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-lg text-gray-700 text-sm cursor-pointer font-medium">{{ $date['day'] }}</div>
-                                    @endif
-                                @else
-                                    <div class="w-10 h-10 flex items-center justify-center text-gray-300 text-sm font-medium">{{ $date['day'] }}</div>
-                                @endif
-                            @endforeach
+                        <div class="grid grid-cols-7 gap-2 text-center" id="calendarGrid">
+                            <!-- Calendar akan di-generate oleh JavaScript -->
+                        </div>
+                        
+                        <div class="mt-4 p-3 bg-blue-50 rounded-lg hidden" id="selectedDateInfo">
+                            <p class="text-sm text-blue-700 font-medium">
+                                <i class="fas fa-calendar-day mr-2"></i>
+                                <span id="selectedDateText"></span>
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -303,9 +315,12 @@
     </div>
 
     <script>
-        // PERBAIKAN: Handle kasus ketika variabel tidak terdefinisi
-        let currentRunningCount = {{ $runningCount ?? 0 }};
-        let currentFinishedCount = {{ $finishedCount ?? 0 }};
+        // Variabel global
+        let currentDate = new Date();
+        let selectedDate = null;
+        let monthEvents = {};
+        let currentRunningCount = 0;
+        let currentFinishedCount = 0;
 
         // Chart.js Configuration
         const ctx = document.getElementById('overviewChart').getContext('2d');
@@ -315,7 +330,7 @@
                 labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                 datasets: [{
                     label: 'Finished',
-                    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, currentFinishedCount],
+                    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                     borderColor: '#EC4899',
                     backgroundColor: 'transparent',
                     tension: 0.4,
@@ -325,7 +340,7 @@
                     pointBackgroundColor: '#EC4899'
                 }, {
                     label: 'Running',
-                    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, currentRunningCount],
+                    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                     borderColor: '#3B82F6',
                     backgroundColor: 'transparent',
                     tension: 0.4,
@@ -379,9 +394,9 @@
                 scales: {
                     y: {
                         beginAtZero: true,
-                        max: Math.max(currentRunningCount, currentFinishedCount, 10) + 10,
+                        max: 10,
                         ticks: {
-                            stepSize: Math.ceil(Math.max(currentRunningCount, currentFinishedCount, 10) / 5),
+                            stepSize: 2,
                             color: '#9CA3AF',
                             font: {
                                 family: 'Inter',
@@ -411,75 +426,304 @@
             }
         });
 
+        // Function untuk generate kalender
+        function generateCalendar(year, month) {
+            const calendarGrid = document.getElementById('calendarGrid');
+            const currentMonthElement = document.getElementById('currentMonth');
+            
+            // Update judul bulan
+            currentMonthElement.textContent = new Date(year, month).toLocaleString('en-US', { 
+                month: 'long', 
+                year: 'numeric' 
+            });
+
+            // Kosongkan grid
+            calendarGrid.innerHTML = '';
+
+            // Tambahkan header hari
+            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            days.forEach(day => {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'text-xs font-semibold text-blue-600 mb-2';
+                dayElement.textContent = day;
+                calendarGrid.appendChild(dayElement);
+            });
+
+            // Hitung hari dalam bulan
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDay = (firstDay.getDay() + 6) % 7; // Adjust for Monday start
+
+            // Tambahkan hari dari bulan sebelumnya
+            const prevMonthLastDay = new Date(year, month, 0).getDate();
+            for (let i = 0; i < startingDay; i++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'w-10 h-10 flex items-center justify-center text-gray-300 text-sm font-medium';
+                dayElement.textContent = prevMonthLastDay - startingDay + i + 1;
+                calendarGrid.appendChild(dayElement);
+            }
+
+            // Tambahkan hari bulan ini
+            const today = new Date();
+            const todayFormatted = today.toISOString().split('T')[0];
+            
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dayElement = document.createElement('div');
+                const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                const dateFormatted = new Date(dateString).toISOString().split('T')[0];
+                
+                let className = 'w-10 h-10 flex items-center justify-center rounded-lg text-sm cursor-pointer font-medium calendar-day ';
+                
+                // Cek jika hari ini
+                if (dateFormatted === todayFormatted) {
+                    className += 'bg-blue-600 text-white ';
+                } else {
+                    className += 'hover:bg-gray-100 text-gray-700 ';
+                }
+                
+                // Cek jika ada events (simulasi data acak untuk demo)
+                const hasEvents = Math.random() > 0.7; // 30% kemungkinan ada event
+                if (hasEvents) {
+                    className += 'has-events ';
+                }
+                
+                // Cek jika selected
+                if (selectedDate === dateFormatted) {
+                    className += 'selected';
+                }
+
+                dayElement.className = className;
+                dayElement.textContent = i;
+                dayElement.setAttribute('data-date', dateFormatted);
+                
+                dayElement.addEventListener('click', function() {
+                    handleDateClick(dateFormatted);
+                });
+                
+                calendarGrid.appendChild(dayElement);
+            }
+
+            // Tambahkan hari dari bulan berikutnya
+            const totalCells = 42; // 6 rows
+            const remainingCells = totalCells - (startingDay + daysInMonth);
+            for (let i = 1; i <= remainingCells; i++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'w-10 h-10 flex items-center justify-center text-gray-300 text-sm font-medium';
+                dayElement.textContent = i;
+                calendarGrid.appendChild(dayElement);
+            }
+        }
+
+        // Function untuk handle klik tanggal
+        function handleDateClick(date) {
+            selectedDate = date;
+            
+            // Update tampilan kalender
+            document.querySelectorAll('.calendar-day').forEach(day => {
+                day.classList.remove('selected');
+                if (day.getAttribute('data-date') === date) {
+                    day.classList.add('selected');
+                }
+            });
+            
+            // Tampilkan info tanggal yang dipilih
+            const selectedDateInfo = document.getElementById('selectedDateInfo');
+            const selectedDateText = document.getElementById('selectedDateText');
+            const resetButton = document.getElementById('resetFilter');
+            
+            selectedDateText.textContent = `Selected: ${new Date(date).toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            })}`;
+            
+            selectedDateInfo.classList.remove('hidden');
+            resetButton.classList.remove('hidden');
+            
+            // Ambil data untuk tanggal yang dipilih (simulasi)
+            fetchDateData(date);
+        }
+
+        // Function untuk ambil data berdasarkan tanggal (simulasi)
+        function fetchDateData(date) {
+            // Simulasi data berdasarkan tanggal
+            const dateObj = new Date(date);
+            const dayOfMonth = dateObj.getDate();
+            
+            // Data acak untuk demo
+            const runningCount = Math.floor(Math.random() * 10) + 1;
+            const finishedCount = Math.floor(Math.random() * 5) + 1;
+            
+            // Update running count
+            document.getElementById('runningCount').textContent = runningCount;
+            document.getElementById('finishedCount').textContent = finishedCount;
+            
+            // Update date indicator
+            document.getElementById('dateIndicator').textContent = `Data for ${new Date(date).toLocaleDateString()}`;
+            document.getElementById('dateIndicatorFinished').textContent = `Data for ${new Date(date).toLocaleDateString()}`;
+            
+            // Update chart dengan data baru
+            updateChartData(runningCount, finishedCount);
+        }
+
+        // Function untuk reset filter
+        function resetFilter() {
+            selectedDate = null;
+            
+            // Reset tampilan kalender
+            document.querySelectorAll('.calendar-day').forEach(day => {
+                day.classList.remove('selected');
+            });
+            
+            // Sembunyikan info tanggal
+            document.getElementById('selectedDateInfo').classList.add('hidden');
+            document.getElementById('resetFilter').classList.add('hidden');
+            
+            // Reset ke data semua waktu
+            document.getElementById('runningCount').textContent = currentRunningCount;
+            document.getElementById('finishedCount').textContent = currentFinishedCount;
+            
+            document.getElementById('dateIndicator').textContent = 'All time data';
+            document.getElementById('dateIndicatorFinished').textContent = 'All time data';
+            
+            // Reset chart
+            updateChartData(currentRunningCount, currentFinishedCount);
+        }
+
         // Function untuk update chart data
         function updateChartData(runningCount, finishedCount) {
-            // PERBAIKAN: Validasi input
             runningCount = runningCount || 0;
             finishedCount = finishedCount || 0;
             
-            // Update data untuk semua bulan dengan data terbaru
-            chart.data.datasets[0].data = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, finishedCount];
-            chart.data.datasets[1].data = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, runningCount];
+            // Update data chart untuk bulan Desember saja (untuk demo)
+            chart.data.datasets[0].data[11] = finishedCount;
+            chart.data.datasets[1].data[11] = runningCount;
             
-            // Update skala Y axis
             const maxValue = Math.max(runningCount, finishedCount, 10) + 10;
             chart.options.scales.y.max = maxValue;
             chart.options.scales.y.ticks.stepSize = Math.ceil(maxValue / 5);
             
-            // Update chart
             chart.update();
             
-            // Simpan nilai terbaru
             currentRunningCount = runningCount;
             currentFinishedCount = finishedCount;
         }
 
-        // Real-time functionality untuk update status Running dan Finished
-        try {
-            const pusher = new Pusher('{{ config('broadcasting.connections.pusher.key', 'local') }}', {
-                cluster: '{{ config('broadcasting.connections.pusher.options.cluster', 'mt1') }}',
-                encrypted: true
-            });
-
-            const channel = pusher.subscribe('code-stemi-dashboard');
-
-            // Listen for real-time updates
-            channel.bind('status.updated', function(data) {
-                // PERBAIKAN: Validasi data sebelum update
-                if (data && typeof data.runningCount !== 'undefined' && typeof data.finishedCount !== 'undefined') {
-                    // Update running count
-                    document.getElementById('runningCount').textContent = data.runningCount;
-                    
-                    // Update finished count
-                    document.getElementById('finishedCount').textContent = data.finishedCount;
-                    
-                    // Update chart dengan data real-time
-                    updateChartData(data.runningCount, data.finishedCount);
-                    
-                    console.log('Real-time update received:', data);
+        // Function untuk ambil data events bulanan (simulasi)
+        function fetchMonthData(year, month) {
+            // Simulasi data bulanan
+            monthEvents = {};
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                // 30% kemungkinan ada event
+                if (Math.random() > 0.7) {
+                    monthEvents[dateString] = {
+                        running: Math.floor(Math.random() * 5),
+                        finished: Math.floor(Math.random() * 3)
+                    };
                 }
-            });
-
-        } catch (error) {
-            console.log('Pusher not configured or error:', error);
+            }
+            
+            generateCalendar(year, month);
         }
 
-        // Initial chart update dengan data saat ini
-        updateChartData(currentRunningCount, currentFinishedCount);
-
-        // PERBAIKAN: Fallback untuk kasus variabel tidak terdefinisi
+        // Event Listeners
         document.addEventListener('DOMContentLoaded', function() {
-            // Pastikan elemen ada sebelum memanipulasi
-            const runningCountEl = document.getElementById('runningCount');
-            const finishedCountEl = document.getElementById('finishedCount');
+            // Generate kalender awal
+            const currentYear = currentDate.getFullYear();
+            const currentMonth = currentDate.getMonth();
+            fetchMonthData(currentYear, currentMonth);
             
-            if (runningCountEl && runningCountEl.textContent === '') {
-                runningCountEl.textContent = '0';
-            }
-            if (finishedCountEl && finishedCountEl.textContent === '') {
-                finishedCountEl.textContent = '0';
-            }
+            // Navigation bulan
+            document.getElementById('prevMonth').addEventListener('click', function() {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                fetchMonthData(currentDate.getFullYear(), currentDate.getMonth());
+            });
+            
+            document.getElementById('nextMonth').addEventListener('click', function() {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                fetchMonthData(currentDate.getFullYear(), currentDate.getMonth());
+            });
+            
+            // Reset filter
+            document.getElementById('resetFilter').addEventListener('click', resetFilter);
+            
+            // Time range selector
+            document.getElementById('timeRange').addEventListener('change', function() {
+                // Update chart berdasarkan time range yang dipilih
+                const timeRange = this.value;
+                // Implementasi update chart berdasarkan time range
+                console.log('Time range changed to:', timeRange);
+            });
+            
+            // HAPUS: JavaScript yang mencegah navigasi sidebar
+            // Kode berikut dihapus karena mencegah link bekerja:
+            /*
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault(); // INI YANG MENYEBABKAN MASALAH
+                    
+                    // Remove active class from all items
+                    document.querySelectorAll('nav a').forEach(link => {
+                        link.classList.remove('sidebar-active');
+                        link.classList.remove('bg-blue-50');
+                        link.classList.remove('text-blue-600');
+                        link.classList.remove('border-l-4');
+                        link.classList.remove('border-blue-600');
+                        link.classList.add('text-gray-500');
+                    });
+                    
+                    // Add active class to clicked item
+                    this.classList.add('sidebar-active');
+                    this.classList.add('bg-blue-50');
+                    this.classList.add('text-blue-600');
+                    this.classList.add('border-l-4');
+                    this.classList.add('border-blue-600');
+                    this.classList.remove('text-gray-500');
+                });
+            });
+            */
+            
+            // Initialize with some data
+            currentRunningCount = 8;
+            currentFinishedCount = 5;
+            document.getElementById('runningCount').textContent = currentRunningCount;
+            document.getElementById('finishedCount').textContent = currentFinishedCount;
+            updateChartData(currentRunningCount, currentFinishedCount);
         });
+
+        // Real-time functionality (opsional - untuk demo)
+        try {
+            // Simulasi real-time updates
+            setInterval(() => {
+                // Randomly update counts for demo
+                if (Math.random() > 0.7) {
+                    const change = Math.random() > 0.5 ? 1 : -1;
+                    currentRunningCount = Math.max(0, currentRunningCount + change);
+                    document.getElementById('runningCount').textContent = currentRunningCount;
+                    
+                    if (!selectedDate) {
+                        updateChartData(currentRunningCount, currentFinishedCount);
+                    }
+                }
+                
+                if (Math.random() > 0.8) {
+                    const change = Math.random() > 0.5 ? 1 : -1;
+                    currentFinishedCount = Math.max(0, currentFinishedCount + change);
+                    document.getElementById('finishedCount').textContent = currentFinishedCount;
+                    
+                    if (!selectedDate) {
+                        updateChartData(currentRunningCount, currentFinishedCount);
+                    }
+                }
+            }, 5000); // Update every 5 seconds
+        } catch (error) {
+            console.log('Real-time simulation error:', error);
+        }
     </script>
 </body>
 </html>

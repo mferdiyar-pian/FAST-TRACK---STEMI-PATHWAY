@@ -6,6 +6,7 @@ use App\Http\Controllers\DataNakesController;
 use App\Http\Controllers\CodeStemiController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\BroadcastController;
+use App\Http\Controllers\CalendarController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -93,3 +94,27 @@ Route::get('/dashboard/stats', [CodeStemiController::class, 'getStats']);
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
 // atau jika menggunakan root path:
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard.index');
+
+// Route untuk dashboard
+Route::get('/', [CalendarController::class, 'dashboard'])->name('dashboard');
+Route::get('/dashboard', [CalendarController::class, 'dashboard'])->name('dashboard.index');
+
+// Route API untuk kalender
+Route::prefix('api/calendar')->group(function () {
+    Route::get('/month-data', [CalendarController::class, 'getMonthData']);
+    Route::get('/date-data/{date}', [CalendarController::class, 'getDateData']);
+    Route::post('/events', [CalendarController::class, 'storeEvent']);
+    Route::delete('/events/{id}', [CalendarController::class, 'destroy']);
+});
+
+// Route untuk form tambah event
+Route::get('/calendar/create', [CalendarController::class, 'create'])->name('calendar.create');
+
+Route::get('/calendar/date/{date}', [CalendarController::class, 'getDateData'])->name('calendar.date');
+
+// Calendar routes
+Route::get('/calendar/dashboard', [CalendarController::class, 'dashboard'])->name('dashboard.index');
+Route::get('/calendar/month-data', [CalendarController::class, 'getMonthData']);
+Route::get('/calendar/date-data', [CalendarController::class, 'getDateData']);
+Route::post('/calendar/events', [CalendarController::class, 'storeEvent']);
+Route::delete('/calendar/events/{id}', [CalendarController::class, 'destroy']);
