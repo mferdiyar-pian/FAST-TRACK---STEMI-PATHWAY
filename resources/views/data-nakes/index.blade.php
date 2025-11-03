@@ -7,6 +7,7 @@
     <title>Fast Track STEMI Pathway - Data Nakes</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -188,9 +189,22 @@
                             <i class="fas fa-bell text-gray-500 text-xl"></i>
                             <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                         </button>
-                        <div class="flex items-center gap-3">
-                            <span class="text-gray-700 font-medium text-sm">dr. Muhammad Zaky, Sp.JP</span>
-                            <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+                        <div x-data="{ isOpen: false }" class="relative">
+                            <button @click="isOpen = !isOpen" class="flex items-center gap-3 focus:outline-none">
+                                <span class="text-gray-700 font-medium text-sm">{{ Auth::user()->name }}</span>
+                                <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+                            </button>
+
+                            <div x-show="isOpen" @click.away="isOpen = false"
+                                class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-10">
+                                <a href="{{ route('setting.index') }}"
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil</a>
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit"
+                                        class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
