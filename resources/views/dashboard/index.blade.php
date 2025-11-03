@@ -163,10 +163,8 @@
         <aside class="w-64 bg-white shadow-sm">
             <div class="p-6">
                 <div class="flex items-center gap-3">
-                    <!-- Logo placeholder -->
-                    <div class="h-14 w-14 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-heartbeat text-blue-600 text-xl"></i>
-                    </div>
+                    <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway"
+                        class="h-14 w-14 object-contain">
                     <div>
                         <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">FAST</h1>
                         <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">TRACK</h1>
