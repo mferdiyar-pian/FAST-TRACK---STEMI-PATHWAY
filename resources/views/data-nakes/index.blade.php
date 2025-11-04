@@ -251,7 +251,7 @@
 
                             <!-- Dropdown Filter -->
                             <div id="filterDropdown"
-                                class="filter-dropdown absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-10">
+                                class="filter-dropdown absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
                                 <div class="p-4">
                                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Filter Data Nakes</h3>
 
@@ -506,7 +506,7 @@
                             {{-- Export Button (fixed version) --}}
                         <button type="button"
                             onclick="window.location.href='{{ route('data-nakes.export') }}'"
-                            class="relative z-50 flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 transition font-medium text-sm">
+                            class="relative z-0 flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 transition font-medium text-sm">
                         <i class="fas fa-download"></i> Export
                         </button>
 
