@@ -156,7 +156,18 @@
                 <div class="flex items-center justify-between">
                     <div></div>
                     <div class="flex items-center gap-6">
-
+                        <!-- Search Form -->
+                        <form id="searchForm" method="GET" action="{{ route('setting.index') }}"
+                            class="relative flex items-center">
+                            <input type="text" name="search" id="searchInput" placeholder="Search settings..."
+                                value="{{ request('search') }}"
+                                class="w-80 pl-4 pr-10 py-2 border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm transition-all duration-200" />
+                            <button type="submit"
+                                class="absolute right-3 text-gray-400 hover:text-blue-600 transition-all duration-150">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </form>
+                        
                         <button class="relative">
                             <i class="fas fa-bell text-gray-500 text-xl"></i>
                             <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
@@ -198,8 +209,20 @@
             {{-- Setting Content --}}
             <div class="p-8">
                 {{-- Title --}}
-                <div class="mb-8">
+                <div class="flex items-center justify-between mb-8">
                     <h2 class="text-3xl font-bold text-gray-800">Setting</h2>
+                    
+                    <!-- Filter Active Badges -->
+                    <div id="activeFilters" class="flex flex-wrap gap-2">
+                        @if (request('search'))
+                            <span class="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full flex items-center gap-1">
+                                Pencarian: "{{ request('search') }}"
+                                <button onclick="removeFilter('search')" class="text-purple-600 hover:text-purple-800">
+                                    <i class="fas fa-times text-xs"></i>
+                                </button>
+                            </span>
+                        @endif
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-3 gap-6">
@@ -449,6 +472,29 @@
     </div>
 
     <script>
+        // ==================== SEARCH FUNCTION ====================
+
+        // Handle search form submission
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const searchValue = document.getElementById('searchInput').value;
+            const url = new URL(window.location.href);
+
+            if (searchValue) {
+                url.searchParams.set('search', searchValue);
+            } else {
+                url.searchParams.delete('search');
+            }
+
+            window.location.href = url.toString();
+        });
+
+        function removeFilter(filterName) {
+            const url = new URL(window.location.href);
+            url.searchParams.delete(filterName);
+            window.location.href = url.toString();
+        }
+
         // Danger zone buttons
         const deactivateButton = document.querySelector('button:contains("Deactivate Account")');
         if (deactivateButton) {

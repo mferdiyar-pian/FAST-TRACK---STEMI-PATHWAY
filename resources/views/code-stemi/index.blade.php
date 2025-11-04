@@ -487,7 +487,7 @@
                                     <button type="button"
                                         onclick="window.location.href='{{ route('code-stemi.export') }}'"
                                         class="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 transition font-medium text-sm">
-                                        <i class="fas fa-download"></i> Export Excel
+                                        <i class="fas fa-download"></i> Export
                                     </button>
 
 
