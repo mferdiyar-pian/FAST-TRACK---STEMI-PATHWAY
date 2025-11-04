@@ -266,8 +266,8 @@
         const chartRunning = <?php echo isset($chartData) ? json_encode(array_column($chartData, 'running')) : '[]' ?>;
         const chartFinished = <?php echo isset($chartData) ? json_encode(array_column($chartData, 'finished')) : '[]' ?>;
 
-        // Initialize Chart
-        function initializeChart(labels = null, runningData = null, finishedData = null) {
+        // Initialize Chart - DIPERBAIKI
+        function initializeChart(labels = null, runningData = null, finishedData = null, range = 'monthly') {
             const ctx = document.getElementById('overviewChart').getContext('2d');
             
             // Gunakan data yang diberikan atau data default
@@ -284,7 +284,8 @@
                 chart.destroy();
             }
 
-            chart = new Chart(ctx, {
+            // Konfigurasi chart berdasarkan range
+            const chartConfig = {
                 type: 'line',
                 data: {
                     labels: finalLabels,
@@ -315,7 +316,15 @@
                         },
                         tooltip: {
                             mode: 'index',
-                            intersect: false
+                            intersect: false,
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    if (range === 'yearly') {
+                                        return `Year: ${tooltipItems[0].label}`;
+                                    }
+                                    return tooltipItems[0].label;
+                                }
+                            }
                         }
                     },
                     scales: {
@@ -326,7 +335,8 @@
                                 color: 'rgba(0, 0, 0, 0.05)'
                             },
                             ticks: {
-                                stepSize: Math.ceil(maxValue / 5)
+                                stepSize: Math.ceil(maxValue / 5),
+                                precision: 0
                             }
                         },
                         x: { 
@@ -341,17 +351,37 @@
                         intersect: false
                     }
                 }
-            });
+            };
+
+            chart = new Chart(ctx, chartConfig);
+            
+            // Update chart title berdasarkan range
+            updateChartTitle(range);
         }
 
-        // Function untuk memuat data chart berdasarkan time range
+        // Update chart title berdasarkan range
+        function updateChartTitle(range) {
+            const chartTitle = document.querySelector('.chart-container h3');
+            if (chartTitle) {
+                if (range === 'yearly') {
+                    chartTitle.textContent = 'Overview - Yearly Code STEMI Activities';
+                } else {
+                    chartTitle.textContent = 'Overview - Monthly Code STEMI Activities';
+                }
+            }
+        }
+
+        // Function untuk memuat data chart berdasarkan time range - DIPERBAIKI
         async function loadChartData(timeRange) {
             try {
                 console.log('Loading chart data for:', timeRange);
                 
                 // Tampilkan loading state
                 const chartContainer = document.querySelector('.chart-container');
+                const timeRangeSelect = document.getElementById('timeRange');
+                
                 chartContainer.classList.add('opacity-50');
+                timeRangeSelect.disabled = true;
                 
                 const response = await fetch(`/dashboard/chart-stats?range=${timeRange}`);
                 
@@ -365,23 +395,36 @@
                 
                 if (data.success) {
                     // Update chart dengan data baru
-                    initializeChart(data.labels, data.running, data.finished);
+                    initializeChart(data.labels, data.running, data.finished, timeRange);
+                    currentTimeRange = timeRange;
+                    
+                    // Show success message
+                    showNotification(`Chart updated to ${timeRange} view`, 'success');
                 } else {
                     console.error('Failed to load chart data:', data.message);
                     // Fallback ke data default
                     initializeChart();
+                    showNotification('Failed to load chart data, using default', 'error');
                 }
             } catch (error) {
                 console.error('Error loading chart data:', error);
                 // Fallback ke data default
                 initializeChart();
+                showNotification('Error loading chart data', 'error');
             } finally {
                 // Hilangkan loading state
                 chartContainer.classList.remove('opacity-50');
+                timeRangeSelect.disabled = false;
             }
         }
 
-        // Function untuk generate kalender
+        // Notification function
+        function showNotification(message, type = 'info') {
+            // Simple notification - bisa diganti dengan library notifikasi
+            console.log(`${type.toUpperCase()}: ${message}`);
+        }
+
+        // Function untuk generate kalender - DIPERBAIKI
         function generateCalendar(year, month) {
             const calendarGrid = document.getElementById('calendarGrid');
             const currentMonthElement = document.getElementById('currentMonth');
@@ -420,7 +463,7 @@
                 calendarGrid.appendChild(dayElement);
             }
 
-            // Hari bulan ini
+            // Hari bulan ini - DIPERBAIKI dengan data fetching
             for (let i = 1; i <= daysInMonth; i++) {
                 const dayElement = document.createElement('div');
                 const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
@@ -447,6 +490,7 @@
                 dayElement.className = className;
                 dayElement.textContent = i;
                 dayElement.setAttribute('data-date', dateFormatted);
+                dayElement.setAttribute('title', `Click to view data for ${dateFormatted}`);
                 
                 // Tambahkan event listener untuk semua tanggal di bulan yang ditampilkan
                 dayElement.addEventListener('click', function() {
@@ -467,13 +511,14 @@
             }
         }
 
-        // Function untuk handle klik tanggal
+        // Function untuk handle klik tanggal - DIPERBAIKI
         function handleDateClick(date) {
             console.log('Date clicked:', date);
             
             // Jika mengklik tanggal yang sama, reset selection
             if (selectedDate === date) {
                 resetCalendarSelection();
+                showNotification('Date filter cleared', 'info');
                 return;
             }
             
@@ -507,9 +552,11 @@
             
             // Ambil data untuk tanggal yang dipilih
             fetchDateData(date);
+            
+            showNotification(`Showing data for ${date}`, 'success');
         }
 
-        // Function untuk update info tanggal yang dipilih
+        // Function untuk update info tanggal yang dipilih - DIPERBAIKI
         function updateSelectedDateInfo(date) {
             const selectedDateElement = document.getElementById('selectedDateInfo');
             const selectedDateFinishedElement = document.getElementById('selectedDateInfoFinished');
@@ -537,7 +584,7 @@
             }
         }
 
-        // Function untuk reset selection
+        // Function untuk reset selection - DIPERBAIKI
         function resetCalendarSelection() {
             selectedDate = null;
             
@@ -561,11 +608,12 @@
             fetchRealTimeStats();
         }
 
-        // Function untuk ambil data berdasarkan tanggal
+        // Function untuk ambil data berdasarkan tanggal - DIPERBAIKI
         async function fetchDateData(date) {
             try {
                 console.log('Fetching data for date:', date);
                 
+                // Show loading states
                 document.getElementById('runningCount').innerHTML = '<div class="loading-spinner inline-block"></div>';
                 document.getElementById('finishedCount').innerHTML = '<div class="loading-spinner inline-block"></div>';
 
@@ -584,21 +632,26 @@
                     document.getElementById('finishedCount').textContent = data.finished_count;
                     
                     console.log(`Data for ${date}: Running=${data.running_count}, Finished=${data.finished_count}`);
+                    
+                    // Refresh chart juga untuk konsistensi
+                    loadChartData(currentTimeRange);
                 } else {
                     console.error('API returned error:', data.message);
                     // Fallback: set ke 0 jika tidak ada data
                     document.getElementById('runningCount').textContent = 0;
                     document.getElementById('finishedCount').textContent = 0;
+                    showNotification('No data available for selected date', 'warning');
                 }
             } catch (error) {
                 console.error('Error fetching date data:', error);
                 // Fallback: set ke 0 jika error
                 document.getElementById('runningCount').textContent = 0;
                 document.getElementById('finishedCount').textContent = 0;
+                showNotification('Error loading date data', 'error');
             }
         }
 
-        // Function untuk ambil data real-time stats (ALL TIME DATA)
+        // Function untuk ambil data real-time stats (ALL TIME DATA) - DIPERBAIKI
         async function fetchRealTimeStats() {
             try {
                 const response = await fetch('/dashboard/dashboard-stats');
@@ -628,10 +681,15 @@
                 if (!selectedDate) {
                     fetchRealTimeStats();
                 }
-            }, 30000);
+            }, 30000); // 30 detik
+            
+            // Chart refresh interval - 1 menit
+            chartInterval = setInterval(() => {
+                loadChartData(currentTimeRange);
+            }, 60000); // 1 menit
         }
 
-        // Event Listeners
+        // Event Listeners - DIPERBAIKI
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize chart dengan data default
             initializeChart();
@@ -654,10 +712,11 @@
                 resetCalendarSelection();
             });
             
-            // Event listener untuk time range selector
+            // Event listener untuk time range selector - DIPERBAIKI
             document.getElementById('timeRange').addEventListener('change', function(e) {
-                currentTimeRange = e.target.value;
-                loadChartData(currentTimeRange);
+                const newRange = e.target.value;
+                console.log('Time range changed to:', newRange);
+                loadChartData(newRange);
             });
             
             // Setup intervals
@@ -665,9 +724,11 @@
             
             // Load initial data
             fetchRealTimeStats();
+            
+            console.log('Dashboard initialized successfully');
         });
 
-        // Real-time functionality dengan Pusher
+        // Real-time functionality dengan Pusher - DIPERBAIKI
         try {
             const pusher = new Pusher('{{ config("broadcasting.connections.pusher.key", "local") }}', {
                 cluster: '{{ config("broadcasting.connections.pusher.options.cluster", "mt1") }}',
@@ -676,7 +737,7 @@
 
             const channel = pusher.subscribe('code-stemi');
             channel.bind('CodeStemiStatusUpdated', function(data) {
-                console.log('Real-time update received');
+                console.log('Real-time update received:', data);
                 
                 // Jika ada tanggal yang dipilih, refresh data tanggal tersebut
                 // Jika tidak ada tanggal yang dipilih, refresh data real-time
@@ -690,11 +751,25 @@
                 
                 // Refresh chart data juga
                 loadChartData(currentTimeRange);
+                
+                showNotification('Data updated in real-time', 'info');
             });
 
         } catch (error) {
             console.log('Pusher initialization error:', error);
         }
+
+        // Export functions untuk debugging
+        window.dashboardDebug = {
+            getCurrentState: () => ({
+                selectedDate,
+                currentTimeRange,
+                currentDate: currentDate.toISOString(),
+                chart: chart ? 'Initialized' : 'Not initialized'
+            }),
+            reloadChart: () => loadChartData(currentTimeRange),
+            resetFilter: () => resetCalendarSelection()
+        };
     </script>
 </body>
 </html>

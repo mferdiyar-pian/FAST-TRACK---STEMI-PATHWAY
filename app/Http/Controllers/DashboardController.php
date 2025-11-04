@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CodeStemi;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -32,39 +33,45 @@ class DashboardController extends Controller
     /**
      * Ambil data untuk chart (12 bulan terakhir)
      */
-    private function getChartData()
+    private function getChartData($range = 'monthly')
     {
-        $currentYear = date('Y');
-        $currentMonth = date('n');
+        if ($range === 'yearly') {
+            return $this->getYearlyChartData();
+        }
         
+        // Default: monthly data (12 bulan terakhir)
+        return $this->getMonthlyChartData();
+    }
+
+    /**
+     * Data bulanan - 12 bulan terakhir
+     */
+    private function getMonthlyChartData()
+    {
         $monthlyData = [];
+        $currentDate = Carbon::now();
         
-        // Data untuk 12 bulan terakhir
         for ($i = 11; $i >= 0; $i--) {
-            $targetMonth = $currentMonth - $i;
-            $targetYear = $currentYear;
+            $targetDate = $currentDate->copy()->subMonths($i);
+            $year = $targetDate->year;
+            $month = $targetDate->month;
             
-            if ($targetMonth < 1) {
-                $targetMonth += 12;
-                $targetYear--;
-            }
-            
-            $runningCount = CodeStemi::whereYear('start_time', $targetYear)
-                ->whereMonth('start_time', $targetMonth)
+            $runningCount = CodeStemi::whereYear('start_time', $year)
+                ->whereMonth('start_time', $month)
                 ->where('status', 'Running')
                 ->count();
                 
-            $finishedCount = CodeStemi::whereYear('start_time', $targetYear)
-                ->whereMonth('start_time', $targetMonth)
+            $finishedCount = CodeStemi::whereYear('start_time', $year)
+                ->whereMonth('start_time', $month)
                 ->where('status', 'Finished')
                 ->count();
             
             $monthlyData[] = [
-                'month' => date('M', mktime(0, 0, 0, $targetMonth, 1)),
+                'month' => $targetDate->format('M'),
                 'running' => $runningCount,
                 'finished' => $finishedCount,
-                'year' => $targetYear,
-                'month_number' => $targetMonth
+                'year' => $year,
+                'month_number' => $month
             ];
         }
         
@@ -72,7 +79,38 @@ class DashboardController extends Controller
     }
 
     /**
-     * API untuk mendapatkan data berdasarkan tanggal (Code STEMI) - DIPERBAIKI
+     * Data tahunan - 5 tahun terakhir
+     */
+    private function getYearlyChartData()
+    {
+        $yearlyData = [];
+        $currentYear = Carbon::now()->year;
+        
+        for ($i = 4; $i >= 0; $i--) {
+            $year = $currentYear - $i;
+            
+            $runningCount = CodeStemi::whereYear('start_time', $year)
+                ->where('status', 'Running')
+                ->count();
+                
+            $finishedCount = CodeStemi::whereYear('start_time', $year)
+                ->where('status', 'Finished')
+                ->count();
+            
+            $yearlyData[] = [
+                'month' => $year, // Use year as label
+                'running' => $runningCount,
+                'finished' => $finishedCount,
+                'year' => $year,
+                'month_number' => null
+            ];
+        }
+        
+        return $yearlyData;
+    }
+
+    /**
+     * API untuk mendapatkan data berdasarkan tanggal (Code STEMI)
      */
     public function getDateData(Request $request)
     {
@@ -87,7 +125,7 @@ class DashboardController extends Controller
         }
 
         try {
-            // PERBAIKAN: Hanya ambil data yang start_time-nya pada tanggal yang dipilih
+            // Ambil data yang start_time-nya pada tanggal yang dipilih
             $codeStemiData = CodeStemi::whereDate('start_time', $date)
                 ->orderBy('start_time', 'desc')
                 ->get();
@@ -164,22 +202,38 @@ class DashboardController extends Controller
     }
 
     /**
-     * API untuk mendapatkan data chart (12 bulan terakhir)
+     * API untuk mendapatkan data chart (diperbaiki untuk support monthly/yearly)
      */
-    public function getChartStats()
+    public function getChartStats(Request $request)
     {
         try {
-            $chartData = $this->getChartData();
+            $range = $request->input('range', 'monthly');
+            $chartData = $this->getChartData($range);
+            
+            // Format response berdasarkan range
+            $labels = [];
+            $runningData = [];
+            $finishedData = [];
+            
+            foreach ($chartData as $data) {
+                $labels[] = $data['month'];
+                $runningData[] = $data['running'];
+                $finishedData[] = $data['finished'];
+            }
             
             return response()->json([
                 'success' => true,
-                'chart_data' => $chartData
+                'chart_data' => $chartData,
+                'labels' => $labels,
+                'running' => $runningData,
+                'finished' => $finishedData,
+                'range' => $range
             ]);
             
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengambil data chart'
+                'message' => 'Gagal mengambil data chart: ' . $e->getMessage()
             ], 500);
         }
     }
