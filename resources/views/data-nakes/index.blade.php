@@ -501,13 +501,14 @@
                                 @endif
                             </div>
 
-                            {{-- Right: Export and Page Info --}}
-                            <div class="flex items-center gap-4">
-                                {{-- Export Button --}}
-                                <button
-                                    class="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 transition font-medium text-sm">
-                                    <i class="fas fa-download"></i>Export
-                                </button>
+                          {{-- Right: Export and Page Info --}}
+                         <div class="flex items-center gap-4">
+                            {{-- Export Button (fixed version) --}}
+                        <button type="button"
+                            onclick="window.location.href='{{ route('data-nakes.export') }}'"
+                            class="relative z-50 flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 transition font-medium text-sm">
+                        <i class="fas fa-download"></i> Export
+                        </button>
 
                                 <!-- 📄 Page Info (Rapi & Centered) -->
                                 <div class="flex items-center gap-3 text-sm text-gray-600">

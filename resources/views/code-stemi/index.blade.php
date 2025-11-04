@@ -1351,4 +1351,3 @@
 </script>
 </body>
 </html>
-tolong perbaiki agar setelah mengklik aktivasi code stemi selesai itu arahnya langsung ke halaman code stemi lagi, jangan ubah semua codenya perbaiki saja apa yang saya arahkan
