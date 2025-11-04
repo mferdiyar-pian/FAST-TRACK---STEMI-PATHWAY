@@ -5,14 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fast Track STEMI Pathway - Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Pusher untuk real-time -->
     <script src="https://js.pusher.com/7.2/pusher.min.js"></script>
     <style>
-        /* Font Settings */
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             font-weight: 400;
@@ -20,131 +17,81 @@
             letter-spacing: -0.011em;
         }
         
-        /* Font Weight Adjustments */
-        .font-semibold {
-            font-weight: 600;
-        }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+        .font-medium { font-weight: 500; }
         
-        .font-bold {
-            font-weight: 700;
-        }
-        
-        .font-medium {
-            font-weight: 500;
-        }
-        
-        /* Text Size Adjustments */
-        .text-xs {
-            font-size: 0.75rem;
-            line-height: 1rem;
-        }
-        
-        .text-sm {
-            font-size: 0.875rem;
-            line-height: 1.25rem;
-        }
-        
-        .text-lg {
-            font-size: 1.125rem;
-            line-height: 1.75rem;
-        }
-        
-        .text-xl {
-            font-size: 1.25rem;
-            line-height: 1.75rem;
-        }
-        
-        .text-2xl {
-            font-size: 1.5rem;
-            line-height: 2rem;
-        }
-        
-        .text-3xl {
-            font-size: 1.875rem;
-            line-height: 2.25rem;
-        }
-        
-        .text-4xl {
-            font-size: 2.25rem;
-            line-height: 2.5rem;
-        }
+        .text-xs { font-size: 0.75rem; line-height: 1rem; }
+        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+        .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+        .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+        .text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
 
-        .bg-cyan-light {
-            background-color: #E0F7FA;
-        }
-        .filter-dropdown {
-            display: none;
-        }
-        .filter-dropdown.show {
-            display: block;
-        }
-        .pagination-active {
-            background-color: #3b82f6;
-            color: white;
-        }
-        .pagination-disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            pointer-events: none;
-        }
-        
-        /* Letter Spacing untuk judul FAST TRACK */
-        .tracking-tight {
-            letter-spacing: -0.025em;
-        }
-        
-        /* Logo text styling */
-        .logo-text {
-            font-weight: 700;
-            letter-spacing: -0.025em;
-        }
-        
-        /* Button text styling */
-        button, .btn {
-            font-weight: 500;
-        }
-        
-        /* Chart text styling */
-        .chart-container {
-            font-family: 'Inter', sans-serif;
-        }
-        
-        /* Calendar Styles */
+        /* CALENDAR STYLES */
         .calendar-day {
             transition: all 0.2s ease;
+            cursor: pointer;
         }
         
+        /* State default untuk semua tanggal */
+        .calendar-day {
+            background-color: transparent !important;
+            color: #374151 !important;
+        }
+        
+        /* Hover state */
         .calendar-day:hover {
             background-color: #3b82f6 !important;
             color: white !important;
         }
         
+        /* Hari ini - hanya background biru muda */
+        .calendar-day.today {
+            background-color: #dbeafe !important;
+            color: #1e40af !important;
+            font-weight: 600;
+        }
+        
+        /* Tanggal yang dipilih - background biru tua */
         .calendar-day.selected {
+            background-color: #1d4ed8 !important;
+            color: white !important;
+            font-weight: 600;
+        }
+        
+        /* Hari ini yang dipilih - tetap biru tua */
+        .calendar-day.today.selected {
             background-color: #1d4ed8 !important;
             color: white !important;
         }
         
-        .calendar-day.has-events {
-            position: relative;
+        /* Non-interactive days (bulan lain) */
+        .calendar-day.other-month {
+            color: #d1d5db !important;
+            cursor: default;
         }
         
-        .calendar-day.has-events::after {
-            content: '';
-            position: absolute;
-            bottom: 2px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 4px;
-            height: 4px;
-            background-color: #3b82f6;
+        .calendar-day.other-month:hover {
+            background-color: transparent !important;
+            color: #d1d5db !important;
+        }
+
+        .loading-spinner {
+            border: 2px solid #f3f4f6;
+            border-top: 2px solid #3b82f6;
             border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
         }
-        
-        .calendar-day.has-events.selected::after {
-            background-color: white;
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
-        
-        /* Sidebar active state */
+
         .sidebar-active {
             background-color: #eff6ff;
             color: #2563eb;
@@ -163,8 +110,7 @@
         <aside class="w-64 bg-white shadow-sm">
             <div class="p-6">
                 <div class="flex items-center gap-3">
-                    <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway"
-                        class="h-14 w-14 object-contain">
+                    <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway" class="h-14 w-14 object-contain">
                     <div>
                         <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">FAST</h1>
                         <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">TRACK</h1>
@@ -208,22 +154,9 @@
                             <i class="fas fa-bell text-gray-500 text-xl"></i>
                             <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                         </button>
-                        <div x-data="{ isOpen: false }" class="relative">
-                            <button @click="isOpen = !isOpen" class="flex items-center gap-3 focus:outline-none">
-                                <span class="text-gray-700 font-medium text-sm">{{ Auth::user()->name }}</span>
-                                <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
-                            </button>
-
-                            <div x-show="isOpen" @click.away="isOpen = false"
-                                class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-10">
-                                <a href="{{ route('setting.index') }}"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil</a>
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit"
-                                        class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
-                                </form>
-                            </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-gray-700 font-medium text-sm">{{ Auth::user()->name }}</span>
+                            <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
                         </div>
                     </div>
                 </div>
@@ -240,8 +173,11 @@
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <p class="text-gray-500 text-sm mb-2 font-medium">Running</p>
-                                        <p id="runningCount" class="text-4xl font-bold text-gray-800">0</p>
-                                        <p id="dateIndicator" class="text-xs text-gray-400 mt-1">All time data</p>
+                                        <p id="runningCount" class="text-4xl font-bold text-gray-800">{{ $runningCount ?? 0 }}</p>
+                                        <p class="text-xs text-gray-400 mt-1">
+                                            <span id="dataSource">All time data</span>
+                                            <span id="selectedDateInfo" class="hidden text-blue-600 font-medium"></span>
+                                        </p>
                                     </div>
                                     <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
                                         <i class="fas fa-running text-blue-500 text-xl"></i>
@@ -253,8 +189,11 @@
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <p class="text-gray-500 text-sm mb-2 font-medium">Finished</p>
-                                        <p id="finishedCount" class="text-4xl font-bold text-gray-800">0</p>
-                                        <p id="dateIndicatorFinished" class="text-xs text-gray-400 mt-1">All time data</p>
+                                        <p id="finishedCount" class="text-4xl font-bold text-gray-800">{{ $finishedCount ?? 0 }}</p>
+                                        <p class="text-xs text-gray-400 mt-1">
+                                            <span id="dataSourceFinished">All time data</span>
+                                            <span id="selectedDateInfoFinished" class="hidden text-blue-600 font-medium"></span>
+                                        </p>
                                     </div>
                                     <div class="w-12 h-12 bg-pink-50 rounded-full flex items-center justify-center">
                                         <i class="fas fa-user-check text-pink-500 text-xl"></i>
@@ -267,7 +206,7 @@
                         <div class="bg-white rounded-xl p-6 shadow-sm chart-container">
                             <div class="flex items-center justify-between mb-6">
                                 <div>
-                                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Overview</h3>
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Overview - Code STEMI Activities</h3>
                                     <div class="flex items-center gap-6 text-sm">
                                         <div class="flex items-center gap-2">
                                             <span class="w-3 h-3 bg-pink-500 rounded-full"></span>
@@ -279,16 +218,10 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="flex items-center gap-2">
-                                    <button id="resetFilter" class="bg-blue-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-blue-600 transition-colors hidden">
-                                        Reset Filter
-                                    </button>
-                                    <select id="timeRange" class="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none font-medium">
-                                        <option value="monthly">Monthly</option>
-                                        <option value="weekly">Weekly</option>
-                                        <option value="yearly">Yearly</option>
-                                    </select>
-                                </div>
+                                <select id="timeRange" class="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none font-medium">
+                                    <option value="monthly">Monthly</option>
+                                    <option value="yearly">Yearly</option>
+                                </select>
                             </div>
                             <div class="relative">
                                 <canvas id="overviewChart" height="80"></canvas>
@@ -314,11 +247,11 @@
                             <!-- Calendar akan di-generate oleh JavaScript -->
                         </div>
                         
-                        <div class="mt-4 p-3 bg-blue-50 rounded-lg hidden" id="selectedDateInfo">
-                            <p class="text-sm text-blue-700 font-medium">
-                                <i class="fas fa-calendar-day mr-2"></i>
-                                <span id="selectedDateText"></span>
-                            </p>
+                        <!-- Reset Selection Button -->
+                        <div class="mt-4 text-center">
+                            <button id="resetSelection" class="text-xs text-blue-600 hover:text-blue-800 font-medium">
+                                Reset Selection
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -330,129 +263,70 @@
         // Variabel global
         let currentDate = new Date();
         let selectedDate = null;
-        let monthEvents = {};
-        let currentRunningCount = 0;
-        let currentFinishedCount = 0;
+        let chart = null;
+        let realTimeInterval = null;
+        let chartInterval = null;
 
-        // Chart.js Configuration
-        const ctx = document.getElementById('overviewChart').getContext('2d');
-        const chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                datasets: [{
-                    label: 'Finished',
-                    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    borderColor: '#EC4899',
-                    backgroundColor: 'transparent',
-                    tension: 0.4,
-                    borderWidth: 3,
-                    pointRadius: 0,
-                    pointHoverRadius: 6,
-                    pointBackgroundColor: '#EC4899'
-                }, {
-                    label: 'Running',
-                    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    borderColor: '#3B82F6',
-                    backgroundColor: 'transparent',
-                    tension: 0.4,
-                    borderWidth: 3,
-                    pointRadius: 0,
-                    pointHoverRadius: 6,
-                    pointBackgroundColor: '#3B82F6'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        backgroundColor: 'white',
-                        titleColor: '#374151',
-                        bodyColor: '#374151',
-                        borderColor: '#E5E7EB',
-                        borderWidth: 1,
-                        padding: 12,
-                        displayColors: true,
-                        boxWidth: 8,
-                        boxHeight: 8,
-                        titleFont: {
-                            family: 'Inter',
-                            size: 12,
-                            weight: '500'
-                        },
-                        bodyFont: {
-                            family: 'Inter',
-                            size: 11,
-                            weight: '400'
-                        },
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.dataset.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                if (context.parsed.y !== null) {
-                                    label += context.parsed.y;
-                                }
-                                return label;
-                            }
-                        }
-                    }
+        // Data chart dari PHP (default)
+        const chartLabels = <?php echo isset($chartData) ? json_encode(array_column($chartData, 'month')) : '[]' ?>;
+        const chartRunning = <?php echo isset($chartData) ? json_encode(array_column($chartData, 'running')) : '[]' ?>;
+        const chartFinished = <?php echo isset($chartData) ? json_encode(array_column($chartData, 'finished')) : '[]' ?>;
+
+        // Initialize Chart
+        function initializeChart() {
+            const ctx = document.getElementById('overviewChart').getContext('2d');
+            
+            const maxRunning = Math.max(...chartRunning);
+            const maxFinished = Math.max(...chartFinished);
+            const maxValue = Math.max(maxRunning, maxFinished, 10) + 2;
+
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: 'Finished',
+                        data: chartFinished,
+                        borderColor: '#EC4899',
+                        backgroundColor: 'rgba(236, 72, 153, 0.1)',
+                        tension: 0.4,
+                        borderWidth: 3,
+                        fill: true
+                    }, {
+                        label: 'Running',
+                        data: chartRunning,
+                        borderColor: '#3B82F6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        borderWidth: 3,
+                        fill: true
+                    }]
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 10,
-                        ticks: {
-                            stepSize: 2,
-                            color: '#9CA3AF',
-                            font: {
-                                family: 'Inter',
-                                size: 11,
-                                weight: '400'
-                            }
-                        },
-                        grid: {
-                            color: '#F3F4F6',
-                            drawBorder: false
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            color: '#9CA3AF',
-                            font: {
-                                family: 'Inter',
-                                size: 11,
-                                weight: '400'
-                            }
-                        },
-                        grid: {
-                            display: false
-                        }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, max: maxValue },
+                        x: { grid: { display: false } }
                     }
                 }
-            }
-        });
+            });
+        }
 
         // Function untuk generate kalender
         function generateCalendar(year, month) {
             const calendarGrid = document.getElementById('calendarGrid');
             const currentMonthElement = document.getElementById('currentMonth');
             
-            // Update judul bulan
             currentMonthElement.textContent = new Date(year, month).toLocaleString('en-US', { 
                 month: 'long', 
                 year: 'numeric' 
             });
 
-            // Kosongkan grid
             calendarGrid.innerHTML = '';
 
-            // Tambahkan header hari
+            // Header hari
             const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
             days.forEach(day => {
                 const dayElement = document.createElement('div');
@@ -461,54 +335,53 @@
                 calendarGrid.appendChild(dayElement);
             });
 
-            // Hitung hari dalam bulan
+            // Hitung hari
             const firstDay = new Date(year, month, 1);
             const lastDay = new Date(year, month + 1, 0);
             const daysInMonth = lastDay.getDate();
-            const startingDay = (firstDay.getDay() + 6) % 7; // Adjust for Monday start
+            const startingDay = (firstDay.getDay() + 6) % 7;
 
-            // Tambahkan hari dari bulan sebelumnya
+            const today = new Date();
+            const todayFormatted = today.toISOString().split('T')[0];
+
+            // Hari bulan sebelumnya
             const prevMonthLastDay = new Date(year, month, 0).getDate();
             for (let i = 0; i < startingDay; i++) {
                 const dayElement = document.createElement('div');
-                dayElement.className = 'w-10 h-10 flex items-center justify-center text-gray-300 text-sm font-medium';
+                dayElement.className = 'w-10 h-10 flex items-center justify-center text-gray-300 text-sm font-medium calendar-day other-month';
                 dayElement.textContent = prevMonthLastDay - startingDay + i + 1;
                 calendarGrid.appendChild(dayElement);
             }
 
-            // Tambahkan hari bulan ini
-            const today = new Date();
-            const todayFormatted = today.toISOString().split('T')[0];
-            
+            // Hari bulan ini
             for (let i = 1; i <= daysInMonth; i++) {
                 const dayElement = document.createElement('div');
                 const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
                 const dateFormatted = new Date(dateString).toISOString().split('T')[0];
                 
-                let className = 'w-10 h-10 flex items-center justify-center rounded-lg text-sm cursor-pointer font-medium calendar-day ';
+                // Base class untuk semua tanggal
+                let className = 'w-10 h-10 flex items-center justify-center rounded-lg text-sm font-medium calendar-day ';
                 
                 // Cek jika hari ini
-                if (dateFormatted === todayFormatted) {
-                    className += 'bg-blue-600 text-white ';
-                } else {
-                    className += 'hover:bg-gray-100 text-gray-700 ';
-                }
-                
-                // Cek jika ada events (simulasi data acak untuk demo)
-                const hasEvents = Math.random() > 0.7; // 30% kemungkinan ada event
-                if (hasEvents) {
-                    className += 'has-events ';
-                }
+                const isToday = dateFormatted === todayFormatted;
                 
                 // Cek jika selected
-                if (selectedDate === dateFormatted) {
+                const isSelected = selectedDate === dateFormatted;
+                
+                // APPLY LOGIC: selected > today > normal
+                if (isSelected) {
                     className += 'selected';
+                } else if (isToday) {
+                    className += 'today';
+                } else {
+                    className += 'text-gray-700';
                 }
 
                 dayElement.className = className;
                 dayElement.textContent = i;
                 dayElement.setAttribute('data-date', dateFormatted);
                 
+                // Tambahkan event listener untuk semua tanggal di bulan yang ditampilkan
                 dayElement.addEventListener('click', function() {
                     handleDateClick(dateFormatted);
                 });
@@ -516,12 +389,12 @@
                 calendarGrid.appendChild(dayElement);
             }
 
-            // Tambahkan hari dari bulan berikutnya
-            const totalCells = 42; // 6 rows
+            // Hari bulan berikutnya
+            const totalCells = 42;
             const remainingCells = totalCells - (startingDay + daysInMonth);
             for (let i = 1; i <= remainingCells; i++) {
                 const dayElement = document.createElement('div');
-                dayElement.className = 'w-10 h-10 flex items-center justify-center text-gray-300 text-sm font-medium';
+                dayElement.className = 'w-10 h-10 flex items-center justify-center text-gray-300 text-sm font-medium calendar-day other-month';
                 dayElement.textContent = i;
                 calendarGrid.appendChild(dayElement);
             }
@@ -529,213 +402,225 @@
 
         // Function untuk handle klik tanggal
         function handleDateClick(date) {
-            selectedDate = date;
+            console.log('Date clicked:', date);
             
-            // Update tampilan kalender
+            // Jika mengklik tanggal yang sama, reset selection
+            if (selectedDate === date) {
+                resetCalendarSelection();
+                return;
+            }
+            
+            // Hapus selected class dari semua element
             document.querySelectorAll('.calendar-day').forEach(day => {
                 day.classList.remove('selected');
-                if (day.getAttribute('data-date') === date) {
-                    day.classList.add('selected');
+                
+                // Kembalikan class today untuk hari ini jika ada
+                const dayDate = day.getAttribute('data-date');
+                const today = new Date();
+                const todayFormatted = today.toISOString().split('T')[0];
+                
+                if (dayDate === todayFormatted && dayDate !== date) {
+                    day.classList.add('today');
                 }
             });
             
-            // Tampilkan info tanggal yang dipilih
-            const selectedDateInfo = document.getElementById('selectedDateInfo');
-            const selectedDateText = document.getElementById('selectedDateText');
-            const resetButton = document.getElementById('resetFilter');
+            // Set selected date baru
+            selectedDate = date;
             
-            selectedDateText.textContent = `Selected: ${new Date(date).toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-            })}`;
+            // Tambahkan selected class ke element yang diklik
+            const clickedElement = document.querySelector(`[data-date="${date}"]`);
+            if (clickedElement) {
+                clickedElement.classList.add('selected');
+                // Hapus today class jika yang diklik adalah hari ini
+                clickedElement.classList.remove('today');
+            }
             
-            selectedDateInfo.classList.remove('hidden');
-            resetButton.classList.remove('hidden');
+            // Update info tanggal yang dipilih
+            updateSelectedDateInfo(date);
             
-            // Ambil data untuk tanggal yang dipilih (simulasi)
+            // Ambil data untuk tanggal yang dipilih
             fetchDateData(date);
         }
 
-        // Function untuk ambil data berdasarkan tanggal (simulasi)
-        function fetchDateData(date) {
-            // Simulasi data berdasarkan tanggal
-            const dateObj = new Date(date);
-            const dayOfMonth = dateObj.getDate();
+        // Function untuk update info tanggal yang dipilih
+        function updateSelectedDateInfo(date) {
+            const selectedDateElement = document.getElementById('selectedDateInfo');
+            const selectedDateFinishedElement = document.getElementById('selectedDateInfoFinished');
+            const dataSourceElement = document.getElementById('dataSource');
+            const dataSourceFinishedElement = document.getElementById('dataSourceFinished');
             
-            // Data acak untuk demo
-            const runningCount = Math.floor(Math.random() * 10) + 1;
-            const finishedCount = Math.floor(Math.random() * 5) + 1;
-            
-            // Update running count
-            document.getElementById('runningCount').textContent = runningCount;
-            document.getElementById('finishedCount').textContent = finishedCount;
-            
-            // Update date indicator
-            document.getElementById('dateIndicator').textContent = `Data for ${new Date(date).toLocaleDateString()}`;
-            document.getElementById('dateIndicatorFinished').textContent = `Data for ${new Date(date).toLocaleDateString()}`;
-            
-            // Update chart dengan data baru
-            updateChartData(runningCount, finishedCount);
+            if (date) {
+                const formattedDate = new Date(date).toLocaleDateString('en-US', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                });
+                
+                selectedDateElement.textContent = ` - ${formattedDate}`;
+                selectedDateFinishedElement.textContent = ` - ${formattedDate}`;
+                selectedDateElement.classList.remove('hidden');
+                selectedDateFinishedElement.classList.remove('hidden');
+                dataSourceElement.textContent = 'Selected date data';
+                dataSourceFinishedElement.textContent = 'Selected date data';
+            } else {
+                selectedDateElement.classList.add('hidden');
+                selectedDateFinishedElement.classList.add('hidden');
+                dataSourceElement.textContent = 'All time data';
+                dataSourceFinishedElement.textContent = 'All time data';
+            }
         }
 
-        // Function untuk reset filter
-        function resetFilter() {
+        // Function untuk reset selection
+        function resetCalendarSelection() {
             selectedDate = null;
             
-            // Reset tampilan kalender
             document.querySelectorAll('.calendar-day').forEach(day => {
                 day.classList.remove('selected');
+                
+                // Kembalikan class today untuk hari ini
+                const dayDate = day.getAttribute('data-date');
+                const today = new Date();
+                const todayFormatted = today.toISOString().split('T')[0];
+                
+                if (dayDate === todayFormatted) {
+                    day.classList.add('today');
+                }
             });
             
-            // Sembunyikan info tanggal
-            document.getElementById('selectedDateInfo').classList.add('hidden');
-            document.getElementById('resetFilter').classList.add('hidden');
+            // Update info
+            updateSelectedDateInfo(null);
             
-            // Reset ke data semua waktu
-            document.getElementById('runningCount').textContent = currentRunningCount;
-            document.getElementById('finishedCount').textContent = currentFinishedCount;
-            
-            document.getElementById('dateIndicator').textContent = 'All time data';
-            document.getElementById('dateIndicatorFinished').textContent = 'All time data';
-            
-            // Reset chart
-            updateChartData(currentRunningCount, currentFinishedCount);
+            // Reset ke data real-time (ALL TIME DATA)
+            fetchRealTimeStats();
         }
 
-        // Function untuk update chart data
-        function updateChartData(runningCount, finishedCount) {
-            runningCount = runningCount || 0;
-            finishedCount = finishedCount || 0;
-            
-            // Update data chart untuk bulan Desember saja (untuk demo)
-            chart.data.datasets[0].data[11] = finishedCount;
-            chart.data.datasets[1].data[11] = runningCount;
-            
-            const maxValue = Math.max(runningCount, finishedCount, 10) + 10;
-            chart.options.scales.y.max = maxValue;
-            chart.options.scales.y.ticks.stepSize = Math.ceil(maxValue / 5);
-            
-            chart.update();
-            
-            currentRunningCount = runningCount;
-            currentFinishedCount = finishedCount;
-        }
+        // Function untuk ambil data berdasarkan tanggal - DIPERBAIKI
+        async function fetchDateData(date) {
+            try {
+                console.log('Fetching data for date:', date);
+                
+                document.getElementById('runningCount').innerHTML = '<div class="loading-spinner inline-block"></div>';
+                document.getElementById('finishedCount').innerHTML = '<div class="loading-spinner inline-block"></div>';
 
-        // Function untuk ambil data events bulanan (simulasi)
-        function fetchMonthData(year, month) {
-            // Simulasi data bulanan
-            monthEvents = {};
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            
-            for (let i = 1; i <= daysInMonth; i++) {
-                const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-                // 30% kemungkinan ada event
-                if (Math.random() > 0.7) {
-                    monthEvents[dateString] = {
-                        running: Math.floor(Math.random() * 5),
-                        finished: Math.floor(Math.random() * 3)
-                    };
+                const response = await fetch(`/dashboard/date-data?date=${date}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
+                
+                const data = await response.json();
+                
+                console.log('API Response:', data);
+                
+                if (data.success) {
+                    document.getElementById('runningCount').textContent = data.running_count;
+                    document.getElementById('finishedCount').textContent = data.finished_count;
+                    
+                    console.log(`Data for ${date}: Running=${data.running_count}, Finished=${data.finished_count}`);
+                } else {
+                    console.error('API returned error:', data.message);
+                    // Fallback: set ke 0 jika tidak ada data
+                    document.getElementById('runningCount').textContent = 0;
+                    document.getElementById('finishedCount').textContent = 0;
+                }
+            } catch (error) {
+                console.error('Error fetching date data:', error);
+                // Fallback: set ke 0 jika error
+                document.getElementById('runningCount').textContent = 0;
+                document.getElementById('finishedCount').textContent = 0;
             }
+        }
+
+        // Function untuk ambil data real-time stats (ALL TIME DATA)
+        async function fetchRealTimeStats() {
+            try {
+                const response = await fetch('/dashboard/dashboard-stats');
+                const data = await response.json();
+                
+                if (data.success) {
+                    // HANYA update jika tidak ada tanggal yang dipilih
+                    if (!selectedDate) {
+                        document.getElementById('runningCount').textContent = data.stats.total_running;
+                        document.getElementById('finishedCount').textContent = data.stats.total_finished;
+                        updateSelectedDateInfo(null);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching real-time stats:', error);
+            }
+        }
+
+        // Function untuk setup intervals
+        function setupIntervals() {
+            // Clear existing intervals
+            if (realTimeInterval) clearInterval(realTimeInterval);
+            if (chartInterval) clearInterval(chartInterval);
             
-            generateCalendar(year, month);
+            // Real-time stats interval - hanya update jika tidak ada selected date
+            realTimeInterval = setInterval(() => {
+                if (!selectedDate) {
+                    fetchRealTimeStats();
+                }
+            }, 30000);
         }
 
         // Event Listeners
         document.addEventListener('DOMContentLoaded', function() {
-            // Generate kalender awal
+            initializeChart();
+            
             const currentYear = currentDate.getFullYear();
             const currentMonth = currentDate.getMonth();
-            fetchMonthData(currentYear, currentMonth);
+            generateCalendar(currentYear, currentMonth);
             
-            // Navigation bulan
             document.getElementById('prevMonth').addEventListener('click', function() {
                 currentDate.setMonth(currentDate.getMonth() - 1);
-                fetchMonthData(currentDate.getFullYear(), currentDate.getMonth());
+                generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+                resetCalendarSelection();
             });
             
             document.getElementById('nextMonth').addEventListener('click', function() {
                 currentDate.setMonth(currentDate.getMonth() + 1);
-                fetchMonthData(currentDate.getFullYear(), currentDate.getMonth());
+                generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+                resetCalendarSelection();
             });
             
-            // Reset filter
-            document.getElementById('resetFilter').addEventListener('click', resetFilter);
-            
-            // Time range selector
-            document.getElementById('timeRange').addEventListener('change', function() {
-                // Update chart berdasarkan time range yang dipilih
-                const timeRange = this.value;
-                // Implementasi update chart berdasarkan time range
-                console.log('Time range changed to:', timeRange);
+            // Reset selection button
+            document.getElementById('resetSelection').addEventListener('click', function() {
+                resetCalendarSelection();
             });
             
-            // HAPUS: JavaScript yang mencegah navigasi sidebar
-            // Kode berikut dihapus karena mencegah link bekerja:
-            /*
-            document.querySelectorAll('.sidebar-item').forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault(); // INI YANG MENYEBABKAN MASALAH
-                    
-                    // Remove active class from all items
-                    document.querySelectorAll('nav a').forEach(link => {
-                        link.classList.remove('sidebar-active');
-                        link.classList.remove('bg-blue-50');
-                        link.classList.remove('text-blue-600');
-                        link.classList.remove('border-l-4');
-                        link.classList.remove('border-blue-600');
-                        link.classList.add('text-gray-500');
-                    });
-                    
-                    // Add active class to clicked item
-                    this.classList.add('sidebar-active');
-                    this.classList.add('bg-blue-50');
-                    this.classList.add('text-blue-600');
-                    this.classList.add('border-l-4');
-                    this.classList.add('border-blue-600');
-                    this.classList.remove('text-gray-500');
-                });
-            });
-            */
+            // Setup intervals
+            setupIntervals();
             
-            // Initialize with some data
-            currentRunningCount = 8;
-            currentFinishedCount = 5;
-            document.getElementById('runningCount').textContent = currentRunningCount;
-            document.getElementById('finishedCount').textContent = currentFinishedCount;
-            updateChartData(currentRunningCount, currentFinishedCount);
+            // Load initial data
+            fetchRealTimeStats();
         });
 
-        // Real-time functionality (opsional - untuk demo)
+        // Real-time functionality dengan Pusher
         try {
-            // Simulasi real-time updates
-            setInterval(() => {
-                // Randomly update counts for demo
-                if (Math.random() > 0.7) {
-                    const change = Math.random() > 0.5 ? 1 : -1;
-                    currentRunningCount = Math.max(0, currentRunningCount + change);
-                    document.getElementById('runningCount').textContent = currentRunningCount;
-                    
-                    if (!selectedDate) {
-                        updateChartData(currentRunningCount, currentFinishedCount);
-                    }
-                }
+            const pusher = new Pusher('{{ config("broadcasting.connections.pusher.key", "local") }}', {
+                cluster: '{{ config("broadcasting.connections.pusher.options.cluster", "mt1") }}',
+                encrypted: true
+            });
+
+            const channel = pusher.subscribe('code-stemi');
+            channel.bind('CodeStemiStatusUpdated', function(data) {
+                console.log('Real-time update received');
                 
-                if (Math.random() > 0.8) {
-                    const change = Math.random() > 0.5 ? 1 : -1;
-                    currentFinishedCount = Math.max(0, currentFinishedCount + change);
-                    document.getElementById('finishedCount').textContent = currentFinishedCount;
-                    
-                    if (!selectedDate) {
-                        updateChartData(currentRunningCount, currentFinishedCount);
-                    }
+                // Jika ada tanggal yang dipilih, refresh data tanggal tersebut
+                // Jika tidak ada tanggal yang dipilih, refresh data real-time
+                if (selectedDate) {
+                    console.log('Refreshing selected date data:', selectedDate);
+                    fetchDateData(selectedDate);
+                } else {
+                    console.log('Refreshing all-time data');
+                    fetchRealTimeStats();
                 }
-            }, 5000); // Update every 5 seconds
-        } catch (error) {
-            console.log('Real-time simulation error:', error);
-        }
+            });
+
+} catch (error) {
+    console.log('Pusher initialization error:', error);
+}
     </script>
 </body>
 </html>

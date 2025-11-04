@@ -85,6 +85,9 @@ Route::middleware(['auth'])->group(function () {
         // Route untuk menampilkan form create (opsional)
         Route::get('/create', [DataNakesController::class, 'create'])->name('data-nakes.create');
         
+        // Route untuk export Excel  <==== tambahkan di sini
+        Route::get('/export', [DataNakesController::class, 'export'])->name('data-nakes.export');
+        
         // Route untuk menyimpan data baru
         Route::post('/', [DataNakesController::class, 'store'])->name('data-nakes.store');
         
@@ -125,4 +128,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/calendar/date-data', [CalendarController::class, 'getDateData']);
     Route::post('/calendar/events', [CalendarController::class, 'storeEvent']);
     Route::delete('/calendar/events/{id}', [CalendarController::class, 'destroy']);
+});
+
+Route::middleware(['auth'])->prefix('settings')->name('setting.')->group(function () {
+    Route::get('/', [SettingController::class, 'index'])->name('index');
+    Route::post('/profile', [SettingController::class, 'updateProfile'])->name('update-profile');
+    Route::post('/password', [SettingController::class, 'updatePassword'])->name('update-password');
+    Route::post('/notifications', [SettingController::class, 'updateNotifications'])->name('update-notifications');
+    Route::post('/profile-photo', [SettingController::class, 'updateProfilePhoto'])->name('update-profile-photo');
+    Route::post('/remove-profile-photo', [SettingController::class, 'removeProfilePhoto'])->name('remove-profile-photo');
 });
