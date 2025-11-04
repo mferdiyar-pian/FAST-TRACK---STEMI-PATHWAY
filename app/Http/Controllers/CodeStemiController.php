@@ -9,6 +9,10 @@ use App\Models\DataNakes;
 use Carbon\Carbon;
 use App\Events\CodeStemiStatusUpdated;
 
+// tambahkan use untuk export
+use App\Exports\CodeStemiExport;
+use Maatwebsite\Excel\Facades\Excel;
+
 class CodeStemiController extends Controller
 {
     /**
@@ -358,11 +362,45 @@ class CodeStemiController extends Controller
     }
 
     /**
-     * Export data Code STEMI (opsional - untuk tombol export)
+     * Export data Code STEMI ke Excel.
+     * Menggunakan filter yang sama dengan halaman index.
      */
     public function export(Request $request)
     {
-        // Implementasi export data bisa ditambahkan di sini
-        return back()->with('info', 'Fitur export akan segera tersedia.');
+        $query = CodeStemi::query();
+
+        // Terapkan filter yang sama seperti index()
+        if ($request->has('status') && $request->status != '') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->has('start_date') && $request->start_date != '') {
+            $query->whereDate('start_time', '>=', $request->start_date);
+        }
+
+        if ($request->has('end_date') && $request->end_date != '') {
+            $query->whereDate('start_time', '<=', $request->end_date);
+        }
+
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('custom_message', 'like', "%{$search}%")
+                  ->orWhere('status', 'like', "%{$search}%")
+                  ->orWhere('duration', 'like', "%{$search}%");
+            });
+        }
+
+        $data = $query->orderBy('start_time', 'desc')->get();
+
+        if ($data->isEmpty()) {
+            return back()->with('error', 'Tidak ada data Code STEMI yang dapat diexport.');
+        }
+
+        // Nama file dinamis
+        $fileName = 'code_stemi_' . now()->format('Ymd_His') . '.xlsx';
+
+        // CodeStemiExport harus menerima collection di constructor
+        return Excel::download(new CodeStemiExport($data), $fileName);
     }
 }
