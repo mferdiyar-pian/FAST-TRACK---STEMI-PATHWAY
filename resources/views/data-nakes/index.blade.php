@@ -437,41 +437,36 @@
                             {{-- Left: Pagination Navigation --}}
                             <div class="flex items-center gap-1">
                                 {{-- Previous Button --}}
-                                @php
-                                    $currentPage = request('page', 1);
-                                    $totalItems = count($data_nakes);
-                                    $perPage = 10; // Sesuaikan dengan jumlah item per halaman
-                                    $totalPages = ceil($totalItems / $perPage);
-                                    $prevPage = $currentPage > 1 ? $currentPage - 1 : null;
-                                    $nextPage = $currentPage < $totalPages ? $currentPage + 1 : null;
-
-                                    // Build URL dengan parameter yang ada
-                                    $baseUrl = request()->url();
-                                    $queryParams = request()->except('page');
-                                @endphp
-
-                                <a href="{{ $prevPage ? $baseUrl . '?' . http_build_query(array_merge($queryParams, ['page' => $prevPage])) : '#' }}"
-                                    class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm flex items-center gap-2 {{ !$prevPage ? 'pagination-disabled' : '' }}">
-                                    <i class="fas fa-chevron-left text-xs"></i>Previous
-                                </a>
+                                @if ($data_nakes->onFirstPage())
+                                    <span class="px-4 py-2 text-gray-400 rounded transition text-sm flex items-center gap-2 pagination-disabled">
+                                        <i class="fas fa-chevron-left text-xs"></i>Previous
+                                    </span>
+                                @else
+                                    <a href="{{ $data_nakes->previousPageUrl() }}"
+                                        class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm flex items-center gap-2">
+                                        <i class="fas fa-chevron-left text-xs"></i>Previous
+                                    </a>
+                                @endif
 
                                 {{-- Page Numbers --}}
                                 @php
+                                    $currentPage = $data_nakes->currentPage();
+                                    $lastPage = $data_nakes->lastPage();
                                     $startPage = max($currentPage - 2, 1);
-                                    $endPage = min($currentPage + 2, $totalPages);
-
+                                    $endPage = min($currentPage + 2, $lastPage);
+                                    
                                     // Adjust start and end if we're near the beginning or end
                                     if ($endPage - $startPage < 4) {
                                         if ($startPage == 1) {
-                                            $endPage = min($startPage + 4, $totalPages);
-                                        } elseif ($endPage == $totalPages) {
+                                            $endPage = min($startPage + 4, $lastPage);
+                                        } elseif ($endPage == $lastPage) {
                                             $startPage = max($endPage - 4, 1);
                                         }
                                     }
                                 @endphp
 
                                 @if ($startPage > 1)
-                                    <a href="{{ $baseUrl . '?' . http_build_query(array_merge($queryParams, ['page' => 1])) }}"
+                                    <a href="{{ $data_nakes->url(1) }}"
                                         class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm min-w-[40px] text-center">1</a>
                                     @if ($startPage > 2)
                                         <span class="px-2 text-gray-400 text-sm">...</span>
@@ -479,34 +474,41 @@
                                 @endif
 
                                 @for ($i = $startPage; $i <= $endPage; $i++)
-                                    <a href="{{ $baseUrl . '?' . http_build_query(array_merge($queryParams, ['page' => $i])) }}"
+                                    <a href="{{ $data_nakes->url($i) }}"
                                         class="px-3 py-2 rounded font-medium text-sm min-w-[40px] text-center {{ $i == $currentPage ? 'bg-blue-500 text-white pagination-active' : 'text-gray-700 hover:bg-gray-100' }}">
                                         {{ $i }}
                                     </a>
                                 @endfor
 
-                                @if ($endPage < $totalPages)
-                                    @if ($endPage < $totalPages - 1)
+                                @if ($endPage < $lastPage)
+                                    @if ($endPage < $lastPage - 1)
                                         <span class="px-2 text-gray-400 text-sm">...</span>
                                     @endif
-                                    <a href="{{ $baseUrl . '?' . http_build_query(array_merge($queryParams, ['page' => $totalPages])) }}"
-                                        class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm min-w-[40px] text-center">{{ $totalPages }}</a>
+                                    <a href="{{ $data_nakes->url($lastPage) }}"
+                                        class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm min-w-[40px] text-center">{{ $lastPage }}</a>
                                 @endif
 
                                 {{-- Next Button --}}
-                                <a href="{{ $nextPage ? $baseUrl . '?' . http_build_query(array_merge($queryParams, ['page' => $nextPage])) : '#' }}"
-                                    class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm flex items-center gap-2 {{ !$nextPage ? 'pagination-disabled' : '' }}">
-                                    Next<i class="fas fa-chevron-right text-xs"></i>
-                                </a>
+                                @if ($data_nakes->hasMorePages())
+                                    <a href="{{ $data_nakes->nextPageUrl() }}"
+                                        class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm flex items-center gap-2">
+                                        Next<i class="fas fa-chevron-right text-xs"></i>
+                                    </a>
+                                @else
+                                    <span class="px-4 py-2 text-gray-400 rounded transition text-sm flex items-center gap-2 pagination-disabled">
+                                        Next<i class="fas fa-chevron-right text-xs"></i>
+                                    </span>
+                                @endif
                             </div>
 
-                            {{-- Right: Export and Page Info --}}
-                            <div class="flex items-center gap-4">
-                                {{-- Export Button --}}
-                                <button
-                                    class="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 transition font-medium text-sm">
-                                    <i class="fas fa-download"></i>Export
-                                </button>
+                          {{-- Right: Export and Page Info --}}
+                         <div class="flex items-center gap-4">
+                            {{-- Export Button (fixed version) --}}
+                        <button type="button"
+                            onclick="window.location.href='{{ route('data-nakes.export') }}'"
+                            class="relative z-50 flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 transition font-medium text-sm">
+                        <i class="fas fa-download"></i> Export
+                        </button>
 
                                 <!-- 📄 Page Info (Rapi & Centered) -->
                                 <div class="flex items-center gap-3 text-sm text-gray-600">
@@ -514,9 +516,9 @@
                                     <div class="relative">
                                         <select id="pageSelect"
                                             class="appearance-none bg-white border border-gray-300 rounded-lg px-3 py-1.5 pr-8 text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200">
-                                            @for ($i = 1; $i <= $totalPages; $i++)
+                                            @for ($i = 1; $i <= $data_nakes->lastPage(); $i++)
                                                 <option value="{{ $i }}"
-                                                    {{ $i == $currentPage ? 'selected' : '' }}>{{ $i }}
+                                                    {{ $i == $data_nakes->currentPage() ? 'selected' : '' }}>{{ $i }}
                                                 </option>
                                             @endfor
                                         </select>
@@ -525,7 +527,7 @@
                                             <i class="fas fa-chevron-down text-xs"></i>
                                         </div>
                                     </div>
-                                    <span>of <span class="font-medium text-gray-800">{{ $totalPages }}</span></span>
+                                    <span>of <span class="font-medium text-gray-800">{{ $data_nakes->lastPage() }}</span></span>
                                 </div>
                             </div>
                         </div>

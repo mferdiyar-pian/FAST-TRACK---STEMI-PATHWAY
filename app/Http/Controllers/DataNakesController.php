@@ -6,6 +6,8 @@ namespace App\Http\Controllers;
 use App\Models\DataNakes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Exports\DataNakesExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class DataNakesController extends Controller
 {
@@ -34,12 +36,12 @@ class DataNakesController extends Controller
             $query->where('nama', 'like', "%{$search}%");
         }
         
-        $data_nakes = $query->orderBy('admitted_date', 'desc')->get();
+        // Pagination dengan 10 data per halaman
+        $data_nakes = $query->orderBy('admitted_date', 'desc')->paginate(10);
         
         return view('data-nakes.index', compact('data_nakes'));
     }
 
-    // Method store, update, destroy, show tetap sama seperti sebelumnya
     public function store(Request $request)
     {
         $request->validate([
@@ -126,5 +128,9 @@ class DataNakesController extends Controller
     {
         $data_nakes = DataNakes::findOrFail($id);
         return response()->json($data_nakes);
+    }
+    public function export()
+    {
+    return Excel::download(new DataNakesExport, 'data_nakes.xlsx');
     }
 }

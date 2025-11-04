@@ -182,6 +182,19 @@
                 </div>
             </header>
 
+            {{-- Flash Messages --}}
+            @if(session('success'))
+                <div class="mx-8 mt-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="mx-8 mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             {{-- Setting Content --}}
             <div class="p-8">
                 {{-- Title --}}
@@ -195,132 +208,160 @@
                         {{-- Profile Information --}}
                         <div class="bg-white rounded-xl shadow-sm p-6">
                             <h3 class="text-lg font-semibold text-gray-800 mb-6">Profile Information</h3>
-
-                            <div class="space-y-4">
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-                                        <input type="text" value="dr. Muhammad Zaky, Sp.JP"
-                                            class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
+                            
+                            <form action="{{ route('setting.update-profile') }}" method="POST">
+                                @csrf
+                                <div class="space-y-4">
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                                            <input type="text" name="name" value="{{ old('name', $user->name) }}"
+                                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
+                                            @error('name')
+                                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                            <input type="email" name="email" value="{{ old('email', $user->email ?? '') }}"
+                                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
+                                            @error('email')
+                                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                            @enderror
+                                        </div>
                                     </div>
+
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                                            <input type="tel" name="phone_number" value="{{ old('phone_number', $user->phone_number ?? '') }}"
+                                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                                            <select name="role"
+                                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
+                                                <option value="">Select Role</option>
+                                                <option value="Dokter Spesialis" {{ old('role', $settings['role'] ?? '') == 'Dokter Spesialis' ? 'selected' : '' }}>Dokter Spesialis</option>
+                                                <option value="Dokter Umum" {{ old('role', $settings['role'] ?? '') == 'Dokter Umum' ? 'selected' : '' }}>Dokter Umum</option>
+                                                <option value="Perawat" {{ old('role', $settings['role'] ?? '') == 'Perawat' ? 'selected' : '' }}>Perawat</option>
+                                                <option value="Admin" {{ old('role', $settings['role'] ?? '') == 'Admin' ? 'selected' : '' }}>Admin</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                                        <input type="email" value="mzaky@hospital.com"
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Hospital</label>
+                                        <input type="text" name="hospital" value="{{ old('hospital', $settings['hospital'] ?? '') }}"
                                             class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
                                     </div>
                                 </div>
 
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                                        <input type="tel" value="+62 812 3456 7890"
-                                            class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
-                                        <select
-                                            class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
-                                            <option>Dokter Spesialis</option>
-                                            <option>Dokter Umum</option>
-                                            <option>Perawat</option>
-                                            <option>Admin</option>
-                                        </select>
-                                    </div>
+                                <div class="flex justify-end mt-6">
+                                    <button type="submit"
+                                        class="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm">
+                                        Save Changes
+                                    </button>
                                 </div>
-
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Hospital</label>
-                                    <input type="text" value="Rumah Sakit Umum Pusat Nasional"
-                                        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
-                                </div>
-                            </div>
-
-                            <div class="flex justify-end mt-6">
-                                <button
-                                    class="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm">
-                                    Save Changes
-                                </button>
-                            </div>
+                            </form>
                         </div>
 
                         {{-- Change Password --}}
                         <div class="bg-white rounded-xl shadow-sm p-6">
                             <h3 class="text-lg font-semibold text-gray-800 mb-6">Change Password</h3>
 
-                            <div class="space-y-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
-                                    <input type="password" placeholder="Enter current password"
-                                        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
+                            <form action="{{ route('setting.update-password') }}" method="POST">
+                                @csrf
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
+                                        <input type="password" name="current_password" placeholder="Enter current password"
+                                            class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
+                                        @error('current_password')
+                                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                                            <input type="password" name="new_password" placeholder="Enter new password"
+                                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
+                                            @error('new_password')
+                                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+                                            <input type="password" name="new_password_confirmation" placeholder="Confirm new password"
+                                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
-                                        <input type="password" placeholder="Enter new password"
-                                            class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Confirm
-                                            Password</label>
-                                        <input type="password" placeholder="Confirm new password"
-                                            class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
-                                    </div>
+                                <div class="flex justify-end mt-6">
+                                    <button type="submit"
+                                        class="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm">
+                                        Update Password
+                                    </button>
                                 </div>
-                            </div>
-
-                            <div class="flex justify-end mt-6">
-                                <button
-                                    class="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm">
-                                    Update Password
-                                </button>
-                            </div>
+                            </form>
                         </div>
 
                         {{-- Notification Settings --}}
                         <div class="bg-white rounded-xl shadow-sm p-6">
                             <h3 class="text-lg font-semibold text-gray-800 mb-6">Notification Settings</h3>
 
-                            <div class="space-y-4">
-                                <div class="flex items-center justify-between py-3 border-b border-gray-100">
-                                    <div>
-                                        <p class="font-medium text-gray-800 text-sm">Email Notifications</p>
-                                        <p class="text-xs text-gray-500">Receive notifications via email</p>
-                                    </div>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" checked class="sr-only peer">
-                                        <div
-                                            class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
+                            <form action="{{ route('setting.update-notifications') }}" method="POST">
+                                @csrf
+                                <div class="space-y-4">
+                                    <div class="flex items-center justify-between py-3 border-b border-gray-100">
+                                        <div>
+                                            <p class="font-medium text-gray-800 text-sm">Email Notifications</p>
+                                            <p class="text-xs text-gray-500">Receive notifications via email</p>
                                         </div>
-                                    </label>
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" name="email_notifications" value="1" 
+                                                {{ ($settings['email_notifications'] ?? '1') == '1' ? 'checked' : '' }} class="sr-only peer">
+                                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    <div class="flex items-center justify-between py-3 border-b border-gray-100">
+                                        <div>
+                                            <p class="font-medium text-gray-800 text-sm">SMS Notifications</p>
+                                            <p class="text-xs text-gray-500">Receive notifications via SMS</p>
+                                        </div>
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" name="sms_notifications" value="1"
+                                                {{ ($settings['sms_notifications'] ?? '1') == '1' ? 'checked' : '' }} class="sr-only peer">
+                                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    <div class="flex items-center justify-between py-3">
+                                        <div>
+                                            <p class="font-medium text-gray-800 text-sm">Emergency Alerts</p>
+                                            <p class="text-xs text-gray-500">Receive critical emergency notifications</p>
+                                        </div>
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" name="emergency_alerts" value="1"
+                                                {{ ($settings['emergency_alerts'] ?? '1') == '1' ? 'checked' : '' }} class="sr-only peer">
+                                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
+                                            </div>
+                                        </label>
+                                    </div>
                                 </div>
 
-                                <div class="flex items-center justify-between py-3 border-b border-gray-100">
-                                    <div>
-                                        <p class="font-medium text-gray-800 text-sm">SMS Notifications</p>
-                                        <p class="text-xs text-gray-500">Receive notifications via SMS</p>
-                                    </div>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" checked class="sr-only peer">
-                                        <div
-                                            class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
-                                        </div>
-                                    </label>
+                                <div class="flex justify-end mt-6">
+                                    <button type="submit"
+                                        class="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm">
+                                        Save Notification Settings
+                                    </button>
                                 </div>
-
-                                <div class="flex items-center justify-between py-3">
-                                    <div>
-                                        <p class="font-medium text-gray-800 text-sm">Emergency Alerts</p>
-                                        <p class="text-xs text-gray-500">Receive critical emergency notifications</p>
-                                    </div>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" checked class="sr-only peer">
-                                        <div
-                                            class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
-                                        </div>
-                                    </label>
-                                </div>
-                            </div>
+                            </form>
                         </div>
                     </div>
 
@@ -331,17 +372,34 @@
                             <h3 class="text-lg font-semibold text-gray-800 mb-6">Profile Picture</h3>
 
                             <div class="flex flex-col items-center">
-                                <div
-                                    class="w-32 h-32 bg-gradient-to-br from-blue-500 to-teal-500 rounded-full flex items-center justify-center text-white text-4xl font-bold mb-4">
-                                    MZ
-                                </div>
-                                <button
-                                    class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition font-medium mb-2">
-                                    Upload Photo
-                                </button>
-                                <button class="px-4 py-2 text-red-600 text-sm hover:bg-red-50 rounded-lg transition font-medium">
-                                    Remove Photo
-                                </button>
+                                @if($user->profile_photo)
+                                    <img src="{{ asset('storage/profile-photos/' . $user->profile_photo) }}" 
+                                         alt="Profile Photo" 
+                                         class="w-32 h-32 rounded-full object-cover mb-4">
+                                @else
+                                    <div class="w-32 h-32 bg-gradient-to-br from-blue-500 to-teal-500 rounded-full flex items-center justify-center text-white text-4xl font-bold mb-4">
+                                        {{ substr($user->name, 0, 2) }}
+                                    </div>
+                                @endif
+
+                                <form action="{{ route('setting.update-profile-photo') }}" method="POST" enctype="multipart/form-data" class="text-center">
+                                    @csrf
+                                    <input type="file" name="profile_photo" id="profile_photo" accept="image/*" class="hidden" onchange="this.form.submit()">
+                                    <button type="button" onclick="document.getElementById('profile_photo').click()"
+                                        class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition font-medium mb-2">
+                                        Upload Photo
+                                    </button>
+                                </form>
+
+                                @if($user->profile_photo)
+                                    <form action="{{ route('setting.remove-profile-photo') }}" method="POST" class="text-center">
+                                        @csrf
+                                        <button type="submit" 
+                                            class="px-4 py-2 text-red-600 text-sm hover:bg-red-50 rounded-lg transition font-medium">
+                                            Remove Photo
+                                        </button>
+                                    </form>
+                                @endif
                             </div>
                         </div>
 
@@ -364,7 +422,7 @@
                                 </div>
                                 <div class="flex justify-between items-center">
                                     <span class="text-sm text-gray-600 font-medium">Member Since</span>
-                                    <span class="font-semibold text-gray-800">Jan 2023</span>
+                                    <span class="font-semibold text-gray-800">{{ $user->created_at->format('M Y') }}</span>
                                 </div>
                             </div>
                         </div>
@@ -391,72 +449,26 @@
     </div>
 
     <script>
-        // Tambahkan event listener untuk form submission
-        document.addEventListener('DOMContentLoaded', function() {
-            // Profile form submission
-            const profileForm = document.querySelector('.bg-white.rounded-xl.shadow-sm.p-6:first-child form');
-            if (profileForm) {
-                profileForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    // Simpan perubahan profile
-                    alert('Profile changes saved successfully!');
-                });
-            }
+        // Danger zone buttons
+        const deactivateButton = document.querySelector('button:contains("Deactivate Account")');
+        if (deactivateButton) {
+            deactivateButton.addEventListener('click', function() {
+                if (confirm('Are you sure you want to deactivate your account? This action can be reversed.')) {
+                    // Deactivate account logic
+                    alert('Account deactivated!');
+                }
+            });
+        }
 
-            // Password form submission
-            const passwordForm = document.querySelector('.bg-white.rounded-xl.shadow-sm.p-6:nth-child(2) form');
-            if (passwordForm) {
-                passwordForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    // Update password
-                    alert('Password updated successfully!');
-                });
-            }
-
-            // Upload photo button
-            const uploadButton = document.querySelector('button:contains("Upload Photo")');
-            if (uploadButton) {
-                uploadButton.addEventListener('click', function() {
-                    // Simulate file upload
-                    const input = document.createElement('input');
-                    input.type = 'file';
-                    input.accept = 'image/*';
-                    input.click();
-                });
-            }
-
-            // Remove photo button
-            const removeButton = document.querySelector('button:contains("Remove Photo")');
-            if (removeButton) {
-                removeButton.addEventListener('click', function() {
-                    if (confirm('Are you sure you want to remove your profile photo?')) {
-                        // Remove profile photo logic
-                        alert('Profile photo removed!');
-                    }
-                });
-            }
-
-            // Danger zone buttons
-            const deactivateButton = document.querySelector('button:contains("Deactivate Account")');
-            if (deactivateButton) {
-                deactivateButton.addEventListener('click', function() {
-                    if (confirm('Are you sure you want to deactivate your account? This action can be reversed.')) {
-                        // Deactivate account logic
-                        alert('Account deactivated!');
-                    }
-                });
-            }
-
-            const deleteButton = document.querySelector('button:contains("Delete Account")');
-            if (deleteButton) {
-                deleteButton.addEventListener('click', function() {
-                    if (confirm('WARNING: This will permanently delete your account and all associated data. This action cannot be undone. Are you sure?')) {
-                        // Delete account logic
-                        alert('Account deleted!');
-                    }
-                });
-            }
-        });
+        const deleteButton = document.querySelector('button:contains("Delete Account")');
+        if (deleteButton) {
+            deleteButton.addEventListener('click', function() {
+                if (confirm('WARNING: This will permanently delete your account and all associated data. This action cannot be undone. Are you sure?')) {
+                    // Delete account logic
+                    alert('Account deleted!');
+                }
+            });
+        }
     </script>
 </body>
 
