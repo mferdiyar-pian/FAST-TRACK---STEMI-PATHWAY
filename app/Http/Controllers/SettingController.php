@@ -6,9 +6,19 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use App\Models\Setting;
 use App\Models\User;
+
+
+/**
+ * @method \Illuminate\Http\RedirectResponse updateProfile(\Illuminate\Http\Request $request)
+ * @method \Illuminate\Http\RedirectResponse updatePassword(\Illuminate\Http\Request $request)
+ * @method \Illuminate\Http\RedirectResponse updateNotifications(\Illuminate\Http\Request $request)
+ * @method \Illuminate\Http\RedirectResponse updateProfilePhoto(\Illuminate\Http\Request $request)
+ * @method \Illuminate\Http\RedirectResponse removeProfilePhoto(\Illuminate\Http\Request $request)
+ */
 
 class SettingController extends Controller
 {
@@ -24,6 +34,7 @@ class SettingController extends Controller
 
     public function updateProfile(Request $request)
     {
+        /** @var User $user */
         $user = Auth::user();
         
         $validated = $request->validate([
@@ -39,12 +50,11 @@ class SettingController extends Controller
         ]);
 
         try {
-            // Update user data
-            $user->fill([
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-                'phone_number' => $validated['phone_number'] ?? null,
-            ])->save();
+            // Update user data menggunakan save() method
+            $user->name = $validated['name'];
+            $user->email = $validated['email'];
+            $user->phone_number = $validated['phone_number'] ?? null;
+            $user->save();
 
             // Simpan settings lainnya
             Setting::updateOrCreate(
@@ -60,19 +70,20 @@ class SettingController extends Controller
             return redirect()->route('setting.index')->with('success', 'Profile updated successfully!');
             
         } catch (\Exception $e) {
-            \Log::error('Profile update error: ' . $e->getMessage());
+            Log::error('Profile update error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to update profile: ' . $e->getMessage());
         }
     }
 
     public function updatePassword(Request $request)
     {
+        /** @var User $user */
+        $user = Auth::user();
+
         $validated = $request->validate([
             'current_password' => 'required',
             'new_password' => 'required|min:8|confirmed',
         ]);
-
-        $user = Auth::user();
 
         // Check current password
         if (!Hash::check($validated['current_password'], $user->password)) {
@@ -80,15 +91,14 @@ class SettingController extends Controller
         }
 
         try {
-            // Update password
-            $user->fill([
-                'password' => Hash::make($validated['new_password'])
-            ])->save();
+            // Update password menggunakan save() method
+            $user->password = Hash::make($validated['new_password']);
+            $user->save();
 
             return redirect()->route('setting.index')->with('success', 'Password updated successfully!');
             
         } catch (\Exception $e) {
-            \Log::error('Password update error: ' . $e->getMessage());
+            Log::error('Password update error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to update password: ' . $e->getMessage());
         }
     }
@@ -117,21 +127,22 @@ class SettingController extends Controller
             return redirect()->route('setting.index')->with('success', 'Notification settings updated!');
             
         } catch (\Exception $e) {
-            \Log::error('Notification settings update error: ' . $e->getMessage());
+            Log::error('Notification settings update error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to update notification settings: ' . $e->getMessage());
         }
     }
 
     public function updateProfilePhoto(Request $request)
     {
-        \Log::info('Profile photo upload started');
+        Log::info('Profile photo upload started');
         
         $request->validate([
-            'profile_photo' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120', // 5MB max
+            'profile_photo' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
         ]);
 
+        /** @var User $user */
         $user = Auth::user();
-        \Log::info('User: ' . $user->id);
+        Log::info('User: ' . $user->id);
 
         try {
             // Check if file was uploaded
@@ -140,12 +151,12 @@ class SettingController extends Controller
             }
 
             $file = $request->file('profile_photo');
-            \Log::info('File received: ' . $file->getClientOriginalName() . ' | Size: ' . $file->getSize());
+            Log::info('File received: ' . $file->getClientOriginalName() . ' | Size: ' . $file->getSize());
 
             // Hapus foto lama jika ada
             if ($user->profile_photo && Storage::exists('public/profile-photos/' . $user->profile_photo)) {
                 Storage::delete('public/profile-photos/' . $user->profile_photo);
-                \Log::info('Old photo deleted: ' . $user->profile_photo);
+                Log::info('Old photo deleted: ' . $user->profile_photo);
             }
 
             // Generate unique filename
@@ -154,40 +165,45 @@ class SettingController extends Controller
             // Store image
             $path = $file->storeAs('public/profile-photos', $imageName);
             
-            \Log::info('File stored at: ' . $path);
-            \Log::info('Storage exists: ' . (Storage::exists($path) ? 'YES' : 'NO'));
+            Log::info('File stored at: ' . $path);
+            Log::info('Storage exists: ' . (Storage::exists($path) ? 'YES' : 'NO'));
 
-            // Update database
-            $user->update(['profile_photo' => $imageName]);
-            \Log::info('Database updated with: ' . $imageName);
+            // Update database menggunakan save() method
+            $user->profile_photo = $imageName;
+            $user->save();
+
+            Log::info('Database updated with: ' . $imageName);
 
             return redirect()->route('setting.index')->with('success', 'Profile photo updated successfully!');
             
         } catch (\Exception $e) {
-            \Log::error('Profile photo upload error: ' . $e->getMessage());
+            Log::error('Profile photo upload error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to update profile photo: ' . $e->getMessage());
         }
     }
 
     public function removeProfilePhoto(Request $request)
     {
+        /** @var User $user */
         $user = Auth::user();
 
         try {
             // Hapus file foto
             if ($user->profile_photo && Storage::exists('public/profile-photos/' . $user->profile_photo)) {
                 Storage::delete('public/profile-photos/' . $user->profile_photo);
-                \Log::info('Profile photo deleted from storage: ' . $user->profile_photo);
+                Log::info('Profile photo deleted from storage: ' . $user->profile_photo);
             }
 
-            // Update database
-            $user->update(['profile_photo' => null]);
-            \Log::info('Profile photo removed from database for user: ' . $user->id);
+            // Update database menggunakan save() method
+            $user->profile_photo = null;
+            $user->save();
+
+            Log::info('Profile photo removed from database for user: ' . $user->id);
 
             return redirect()->route('setting.index')->with('success', 'Profile photo removed successfully!');
             
         } catch (\Exception $e) {
-            \Log::error('Profile photo remove error: ' . $e->getMessage());
+            Log::error('Profile photo remove error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to remove profile photo: ' . $e->getMessage());
         }
     }

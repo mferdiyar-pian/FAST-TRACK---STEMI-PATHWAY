@@ -12,7 +12,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name',
-        'username',
+        'username', 
         'email',
         'phone_number',
         'profile_photo',
@@ -42,14 +42,5 @@ class User extends Authenticatable
     {
         $setting = $this->settings()->where('key', $key)->first();
         return $setting ? $setting->value : $default;
-    }
-
-    // Accessor untuk profile photo URL
-    public function getProfilePhotoUrlAttribute()
-    {
-        if ($this->profile_photo && \Illuminate\Support\Facades\Storage::exists('public/profile-photos/' . $this->profile_photo)) {
-            return \Illuminate\Support\Facades\Storage::url('profile-photos/' . $this->profile_photo);
-        }
-        return null;
     }
 }

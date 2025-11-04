@@ -85,6 +85,9 @@ Route::middleware(['auth'])->group(function () {
         // Route untuk menampilkan form create (opsional)
         Route::get('/create', [DataNakesController::class, 'create'])->name('data-nakes.create');
         
+        // Route untuk export Excel  <==== tambahkan di sini
+        Route::get('/export', [DataNakesController::class, 'export'])->name('data-nakes.export');
+        
         // Route untuk menyimpan data baru
         Route::post('/', [DataNakesController::class, 'store'])->name('data-nakes.store');
         
