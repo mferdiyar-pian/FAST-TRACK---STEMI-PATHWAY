@@ -6,6 +6,8 @@ namespace App\Http\Controllers;
 use App\Models\DataNakes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Exports\DataNakesExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class DataNakesController extends Controller
 {
@@ -126,5 +128,9 @@ class DataNakesController extends Controller
     {
         $data_nakes = DataNakes::findOrFail($id);
         return response()->json($data_nakes);
+    }
+    public function export()
+    {
+    return Excel::download(new DataNakesExport, 'data_nakes.xlsx');
     }
 }

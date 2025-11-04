@@ -807,507 +807,547 @@
     </div>
 
     <script>
-        let timers = new Map();
-        let detailTimers = new Map();
-        let contextMenuItemId = null;
+    let timers = new Map();
+    let detailTimers = new Map();
+    let contextMenuItemId = null;
 
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeTimers();
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeTimers();
 
-            // ==================== PAGINATION FUNCTIONS ====================
-            
-            // Handle page select change
-            document.getElementById('pageSelect').addEventListener('change', function() {
-                const page = this.value;
-                const url = new URL(window.location.href);
-                url.searchParams.set('page', page);
-                window.location.href = url.toString();
-            });
-
-            // ==================== SEARCH FUNCTION ====================
-            
-            // Handle search form submission
-            document.getElementById('searchForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                const searchValue = document.getElementById('searchInput').value;
-                const url = new URL(window.location.href);
-                
-                if (searchValue) {
-                    url.searchParams.set('search', searchValue);
-                } else {
-                    url.searchParams.delete('search');
-                }
-                
-                // Reset to page 1 when searching
-                url.searchParams.set('page', 1);
-                window.location.href = url.toString();
-            });
-
-            // Handle form submission edit
-            document.getElementById('editCodeStemiForm').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                
-                const form = this;
-                const formData = new FormData(form);
-                const url = form.action;
-                
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-                            'X-Requested-With': 'XMLHttpRequest'
-                        },
-                        body: formData
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                        showSuccessModal('Data Code STEMI berhasil diperbarui');
-                        closeEditModal();
-                        setTimeout(() => {
-                            location.reload();
-                        }, 2000);
-                    } else {
-                        alert(result.message);
-                    }
-                    
-                } catch (error) {
-                    console.error('Error updating data:', error);
-                    alert('Terjadi kesalahan saat mengupdate data');
-                }
-            });
+        // ==================== PAGINATION FUNCTIONS ====================
+        
+        // Handle page select change
+        document.getElementById('pageSelect').addEventListener('change', function() {
+            const page = this.value;
+            const url = new URL(window.location.href);
+            url.searchParams.set('page', page);
+            window.location.href = url.toString();
         });
 
-        // ==================== FILTER FUNCTIONS ====================
+        // ==================== SEARCH FUNCTION ====================
         
-        function toggleFilterDropdown() {
-            const dropdown = document.getElementById('filterDropdown');
-            dropdown.classList.toggle('show');
-        }
-
-        function applyFilter() {
-            const form = document.getElementById('filterForm');
-            const formData = new FormData(form);
-            const params = new URLSearchParams();
+        // Handle search form submission
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const searchValue = document.getElementById('searchInput').value;
+            const url = new URL(window.location.href);
             
-            for (let [key, value] of formData) {
-                if (value) {
-                    params.append(key, value);
-                }
+            if (searchValue) {
+                url.searchParams.set('search', searchValue);
+            } else {
+                url.searchParams.delete('search');
             }
             
-            // Reset to page 1 when applying filters
-            params.append('page', 1);
-            
-            // Close filter dropdown
-            document.getElementById('filterDropdown').classList.remove('show');
-            
-            // Redirect with filter parameters
-            window.location.href = '{{ route('code-stemi.index') }}?' + params.toString();
-        }
-
-        function resetFilter() {
-            // Reset form
-            document.getElementById('filterForm').reset();
-            // Redirect without parameters
-            window.location.href = '{{ route('code-stemi.index') }}';
-        }
-
-        function removeFilter(filterName) {
-            const url = new URL(window.location.href);
-            url.searchParams.delete(filterName);
-            // Reset to page 1 when removing filters
+            // Reset to page 1 when searching
             url.searchParams.set('page', 1);
             window.location.href = url.toString();
-        }
-
-        // Close filter dropdown when clicking outside
-        document.addEventListener('click', function(e) {
-            const filterBtn = document.querySelector('button[onclick="toggleFilterDropdown()"]');
-            const dropdown = document.getElementById('filterDropdown');
-            
-            if (filterBtn && dropdown && !filterBtn.contains(e.target) && !dropdown.contains(e.target)) {
-                dropdown.classList.remove('show');
-            }
         });
 
-        function initializeTimers() {
-            const rows = document.querySelectorAll('tr[data-start-time]');
-            rows.forEach(row => {
-                const id = row.getAttribute('data-id');
-                const startTime = row.getAttribute('data-start-time');
-                const status = row.getAttribute('data-status');
-                
-                if (status === 'Running') {
-                    startTimer(id, startTime);
-                }
-            });
-        }
-
-        function startTimer(id, startTime) {
-            const start = new Date(startTime);
+        // Handle form submission edit
+        document.getElementById('editCodeStemiForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
             
-            function updateTimer() {
-                const now = new Date();
-                const diff = Math.max(0, now - start);
-                
-                const hours = Math.floor(diff / (1000 * 60 * 60));
-                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-                
-                const timeString = `${hours.toString().padStart(2, '0')}h : ${minutes.toString().padStart(2, '0')}m : ${seconds.toString().padStart(2, '0')}s`;
-                
-                const timeElement = document.getElementById(`time-${id}`);
-                if (timeElement) {
-                    timeElement.textContent = timeString;
-                }
-                
-                if (detailTimers.has(id)) {
-                    const detailTimeElement = document.getElementById(`detail-time-${id}`);
-                    if (detailTimeElement) {
-                        detailTimeElement.textContent = timeString;
-                    }
-                }
-            }
-            
-            updateTimer();
-            const timerId = setInterval(updateTimer, 1000);
-            timers.set(id, timerId);
-        }
-
-        // ==================== SUCCESS MODAL FUNCTIONS ====================
-        function showSuccessModal(message) {
-            document.getElementById('successModal').classList.remove('hidden');
-            document.getElementById('successModal').classList.add('flex');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeSuccessModal() {
-            document.getElementById('successModal').classList.add('hidden');
-            document.getElementById('successModal').classList.remove('flex');
-            document.body.style.overflow = 'auto';
-            location.reload();
-        }
-
-        // ==================== ACTIVATION CONFIRMATION FUNCTIONS ====================
-        function confirmActivation() {
-            document.getElementById('activationConfirmModal').classList.remove('hidden');
-            document.getElementById('activationConfirmModal').classList.add('flex');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeActivationConfirmModal() {
-            document.getElementById('activationConfirmModal').classList.add('hidden');
-            document.getElementById('activationConfirmModal').classList.remove('flex');
-            document.body.style.overflow = 'auto';
-        }
-
-        function submitActivationForm() {
-            document.getElementById('activationForm').submit();
-        }
-
-        // ==================== FINISH CONFIRMATION FUNCTIONS ====================
-        function confirmFinish(id) {
-            document.getElementById('finishForm').action = `/code-stemi/${id}/finish`;
-            document.getElementById('finishConfirmModal').classList.remove('hidden');
-            document.getElementById('finishConfirmModal').classList.add('flex');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeFinishConfirmModal() {
-            document.getElementById('finishConfirmModal').classList.add('hidden');
-            document.getElementById('finishConfirmModal').classList.remove('flex');
-            document.body.style.overflow = 'auto';
-        }
-
-        function handleFinishSubmit(event) {
-            event.preventDefault();
-            const form = document.getElementById('finishForm');
+            const form = this;
             const formData = new FormData(form);
             const url = form.action;
             
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: formData
-            })
-            .then(response => response.json())
-            .then(result => {
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
                 if (result.success) {
-                    closeFinishConfirmModal();
                     showSuccessModal('Data Code STEMI berhasil diperbarui');
+                    closeEditModal();
                     setTimeout(() => {
                         location.reload();
                     }, 2000);
                 } else {
                     alert(result.message);
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Terjadi kesalahan saat menyelesaikan Code STEMI');
-            });
-        }
-
-        // ==================== CONTEXT MENU FUNCTIONS ====================
-        function openContextMenu(event, id) {
-            event.stopPropagation();
-            const menu = document.getElementById('contextMenu');
-            contextMenuItemId = id;
-            
-            // Position menu at button
-            const rect = event.currentTarget.getBoundingClientRect();
-            menu.style.left = (rect.left - 120) + 'px';
-            menu.style.top = (rect.bottom + 5) + 'px';
-            menu.classList.remove('hidden');
-        }
-
-        function editFromMenu() {
-            const id = contextMenuItemId;
-            document.getElementById('contextMenu').classList.add('hidden');
-            openEditModal(id);
-        }
-
-        function deleteFromMenu() {
-            const id = contextMenuItemId;
-            document.getElementById('contextMenu').classList.add('hidden');
-            confirmDelete(id);
-        }
-
-        // ==================== DELETE MODAL FUNCTIONS ====================
-        function confirmDelete(id) {
-            document.getElementById('deleteForm').action = `/code-stemi/${id}`;
-            document.getElementById('deleteModal').classList.remove('hidden');
-            document.getElementById('deleteModal').classList.add('flex');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeDeleteModal() {
-            document.getElementById('deleteModal').classList.add('hidden');
-            document.getElementById('deleteModal').classList.remove('flex');
-            document.body.style.overflow = 'auto';
-        }
-
-        // ==================== MODAL FUNCTIONS ====================
-        function openAddModal() {
-            const modal = document.getElementById('addCodeStemiModal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeAddModal() {
-            const modal = document.getElementById('addCodeStemiModal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-            document.body.style.overflow = 'auto';
-        }
-
-        function openEditModal(id) {
-            loadEditData(id);
-            const modal = document.getElementById('editCodeStemiModal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeEditModal() {
-            const modal = document.getElementById('editCodeStemiModal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-            document.body.style.overflow = 'auto';
-        }
-
-        function openDetailModal(id) {
-            loadDetailData(id);
-            const modal = document.getElementById('detailCodeStemiModal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeDetailModal() {
-            const modal = document.getElementById('detailCodeStemiModal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-            document.body.style.overflow = 'auto';
-            
-            detailTimers.forEach((timerId) => {
-                clearInterval(timerId);
-            });
-            detailTimers.clear();
-        }
-
-        // ==================== DATA LOADING FUNCTIONS ====================
-        async function loadEditData(id) {
-            try {
-                const response = await fetch(`/code-stemi/${id}/edit`);
-                const data = await response.json();
-                
-                // Set form action
-                document.getElementById('editCodeStemiForm').action = `/code-stemi/${id}`;
-                
-                // Set checklist
-                const checkboxes = document.querySelectorAll('.edit-checklist');
-                checkboxes.forEach(checkbox => {
-                    checkbox.checked = data.checklist && data.checklist.includes(checkbox.value);
-                });
-                
-                // Set custom message
-                document.getElementById('editCustomMessage').value = data.custom_message || '';
                 
             } catch (error) {
-                console.error('Error loading edit data:', error);
-                alert('Gagal memuat data untuk edit');
+                console.error('Error updating data:', error);
+                alert('Terjadi kesalahan saat mengupdate data');
+            }
+        });
+    });
+
+    // ==================== FILTER FUNCTIONS ====================
+    
+    function toggleFilterDropdown() {
+        const dropdown = document.getElementById('filterDropdown');
+        dropdown.classList.toggle('show');
+    }
+
+    function applyFilter() {
+        const form = document.getElementById('filterForm');
+        const formData = new FormData(form);
+        const params = new URLSearchParams();
+        
+        for (let [key, value] of formData) {
+            if (value) {
+                params.append(key, value);
             }
         }
+        
+        // Reset to page 1 when applying filters
+        params.append('page', 1);
+        
+        // Close filter dropdown
+        document.getElementById('filterDropdown').classList.remove('show');
+        
+        // Redirect with filter parameters
+        window.location.href = '{{ route('code-stemi.index') }}?' + params.toString();
+    }
 
-        async function loadDetailData(id) {
-            try {
-                const response = await fetch(`/code-stemi/${id}`);
-                const data = await response.json();
-                
-                const checklistItems = ['Anamnesis', 'EKG', 'Rongten Thorax', 'Pemeriksaan Fisik', 'Laboratorium', 'Informed Consent'];
-                let checklistHTML = '';
-                
-                checklistItems.forEach(item => {
-                    const isChecked = data.checklist && data.checklist.includes(item);
-                    checklistHTML += `
-                        <label class="flex items-center gap-2">
-                            <input type="checkbox" ${isChecked ? 'checked' : ''} disabled class="w-4 h-4 text-blue-600 rounded border-gray-300">
-                            <span class="text-sm text-gray-700 ${isChecked ? 'font-medium' : 'text-gray-400'}">${item}</span>
-                        </label>
-                    `;
-                });
+    function resetFilter() {
+        // Reset form
+        document.getElementById('filterForm').reset();
+        // Redirect without parameters
+        window.location.href = '{{ route('code-stemi.index') }}';
+    }
 
-                document.getElementById('detailContent').innerHTML = `
-                    <div class="grid grid-cols-2 gap-2">
-                        ${checklistHTML}
-                    </div>
+    function removeFilter(filterName) {
+        const url = new URL(window.location.href);
+        url.searchParams.delete(filterName);
+        // Reset to page 1 when removing filters
+        url.searchParams.set('page', 1);
+        window.location.href = url.toString();
+    }
 
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-800 mb-2">Pesan Broadcast</label>
-                        <p class="text-xs text-gray-600 mb-2">Fast Track STEMI Pathway</p>
-                        <div class="bg-blue-50 rounded-lg p-3 space-y-1">
-                            <p class="text-xs text-blue-900 font-semibold">CODE STEMI AKTIF</p>
-                            <p class="text-xs text-blue-800">Pasien STEMI telah berada di IGD RS Otak M Hatta Bukittinggi.</p>
-                            <p class="text-xs text-blue-800">Seluruh unit terkait dimohon segera siaga.</p>
-                            <p class="text-xs text-blue-800">Fast Track STEMI Pathway aktif.</p>
-                            <p class="text-xs text-blue-800">Waktu Door-to-balloon dimulai.</p>
-                            ${data.custom_message ? `<p class="text-xs text-blue-800 mt-2 font-semibold">Pesan Tambahan:</p><p class="text-xs text-blue-800">${data.custom_message}</p>` : ''}
-                        </div>
-                        <p class="text-xs text-gray-400 italic mt-1">Dapat menambahkan custom messages disini</p>
-                    </div>
-
-                    <div class="bg-white border border-gray-200 rounded-lg p-4 text-center">
-                        <p class="text-sm font-semibold text-gray-800 mb-2">DOOR TO BALLOON TIME</p>
-                        <div id="detail-time-${data.id}" class="text-3xl font-bold text-blue-600 tracking-wider timer-text">${data.door_to_balloon_time}</div>
-                    </div>
-
-                    ${data.status === 'Running' ? `
-                    <button onclick="confirmFinish(${data.id})" class="w-full py-2.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition text-sm">
-                        AKTIVASI CODE STEMI SELESAI
-                    </button>
-                    ` : ''}
-                `;
-
-                if (data.status === 'Running') {
-                    startDetailTimer(data.id, data.start_time);
-                }
-
-            } catch (error) {
-                console.error('Error loading detail:', error);
-                alert('Gagal memuat detail data');
-            }
+    // Close filter dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        const filterBtn = document.querySelector('button[onclick="toggleFilterDropdown()"]');
+        const dropdown = document.getElementById('filterDropdown');
+        
+        if (filterBtn && dropdown && !filterBtn.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.remove('show');
         }
+    });
 
-        function startDetailTimer(id, startTime) {
-            const start = new Date(startTime);
+    function initializeTimers() {
+        const rows = document.querySelectorAll('tr[data-start-time]');
+        rows.forEach(row => {
+            const id = row.getAttribute('data-id');
+            const startTime = row.getAttribute('data-start-time');
+            const status = row.getAttribute('data-status');
             
-            function updateDetailTimer() {
-                const now = new Date();
-                const diff = Math.max(0, now - start);
-                
-                const hours = Math.floor(diff / (1000 * 60 * 60));
-                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-                
-                const timeString = `${hours.toString().padStart(2, '0')}h : ${minutes.toString().padStart(2, '0')}m : ${seconds.toString().padStart(2, '0')}s`;
-                
+            if (status === 'Running') {
+                startTimer(id, startTime);
+            }
+        });
+    }
+
+    function startTimer(id, startTime) {
+        const start = new Date(startTime);
+        
+        function updateTimer() {
+            const now = new Date();
+            const diff = Math.max(0, now - start);
+            
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            const timeString = `${hours.toString().padStart(2, '0')}h : ${minutes.toString().padStart(2, '0')}m : ${seconds.toString().padStart(2, '0')}s`;
+            
+            const timeElement = document.getElementById(`time-${id}`);
+            if (timeElement) {
+                timeElement.textContent = timeString;
+            }
+            
+            if (detailTimers.has(id)) {
                 const detailTimeElement = document.getElementById(`detail-time-${id}`);
                 if (detailTimeElement) {
                     detailTimeElement.textContent = timeString;
                 }
             }
-            
-            updateDetailTimer();
-            const timerId = setInterval(updateDetailTimer, 1000);
-            detailTimers.set(id, timerId);
+        }
+        
+        updateTimer();
+        const timerId = setInterval(updateTimer, 1000);
+        timers.set(id, timerId);
+    }
+
+    // ==================== SUCCESS MODAL FUNCTIONS ====================
+    function showSuccessModal(message) {
+        document.getElementById('successModal').classList.remove('hidden');
+        document.getElementById('successModal').classList.add('flex');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeSuccessModal() {
+        document.getElementById('successModal').classList.add('hidden');
+        document.getElementById('successModal').classList.remove('flex');
+        document.body.style.overflow = 'auto';
+    }
+
+    // ==================== ACTIVATION CONFIRMATION FUNCTIONS ====================
+    function confirmActivation() {
+        document.getElementById('activationConfirmModal').classList.remove('hidden');
+        document.getElementById('activationConfirmModal').classList.add('flex');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeActivationConfirmModal() {
+        document.getElementById('activationConfirmModal').classList.add('hidden');
+        document.getElementById('activationConfirmModal').classList.remove('flex');
+        document.body.style.overflow = 'auto';
+    }
+
+    function submitActivationForm() {
+        document.getElementById('activationForm').submit();
+    }
+
+    // ==================== FINISH CONFIRMATION FUNCTIONS ====================
+    function confirmFinish(id) {
+        document.getElementById('finishForm').action = `/code-stemi/${id}/finish`;
+        document.getElementById('finishConfirmModal').classList.remove('hidden');
+        document.getElementById('finishConfirmModal').classList.add('flex');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeFinishConfirmModal() {
+        document.getElementById('finishConfirmModal').classList.add('hidden');
+        document.getElementById('finishConfirmModal').classList.remove('flex');
+        document.body.style.overflow = 'auto';
+    }
+
+    function handleFinishSubmit(event) {
+        event.preventDefault();
+        const form = document.getElementById('finishForm');
+        const formData = new FormData(form);
+        const url = form.action;
+        const itemId = url.split('/').filter(Boolean).pop(); // Ambil ID dari URL
+        
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                // TUTUP MODAL KONFIRMASI
+                closeFinishConfirmModal();
+                
+                // UPDATE TAMPILAN LANGSUNG TANPA REFRESH
+                updateTableAfterFinish(itemId);
+                
+                // TAMPILKAN MODAL SUKSES
+                showSuccessModal('Data Code STEMI berhasil diperbarui');
+                
+            } else {
+                alert(result.message);
+                closeFinishConfirmModal();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat menyelesaikan Code STEMI');
+            closeFinishConfirmModal();
+        });
+    }
+
+    // FUNGSI UNTUK UPDATE TABEL SETELAH FINISH
+    function updateTableAfterFinish(itemId) {
+        // 1. UPDATE STATUS BADGE
+        const statusBadge = document.querySelector(`tr[data-id="${itemId}"] .status-badge`);
+        if (statusBadge) {
+            statusBadge.textContent = 'Finished';
+            statusBadge.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium status-badge bg-gray-100 text-gray-800';
         }
 
-        // ==================== EVENT LISTENERS ====================
-        document.addEventListener('click', function(e) {
-            // Close context menu when clicking outside
-            const menu = document.getElementById('contextMenu');
-            if (menu && !menu.contains(e.target)) {
-                menu.classList.add('hidden');
-            }
-            
-            // Close modals when clicking outside
-            const addModal = document.getElementById('addCodeStemiModal');
-            if (e.target === addModal) {
-                closeAddModal();
-            }
-            
-            const activationConfirmModal = document.getElementById('activationConfirmModal');
-            if (e.target === activationConfirmModal) {
-                closeActivationConfirmModal();
-            }
-            
-            const finishConfirmModal = document.getElementById('finishConfirmModal');
-            if (e.target === finishConfirmModal) {
-                closeFinishConfirmModal();
-            }
-            
-            const successModal = document.getElementById('successModal');
-            if (e.target === successModal) {
-                closeSuccessModal();
-            }
-            
-            const editModal = document.getElementById('editCodeStemiModal');
-            if (e.target === editModal) {
-                closeEditModal();
-            }
-            
-            const detailModal = document.getElementById('detailCodeStemiModal');
-            if (e.target === detailModal) {
-                closeDetailModal();
-            }
-            
-            const deleteModal = document.getElementById('deleteModal');
-            if (e.target === deleteModal) {
-                closeDeleteModal();
-            }
-        });
+        // 2. UPDATE WARNA TIMER MENJADI MERAH
+        const timeElement = document.getElementById(`time-${itemId}`);
+        if (timeElement) {
+            timeElement.className = 'text-sm font-semibold timer-text text-red-600';
+        }
 
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeAddModal();
-                closeActivationConfirmModal();
-                closeFinishConfirmModal();
-                closeSuccessModal();
-                closeEditModal();
-                closeDetailModal();
-                closeDeleteModal();
-                document.getElementById('contextMenu').classList.add('hidden');
-                document.getElementById('filterDropdown').classList.remove('show');
-            }
+        // 3. HAPUS TOMBOL "AKTIVASI CODE STEMI SELESAI"
+        const finishButton = document.querySelector(`tr[data-id="${itemId}"] button[onclick*="confirmFinish"]`);
+        if (finishButton) {
+            finishButton.remove();
+        }
+
+        // 4. UPDATE DATA ATTRIBUTE
+        const row = document.querySelector(`tr[data-id="${itemId}"]`);
+        if (row) {
+            row.setAttribute('data-status', 'Finished');
+        }
+
+        // 5. HENTIKAN TIMER JIKA ADA
+        if (timers.has(itemId)) {
+            clearInterval(timers.get(itemId));
+            timers.delete(itemId);
+        }
+    }
+
+    // ==================== CONTEXT MENU FUNCTIONS ====================
+    function openContextMenu(event, id) {
+        event.stopPropagation();
+        const menu = document.getElementById('contextMenu');
+        contextMenuItemId = id;
+        
+        // Position menu at button
+        const rect = event.currentTarget.getBoundingClientRect();
+        menu.style.left = (rect.left - 120) + 'px';
+        menu.style.top = (rect.bottom + 5) + 'px';
+        menu.classList.remove('hidden');
+    }
+
+    function editFromMenu() {
+        const id = contextMenuItemId;
+        document.getElementById('contextMenu').classList.add('hidden');
+        openEditModal(id);
+    }
+
+    function deleteFromMenu() {
+        const id = contextMenuItemId;
+        document.getElementById('contextMenu').classList.add('hidden');
+        confirmDelete(id);
+    }
+
+    // ==================== DELETE MODAL FUNCTIONS ====================
+    function confirmDelete(id) {
+        document.getElementById('deleteForm').action = `/code-stemi/${id}`;
+        document.getElementById('deleteModal').classList.remove('hidden');
+        document.getElementById('deleteModal').classList.add('flex');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.add('hidden');
+        document.getElementById('deleteModal').classList.remove('flex');
+        document.body.style.overflow = 'auto';
+    }
+
+    // ==================== MODAL FUNCTIONS ====================
+    function openAddModal() {
+        const modal = document.getElementById('addCodeStemiModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeAddModal() {
+        const modal = document.getElementById('addCodeStemiModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        document.body.style.overflow = 'auto';
+    }
+
+    function openEditModal(id) {
+        loadEditData(id);
+        const modal = document.getElementById('editCodeStemiModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeEditModal() {
+        const modal = document.getElementById('editCodeStemiModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        document.body.style.overflow = 'auto';
+    }
+
+    function openDetailModal(id) {
+        loadDetailData(id);
+        const modal = document.getElementById('detailCodeStemiModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDetailModal() {
+        const modal = document.getElementById('detailCodeStemiModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        document.body.style.overflow = 'auto';
+        
+        detailTimers.forEach((timerId) => {
+            clearInterval(timerId);
         });
-    </script>
+        detailTimers.clear();
+    }
+
+    // ==================== DATA LOADING FUNCTIONS ====================
+    async function loadEditData(id) {
+        try {
+            const response = await fetch(`/code-stemi/${id}/edit`);
+            const data = await response.json();
+            
+            // Set form action
+            document.getElementById('editCodeStemiForm').action = `/code-stemi/${id}`;
+            
+            // Set checklist
+            const checkboxes = document.querySelectorAll('.edit-checklist');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = data.checklist && data.checklist.includes(checkbox.value);
+            });
+            
+            // Set custom message
+            document.getElementById('editCustomMessage').value = data.custom_message || '';
+            
+        } catch (error) {
+            console.error('Error loading edit data:', error);
+            alert('Gagal memuat data untuk edit');
+        }
+    }
+
+    async function loadDetailData(id) {
+        try {
+            const response = await fetch(`/code-stemi/${id}`);
+            const data = await response.json();
+            
+            const checklistItems = ['Anamnesis', 'EKG', 'Rongten Thorax', 'Pemeriksaan Fisik', 'Laboratorium', 'Informed Consent'];
+            let checklistHTML = '';
+            
+            checklistItems.forEach(item => {
+                const isChecked = data.checklist && data.checklist.includes(item);
+                checklistHTML += `
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" ${isChecked ? 'checked' : ''} disabled class="w-4 h-4 text-blue-600 rounded border-gray-300">
+                        <span class="text-sm text-gray-700 ${isChecked ? 'font-medium' : 'text-gray-400'}">${item}</span>
+                    </label>
+                `;
+            });
+
+            document.getElementById('detailContent').innerHTML = `
+                <div class="grid grid-cols-2 gap-2">
+                    ${checklistHTML}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-800 mb-2">Pesan Broadcast</label>
+                    <p class="text-xs text-gray-600 mb-2">Fast Track STEMI Pathway</p>
+                    <div class="bg-blue-50 rounded-lg p-3 space-y-1">
+                        <p class="text-xs text-blue-900 font-semibold">CODE STEMI AKTIF</p>
+                        <p class="text-xs text-blue-800">Pasien STEMI telah berada di IGD RS Otak M Hatta Bukittinggi.</p>
+                        <p class="text-xs text-blue-800">Seluruh unit terkait dimohon segera siaga.</p>
+                        <p class="text-xs text-blue-800">Fast Track STEMI Pathway aktif.</p>
+                        <p class="text-xs text-blue-800">Waktu Door-to-balloon dimulai.</p>
+                        ${data.custom_message ? `<p class="text-xs text-blue-800 mt-2 font-semibold">Pesan Tambahan:</p><p class="text-xs text-blue-800">${data.custom_message}</p>` : ''}
+                    </div>
+                    <p class="text-xs text-gray-400 italic mt-1">Dapat menambahkan custom messages disini</p>
+                </div>
+
+                <div class="bg-white border border-gray-200 rounded-lg p-4 text-center">
+                    <p class="text-sm font-semibold text-gray-800 mb-2">DOOR TO BALLOON TIME</p>
+                    <div id="detail-time-${data.id}" class="text-3xl font-bold text-blue-600 tracking-wider timer-text">${data.door_to_balloon_time}</div>
+                </div>
+
+                ${data.status === 'Running' ? `
+                <button onclick="confirmFinish(${data.id})" class="w-full py-2.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition text-sm">
+                    AKTIVASI CODE STEMI SELESAI
+                </button>
+                ` : ''}
+            `;
+
+            if (data.status === 'Running') {
+                startDetailTimer(data.id, data.start_time);
+            }
+
+        } catch (error) {
+            console.error('Error loading detail:', error);
+            alert('Gagal memuat detail data');
+        }
+    }
+
+    function startDetailTimer(id, startTime) {
+        const start = new Date(startTime);
+        
+        function updateDetailTimer() {
+            const now = new Date();
+            const diff = Math.max(0, now - start);
+            
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            const timeString = `${hours.toString().padStart(2, '0')}h : ${minutes.toString().padStart(2, '0')}m : ${seconds.toString().padStart(2, '0')}s`;
+            
+            const detailTimeElement = document.getElementById(`detail-time-${id}`);
+            if (detailTimeElement) {
+                detailTimeElement.textContent = timeString;
+            }
+        }
+        
+        updateDetailTimer();
+        const timerId = setInterval(updateDetailTimer, 1000);
+        detailTimers.set(id, timerId);
+    }
+
+    // ==================== EVENT LISTENERS ====================
+    document.addEventListener('click', function(e) {
+        // Close context menu when clicking outside
+        const menu = document.getElementById('contextMenu');
+        if (menu && !menu.contains(e.target)) {
+            menu.classList.add('hidden');
+        }
+        
+        // Close modals when clicking outside
+        const addModal = document.getElementById('addCodeStemiModal');
+        if (e.target === addModal) {
+            closeAddModal();
+        }
+        
+        const activationConfirmModal = document.getElementById('activationConfirmModal');
+        if (e.target === activationConfirmModal) {
+            closeActivationConfirmModal();
+        }
+        
+        const finishConfirmModal = document.getElementById('finishConfirmModal');
+        if (e.target === finishConfirmModal) {
+            closeFinishConfirmModal();
+        }
+        
+        const successModal = document.getElementById('successModal');
+        if (e.target === successModal) {
+            closeSuccessModal();
+        }
+        
+        const editModal = document.getElementById('editCodeStemiModal');
+        if (e.target === editModal) {
+            closeEditModal();
+        }
+        
+        const detailModal = document.getElementById('detailCodeStemiModal');
+        if (e.target === detailModal) {
+            closeDetailModal();
+        }
+        
+        const deleteModal = document.getElementById('deleteModal');
+        if (e.target === deleteModal) {
+            closeDeleteModal();
+        }
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeAddModal();
+            closeActivationConfirmModal();
+            closeFinishConfirmModal();
+            closeSuccessModal();
+            closeEditModal();
+            closeDetailModal();
+            closeDeleteModal();
+            document.getElementById('contextMenu').classList.add('hidden');
+            document.getElementById('filterDropdown').classList.remove('show');
+        }
+    });
+</script>
 </body>
 </html>

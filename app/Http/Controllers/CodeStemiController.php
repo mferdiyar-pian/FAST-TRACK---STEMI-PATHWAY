@@ -236,54 +236,47 @@ class CodeStemiController extends Controller
     }
 
     /**
-     * Tandai Code STEMI selesai.
-     */
-    public function finish($id)
-    {
-        try {
-            $code = CodeStemi::findOrFail($id);
-            
-            if ($code->status === 'Finished') {
-                return redirect()->route('code-stemi.index')->with('error', 'Code STEMI sudah selesai!');
-            }
-
-            $code->update([
-                'status' => 'Finished',
-                'end_time' => Carbon::now('Asia/Makassar'),
-            ]);
-
-            // Hitung ulang duration
-            $this->calculateDuration($code);
-
-            // ✅ TRIGGER REAL-TIME UPDATE
-            broadcast(new CodeStemiStatusUpdated());
-
-            return redirect()->route('code-stemi.index')->with('success', 'Code STEMI selesai!');
-
-        } catch (\Exception $e) {
-            return redirect()->route('code-stemi.index')->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+ * Tandai Code STEMI selesai.
+ */
+public function finish($id)
+{
+    try {
+        $code = CodeStemi::findOrFail($id);
+        
+        if ($code->status === 'Finished') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Code STEMI sudah selesai!'
+            ], 400);
         }
+
+        $code->update([
+            'status' => 'Finished',
+            'end_time' => Carbon::now('Asia/Makassar'),
+        ]);
+
+        // Hitung ulang duration
+        $this->calculateDuration($code);
+
+        // ✅ TRIGGER REAL-TIME UPDATE
+        broadcast(new CodeStemiStatusUpdated());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Code STEMI selesai!',
+            'data' => [
+                'id' => $code->id,
+                'final_time' => $code->door_to_balloon_time
+            ]
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+        ], 500);
     }
-
-    /**
-     * Hapus data Code STEMI.
-     */
-    public function destroy($id)
-    {
-        try {
-            $code = CodeStemi::findOrFail($id);
-            $code->delete();
-
-            // ✅ TRIGGER REAL-TIME UPDATE
-            broadcast(new CodeStemiStatusUpdated());
-
-            return redirect()->route('code-stemi.index')->with('success', 'Data berhasil dihapus.');
-
-        } catch (\Exception $e) {
-            return redirect()->route('code-stemi.index')->with('error', 'Gagal menghapus data: ' . $e->getMessage());
-        }
-    }
-
+}
     /**
      * Hitung dan update duration.
      */
