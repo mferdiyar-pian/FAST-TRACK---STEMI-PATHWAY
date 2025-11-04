@@ -34,12 +34,12 @@ class DataNakesController extends Controller
             $query->where('nama', 'like', "%{$search}%");
         }
         
-        $data_nakes = $query->orderBy('admitted_date', 'desc')->get();
+        // Pagination dengan 10 data per halaman
+        $data_nakes = $query->orderBy('admitted_date', 'desc')->paginate(10);
         
         return view('data-nakes.index', compact('data_nakes'));
     }
 
-    // Method store, update, destroy, show tetap sama seperti sebelumnya
     public function store(Request $request)
     {
         $request->validate([
