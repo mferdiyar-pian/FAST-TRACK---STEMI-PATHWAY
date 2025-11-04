@@ -246,13 +246,6 @@
                         <div class="grid grid-cols-7 gap-2 text-center" id="calendarGrid">
                             <!-- Calendar akan di-generate oleh JavaScript -->
                         </div>
-                        
-                        <!-- Reset Selection Button -->
-                        <div class="mt-4 text-center">
-                            <button id="resetSelection" class="text-xs text-blue-600 hover:text-blue-800 font-medium">
-                                Reset Selection
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -266,6 +259,7 @@
         let chart = null;
         let realTimeInterval = null;
         let chartInterval = null;
+        let currentTimeRange = 'monthly';
 
         // Data chart dari PHP (default)
         const chartLabels = <?php echo isset($chartData) ? json_encode(array_column($chartData, 'month')) : '[]' ?>;
@@ -273,20 +267,30 @@
         const chartFinished = <?php echo isset($chartData) ? json_encode(array_column($chartData, 'finished')) : '[]' ?>;
 
         // Initialize Chart
-        function initializeChart() {
+        function initializeChart(labels = null, runningData = null, finishedData = null) {
             const ctx = document.getElementById('overviewChart').getContext('2d');
             
-            const maxRunning = Math.max(...chartRunning);
-            const maxFinished = Math.max(...chartFinished);
+            // Gunakan data yang diberikan atau data default
+            const finalLabels = labels || chartLabels;
+            const finalRunning = runningData || chartRunning;
+            const finalFinished = finishedData || chartFinished;
+            
+            const maxRunning = Math.max(...finalRunning);
+            const maxFinished = Math.max(...finalFinished);
             const maxValue = Math.max(maxRunning, maxFinished, 10) + 2;
+
+            // Hancurkan chart yang ada jika ada
+            if (chart) {
+                chart.destroy();
+            }
 
             chart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: chartLabels,
+                    labels: finalLabels,
                     datasets: [{
                         label: 'Finished',
-                        data: chartFinished,
+                        data: finalFinished,
                         borderColor: '#EC4899',
                         backgroundColor: 'rgba(236, 72, 153, 0.1)',
                         tension: 0.4,
@@ -294,7 +298,7 @@
                         fill: true
                     }, {
                         label: 'Running',
-                        data: chartRunning,
+                        data: finalRunning,
                         borderColor: '#3B82F6',
                         backgroundColor: 'rgba(59, 130, 246, 0.1)',
                         tension: 0.4,
@@ -305,13 +309,76 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: true,
-                    plugins: { legend: { display: false } },
+                    plugins: { 
+                        legend: { 
+                            display: false 
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
                     scales: {
-                        y: { beginAtZero: true, max: maxValue },
-                        x: { grid: { display: false } }
+                        y: { 
+                            beginAtZero: true, 
+                            max: maxValue,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                stepSize: Math.ceil(maxValue / 5)
+                            }
+                        },
+                        x: { 
+                            grid: { 
+                                display: false 
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
                     }
                 }
             });
+        }
+
+        // Function untuk memuat data chart berdasarkan time range
+        async function loadChartData(timeRange) {
+            try {
+                console.log('Loading chart data for:', timeRange);
+                
+                // Tampilkan loading state
+                const chartContainer = document.querySelector('.chart-container');
+                chartContainer.classList.add('opacity-50');
+                
+                const response = await fetch(`/dashboard/chart-stats?range=${timeRange}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                console.log('Chart data response:', data);
+                
+                if (data.success) {
+                    // Update chart dengan data baru
+                    initializeChart(data.labels, data.running, data.finished);
+                } else {
+                    console.error('Failed to load chart data:', data.message);
+                    // Fallback ke data default
+                    initializeChart();
+                }
+            } catch (error) {
+                console.error('Error loading chart data:', error);
+                // Fallback ke data default
+                initializeChart();
+            } finally {
+                // Hilangkan loading state
+                chartContainer.classList.remove('opacity-50');
+            }
         }
 
         // Function untuk generate kalender
@@ -494,7 +561,7 @@
             fetchRealTimeStats();
         }
 
-        // Function untuk ambil data berdasarkan tanggal - DIPERBAIKI
+        // Function untuk ambil data berdasarkan tanggal
         async function fetchDateData(date) {
             try {
                 console.log('Fetching data for date:', date);
@@ -566,12 +633,15 @@
 
         // Event Listeners
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize chart dengan data default
             initializeChart();
             
+            // Generate calendar
             const currentYear = currentDate.getFullYear();
             const currentMonth = currentDate.getMonth();
             generateCalendar(currentYear, currentMonth);
             
+            // Event listener untuk prev/next month
             document.getElementById('prevMonth').addEventListener('click', function() {
                 currentDate.setMonth(currentDate.getMonth() - 1);
                 generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
@@ -584,9 +654,10 @@
                 resetCalendarSelection();
             });
             
-            // Reset selection button
-            document.getElementById('resetSelection').addEventListener('click', function() {
-                resetCalendarSelection();
+            // Event listener untuk time range selector
+            document.getElementById('timeRange').addEventListener('change', function(e) {
+                currentTimeRange = e.target.value;
+                loadChartData(currentTimeRange);
             });
             
             // Setup intervals
@@ -616,11 +687,14 @@
                     console.log('Refreshing all-time data');
                     fetchRealTimeStats();
                 }
+                
+                // Refresh chart data juga
+                loadChartData(currentTimeRange);
             });
 
-} catch (error) {
-    console.log('Pusher initialization error:', error);
-}
+        } catch (error) {
+            console.log('Pusher initialization error:', error);
+        }
     </script>
 </body>
 </html>
