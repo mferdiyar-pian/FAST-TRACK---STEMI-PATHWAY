@@ -18,118 +18,34 @@
             letter-spacing: -0.011em;
         }
         
-        /* Font Weight Adjustments */
-        .font-semibold {
-            font-weight: 600;
-        }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+        .font-medium { font-weight: 500; }
         
-        .font-bold {
-            font-weight: 700;
-        }
-        
-        .font-medium {
-            font-weight: 500;
-        }
-        
-        /* Text Size Adjustments */
-        .text-xs {
-            font-size: 0.75rem;
-            line-height: 1rem;
-        }
-        
-        .text-sm {
-            font-size: 0.875rem;
-            line-height: 1.25rem;
-        }
-        
-        .text-lg {
-            font-size: 1.125rem;
-            line-height: 1.75rem;
-        }
-        
-        .text-xl {
-            font-size: 1.25rem;
-            line-height: 1.75rem;
-        }
-        
-        .text-2xl {
-            font-size: 1.5rem;
-            line-height: 2rem;
-        }
-        
-        .text-3xl {
-            font-size: 1.875rem;
-            line-height: 2.25rem;
-        }
-        
-        .text-4xl {
-            font-size: 2.25rem;
-            line-height: 2.5rem;
-        }
+        .text-xs { font-size: 0.75rem; line-height: 1rem; }
+        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+        .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+        .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+        .text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
 
-        .bg-cyan-light {
-            background-color: #E0F7FA;
-        }
-        .filter-dropdown {
-            display: none;
-        }
-        .filter-dropdown.show {
-            display: block;
-        }
-        .pagination-active {
-            background-color: #3b82f6;
-            color: white;
-        }
-        .pagination-disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            pointer-events: none;
-        }
+        .bg-cyan-light { background-color: #E0F7FA; }
+        .filter-dropdown { display: none; }
+        .filter-dropdown.show { display: block; }
+        .pagination-active { background-color: #3b82f6; color: white; }
+        .pagination-disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
         
-        /* Letter Spacing untuk judul FAST TRACK */
-        .tracking-tight {
-            letter-spacing: -0.025em;
-        }
+        .tracking-tight { letter-spacing: -0.025em; }
+        .text-micro { font-size: 0.6875rem; line-height: 0.875rem; }
         
-        /* Khusus untuk teks kecil agar lebih readable */
-        .text-micro {
-            font-size: 0.6875rem;
-            line-height: 0.875rem;
-        }
+        table { font-size: 0.875rem; font-weight: 400; }
+        th { font-weight: 600; font-size: 0.75rem; }
         
-        /* Adjustments untuk tabel */
-        table {
-            font-size: 0.875rem;
-            font-weight: 400;
-        }
-        
-        th {
-            font-weight: 600;
-            font-size: 0.75rem;
-        }
-        
-        /* Logo text styling */
-        .logo-text {
-            font-weight: 700;
-            letter-spacing: -0.025em;
-        }
-        
-        /* Button text styling */
-        button, .btn {
-            font-weight: 500;
-        }
-        
-        /* Status badge styling */
-        .status-badge {
-            font-weight: 500;
-            font-size: 0.75rem;
-        }
-        
-        /* Timer text styling */
-        .timer-text {
-            font-weight: 600;
-            letter-spacing: 0.025em;
-        }
+        .logo-text { font-weight: 700; letter-spacing: -0.025em; }
+        button, .btn { font-weight: 500; }
+        .status-badge { font-weight: 500; font-size: 0.75rem; }
+        .timer-text { font-weight: 600; letter-spacing: 0.025em; }
     </style>
 </head>
 
@@ -210,13 +126,13 @@
             <div class="p-8">
                 {{-- Notifikasi --}}
                 @if(session('success'))
-                    <div class="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm">
+                    <div class="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm auto-remove-notification">
                         {{ session('success') }}
                     </div>
                 @endif
 
                 @if(session('error'))
-                    <div class="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+                    <div class="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm auto-remove-notification">
                         {{ session('error') }}
                     </div>
                 @endif
@@ -397,7 +313,6 @@
                             $prevPage = $data->currentPage() > 1 ? $data->currentPage() - 1 : null;
                             $nextPage = $data->currentPage() < $totalPages ? $data->currentPage() + 1 : null;
                             
-                            // Build URL dengan parameter yang ada
                             $baseUrl = request()->url();
                             $queryParams = request()->except('page');
                         @endphp
@@ -416,7 +331,6 @@
                                         $startPage = max($currentPage - 2, 1);
                                         $endPage = min($currentPage + 2, $totalPages);
                                         
-                                        // Adjust start and end if we're near the beginning or end
                                         if ($endPage - $startPage < 4) {
                                             if ($startPage == 1) {
                                                 $endPage = min($startPage + 4, $totalPages);
@@ -458,12 +372,10 @@
 
                                 {{-- Right: Export and Page Info --}}
                                 <div class="flex items-center gap-4">
-                                    {{-- Export Button --}}
                                     <button class="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 transition font-medium text-sm">
                                         <i class="fas fa-download"></i>Export
                                     </button>
                                     
-                                    <!-- 📄 Page Info (Rapi & Centered) -->
                                     <div class="flex items-center gap-3 text-sm text-gray-600">
                                         <span class="font-medium text-gray-700">Page</span>
                                         <div class="relative">
@@ -635,43 +547,12 @@
                     <form id="finishForm" method="POST" class="flex-1">
                         @csrf
                         @method('PATCH')
-                        <button type="submit" onclick="handleFinishSubmit(event)"
+                        <button type="button" onclick="handleFinishSubmit()"
                             class="w-full py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition">
                             <i class="fas fa-check mr-2"></i>SELESAI
                         </button>
                     </form>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Modal Success --}}
-    <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 transform transition-all">
-            <div class="p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center gap-3">
-                        <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway" class="h-12 object-contain">
-                        <div>
-                            <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">FAST</h1>
-                            <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">TRACK</h1>
-                            <p class="text-teal-600 font-bold text-xs leading-tight logo-text">STEMI</p>
-                            <p class="text-teal-600 font-bold text-xs leading-tight logo-text">PATHWAY</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="flex items-center justify-center w-16 h-16 mx-auto bg-green-100 rounded-full mb-4">
-                    <i class="fas fa-check-circle text-green-600 text-xl"></i>
-                </div>
-                <h3 class="text-xl font-bold text-gray-800 text-center mb-2">Berhasil!</h3>
-                <p class="text-gray-600 text-center mb-2">Data Code STEMI berhasil diperbarui</p>
-                <p class="text-green-600 font-semibold text-center mb-6">Code STEMI selesai!</p>
-
-                <button onclick="closeSuccessModal()"
-                    class="w-full py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition">
-                    <i class="fas fa-check mr-2"></i>OK
-                </button>
             </div>
         </div>
     </div>
@@ -796,7 +677,7 @@
                     <form id="deleteForm" method="POST" class="flex-1">
                         @csrf
                         @method('DELETE')
-                        <button type="submit"
+                        <button type="button" onclick="handleDeleteSubmit()"
                             class="w-full py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition">
                             <i class="fas fa-trash mr-2"></i>HAPUS
                         </button>
@@ -810,13 +691,13 @@
     let timers = new Map();
     let detailTimers = new Map();
     let contextMenuItemId = null;
+    let autoRefreshInterval = null;
 
     document.addEventListener('DOMContentLoaded', function() {
         initializeTimers();
+        startAutoRefresh();
 
         // ==================== PAGINATION FUNCTIONS ====================
-        
-        // Handle page select change
         document.getElementById('pageSelect').addEventListener('change', function() {
             const page = this.value;
             const url = new URL(window.location.href);
@@ -825,8 +706,6 @@
         });
 
         // ==================== SEARCH FUNCTION ====================
-        
-        // Handle search form submission
         document.getElementById('searchForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const searchValue = document.getElementById('searchInput').value;
@@ -838,7 +717,6 @@
                 url.searchParams.delete('search');
             }
             
-            // Reset to page 1 when searching
             url.searchParams.set('page', 1);
             window.location.href = url.toString();
         });
@@ -864,24 +742,63 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    showSuccessModal('Data Code STEMI berhasil diperbarui');
+                    showSuccessNotification('Data Code STEMI berhasil diperbarui');
                     closeEditModal();
+                    // Auto refresh setelah 2 detik
                     setTimeout(() => {
                         location.reload();
                     }, 2000);
                 } else {
-                    alert(result.message);
+                    showErrorModal(result.message || 'Terjadi kesalahan saat mengupdate data');
                 }
                 
             } catch (error) {
                 console.error('Error updating data:', error);
-                alert('Terjadi kesalahan saat mengupdate data');
+                showErrorModal('Terjadi kesalahan saat mengupdate data');
             }
         });
+
+        // Auto remove notifications after 5 seconds
+        setTimeout(() => {
+            document.querySelectorAll('.auto-remove-notification').forEach(notification => {
+                notification.remove();
+            });
+        }, 5000);
     });
 
+    // ==================== AUTO REFRESH FUNCTIONS ====================
+    function startAutoRefresh() {
+        // Refresh setiap 30 detik untuk update real-time
+        autoRefreshInterval = setInterval(() => {
+            checkForUpdates();
+        }, 30000); // 30 detik
+    }
+
+    function stopAutoRefresh() {
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+            autoRefreshInterval = null;
+        }
+    }
+
+    async function checkForUpdates() {
+        try {
+            const response = await fetch('/code-stemi/stats');
+            const result = await response.json();
+            
+            if (result.success) {
+                // Jika ada perubahan, refresh halaman
+                const currentUrl = new URL(window.location.href);
+                if (!currentUrl.searchParams.get('page')) {
+                    location.reload();
+                }
+            }
+        } catch (error) {
+            console.log('Auto-refresh check failed:', error);
+        }
+    }
+
     // ==================== FILTER FUNCTIONS ====================
-    
     function toggleFilterDropdown() {
         const dropdown = document.getElementById('filterDropdown');
         dropdown.classList.toggle('show');
@@ -898,27 +815,19 @@
             }
         }
         
-        // Reset to page 1 when applying filters
         params.append('page', 1);
-        
-        // Close filter dropdown
         document.getElementById('filterDropdown').classList.remove('show');
-        
-        // Redirect with filter parameters
         window.location.href = '{{ route('code-stemi.index') }}?' + params.toString();
     }
 
     function resetFilter() {
-        // Reset form
         document.getElementById('filterForm').reset();
-        // Redirect without parameters
         window.location.href = '{{ route('code-stemi.index') }}';
     }
 
     function removeFilter(filterName) {
         const url = new URL(window.location.href);
         url.searchParams.delete(filterName);
-        // Reset to page 1 when removing filters
         url.searchParams.set('page', 1);
         window.location.href = url.toString();
     }
@@ -977,17 +886,48 @@
         timers.set(id, timerId);
     }
 
-    // ==================== SUCCESS MODAL FUNCTIONS ====================
-    function showSuccessModal(message) {
-        document.getElementById('successModal').classList.remove('hidden');
-        document.getElementById('successModal').classList.add('flex');
-        document.body.style.overflow = 'hidden';
+    // ==================== NOTIFICATION FUNCTIONS ====================
+    function showSuccessNotification(message) {
+        // Hapus notifikasi lama jika ada
+        const oldNotifications = document.querySelectorAll('.auto-remove-notification');
+        oldNotifications.forEach(notification => notification.remove());
+
+        // Buat notifikasi baru
+        const notification = document.createElement('div');
+        notification.className = 'auto-remove-notification mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm';
+        notification.innerHTML = `
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    <span>${message}</span>
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" class="text-green-600 hover:text-green-800">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+
+        // Sisipkan notifikasi di atas konten
+        const content = document.querySelector('.p-8');
+        content.insertBefore(notification, content.firstChild);
+
+        // Auto remove setelah 5 detik
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 5000);
     }
 
-    function closeSuccessModal() {
-        document.getElementById('successModal').classList.add('hidden');
-        document.getElementById('successModal').classList.remove('flex');
-        document.body.style.overflow = 'auto';
+    // ==================== ERROR MODAL FUNCTIONS ====================
+    function showErrorModal(message) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Terjadi Kesalahan',
+            text: message,
+            confirmButtonColor: '#dc2626',
+            confirmButtonText: 'OK'
+        });
     }
 
     // ==================== ACTIVATION CONFIRMATION FUNCTIONS ====================
@@ -1021,76 +961,108 @@
         document.body.style.overflow = 'auto';
     }
 
-    function handleFinishSubmit(event) {
-        event.preventDefault();
+    async function handleFinishSubmit() {
         const form = document.getElementById('finishForm');
         const formData = new FormData(form);
         const url = form.action;
-        const itemId = url.split('/').filter(Boolean).pop(); // Ambil ID dari URL
-        
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(result => {
+        const itemId = url.split('/').filter(Boolean).pop();
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            });
+
+            const result = await response.json();
+            
             if (result.success) {
-                // TUTUP MODAL KONFIRMASI
                 closeFinishConfirmModal();
-                
-                // UPDATE TAMPILAN LANGSUNG TANPA REFRESH
                 updateTableAfterFinish(itemId);
+                showSuccessNotification('Aktivasi Code STEMI telah berhasil diselesaikan. Door-to-balloon time telah dicatat.');
                 
-                // TAMPILKAN MODAL SUKSES
-                showSuccessModal('Data Code STEMI berhasil diperbarui');
+                // Auto refresh setelah 2 detik
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
                 
             } else {
-                alert(result.message);
+                showErrorModal(result.message || 'Terjadi kesalahan saat menyelesaikan Code STEMI');
                 closeFinishConfirmModal();
             }
-        })
-        .catch(error => {
+        } catch (error) {
             console.error('Error:', error);
-            alert('Terjadi kesalahan saat menyelesaikan Code STEMI');
+            showErrorModal('Terjadi kesalahan saat menyelesaikan Code STEMI');
             closeFinishConfirmModal();
-        });
+        }
     }
 
     // FUNGSI UNTUK UPDATE TABEL SETELAH FINISH
     function updateTableAfterFinish(itemId) {
-        // 1. UPDATE STATUS BADGE
         const statusBadge = document.querySelector(`tr[data-id="${itemId}"] .status-badge`);
         if (statusBadge) {
             statusBadge.textContent = 'Finished';
             statusBadge.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium status-badge bg-gray-100 text-gray-800';
         }
 
-        // 2. UPDATE WARNA TIMER MENJADI MERAH
         const timeElement = document.getElementById(`time-${itemId}`);
         if (timeElement) {
             timeElement.className = 'text-sm font-semibold timer-text text-red-600';
+            if (timers.has(itemId)) {
+                clearInterval(timers.get(itemId));
+                timers.delete(itemId);
+            }
         }
 
-        // 3. HAPUS TOMBOL "AKTIVASI CODE STEMI SELESAI"
         const finishButton = document.querySelector(`tr[data-id="${itemId}"] button[onclick*="confirmFinish"]`);
         if (finishButton) {
             finishButton.remove();
         }
 
-        // 4. UPDATE DATA ATTRIBUTE
         const row = document.querySelector(`tr[data-id="${itemId}"]`);
         if (row) {
             row.setAttribute('data-status', 'Finished');
+            row.setAttribute('data-end-time', new Date().toISOString());
         }
+    }
 
-        // 5. HENTIKAN TIMER JIKA ADA
-        if (timers.has(itemId)) {
-            clearInterval(timers.get(itemId));
-            timers.delete(itemId);
+    // ==================== DELETE FUNCTIONS ====================
+    async function handleDeleteSubmit() {
+        const form = document.getElementById('deleteForm');
+        const url = form.action;
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: new FormData(form)
+            });
+
+            const result = await response.json();
+            
+            if (result.success) {
+                closeDeleteModal();
+                showSuccessNotification('Data Code STEMI berhasil dihapus!');
+                
+                // Auto refresh setelah 1 detik
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+                
+            } else {
+                showErrorModal(result.message || 'Terjadi kesalahan saat menghapus data');
+                closeDeleteModal();
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showErrorModal('Terjadi kesalahan saat menghapus data');
+            closeDeleteModal();
         }
     }
 
@@ -1100,7 +1072,6 @@
         const menu = document.getElementById('contextMenu');
         contextMenuItemId = id;
         
-        // Position menu at button
         const rect = event.currentTarget.getBoundingClientRect();
         menu.style.left = (rect.left - 120) + 'px';
         menu.style.top = (rect.bottom + 5) + 'px';
@@ -1189,21 +1160,18 @@
             const response = await fetch(`/code-stemi/${id}/edit`);
             const data = await response.json();
             
-            // Set form action
             document.getElementById('editCodeStemiForm').action = `/code-stemi/${id}`;
             
-            // Set checklist
             const checkboxes = document.querySelectorAll('.edit-checklist');
             checkboxes.forEach(checkbox => {
                 checkbox.checked = data.checklist && data.checklist.includes(checkbox.value);
             });
             
-            // Set custom message
             document.getElementById('editCustomMessage').value = data.custom_message || '';
             
         } catch (error) {
             console.error('Error loading edit data:', error);
-            alert('Gagal memuat data untuk edit');
+            showErrorModal('Gagal memuat data untuk edit');
         }
     }
 
@@ -1262,7 +1230,7 @@
 
         } catch (error) {
             console.error('Error loading detail:', error);
-            alert('Gagal memuat detail data');
+            showErrorModal('Gagal memuat detail data');
         }
     }
 
@@ -1292,61 +1260,57 @@
 
     // ==================== EVENT LISTENERS ====================
     document.addEventListener('click', function(e) {
-        // Close context menu when clicking outside
         const menu = document.getElementById('contextMenu');
         if (menu && !menu.contains(e.target)) {
             menu.classList.add('hidden');
         }
         
-        // Close modals when clicking outside
-        const addModal = document.getElementById('addCodeStemiModal');
-        if (e.target === addModal) {
-            closeAddModal();
-        }
+        const modals = [
+            'addCodeStemiModal', 'activationConfirmModal', 'finishConfirmModal',
+            'editCodeStemiModal', 'detailCodeStemiModal', 'deleteModal'
+        ];
         
-        const activationConfirmModal = document.getElementById('activationConfirmModal');
-        if (e.target === activationConfirmModal) {
-            closeActivationConfirmModal();
-        }
-        
-        const finishConfirmModal = document.getElementById('finishConfirmModal');
-        if (e.target === finishConfirmModal) {
-            closeFinishConfirmModal();
-        }
-        
-        const successModal = document.getElementById('successModal');
-        if (e.target === successModal) {
-            closeSuccessModal();
-        }
-        
-        const editModal = document.getElementById('editCodeStemiModal');
-        if (e.target === editModal) {
-            closeEditModal();
-        }
-        
-        const detailModal = document.getElementById('detailCodeStemiModal');
-        if (e.target === detailModal) {
-            closeDetailModal();
-        }
-        
-        const deleteModal = document.getElementById('deleteModal');
-        if (e.target === deleteModal) {
-            closeDeleteModal();
-        }
+        modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (modal && e.target === modal) {
+                closeAllModals();
+            }
+        });
     });
 
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            closeAddModal();
-            closeActivationConfirmModal();
-            closeFinishConfirmModal();
-            closeSuccessModal();
-            closeEditModal();
-            closeDetailModal();
-            closeDeleteModal();
+            closeAllModals();
             document.getElementById('contextMenu').classList.add('hidden');
             document.getElementById('filterDropdown').classList.remove('show');
         }
+    });
+
+    function closeAllModals() {
+        const modals = [
+            'addCodeStemiModal', 'activationConfirmModal', 'finishConfirmModal',
+            'editCodeStemiModal', 'detailCodeStemiModal', 'deleteModal'
+        ];
+        
+        modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        });
+        document.body.style.overflow = 'auto';
+    }
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+        stopAutoRefresh();
+        timers.forEach((timerId) => {
+            clearInterval(timerId);
+        });
+        detailTimers.forEach((timerId) => {
+            clearInterval(timerId);
+        });
     });
 </script>
 </body>

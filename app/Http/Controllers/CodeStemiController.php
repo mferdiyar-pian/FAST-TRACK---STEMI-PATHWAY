@@ -185,6 +185,31 @@ class CodeStemiController extends Controller
     }
 
     /**
+     * Hapus data Code STEMI.
+     */
+    public function destroy($id)
+    {
+        try {
+            $codeStemi = CodeStemi::findOrFail($id);
+            $codeStemi->delete();
+
+            // ✅ TRIGGER REAL-TIME UPDATE
+            broadcast(new CodeStemiStatusUpdated());
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data Code STEMI berhasil dihapus!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Update checklist dari modal detail.
      */
     public function updateChecklist(Request $request, $id)
@@ -236,47 +261,48 @@ class CodeStemiController extends Controller
     }
 
     /**
- * Tandai Code STEMI selesai.
- */
-public function finish($id)
-{
-    try {
-        $code = CodeStemi::findOrFail($id);
-        
-        if ($code->status === 'Finished') {
+     * Tandai Code STEMI selesai.
+     */
+    public function finish($id)
+    {
+        try {
+            $code = CodeStemi::findOrFail($id);
+            
+            if ($code->status === 'Finished') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Code STEMI sudah selesai!'
+                ], 400);
+            }
+
+            $code->update([
+                'status' => 'Finished',
+                'end_time' => Carbon::now('Asia/Makassar'),
+            ]);
+
+            // Hitung ulang duration
+            $this->calculateDuration($code);
+
+            // ✅ TRIGGER REAL-TIME UPDATE
+            broadcast(new CodeStemiStatusUpdated());
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Code STEMI selesai!',
+                'data' => [
+                    'id' => $code->id,
+                    'final_time' => $code->door_to_balloon_time
+                ]
+            ]);
+
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Code STEMI sudah selesai!'
-            ], 400);
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
         }
-
-        $code->update([
-            'status' => 'Finished',
-            'end_time' => Carbon::now('Asia/Makassar'),
-        ]);
-
-        // Hitung ulang duration
-        $this->calculateDuration($code);
-
-        // ✅ TRIGGER REAL-TIME UPDATE
-        broadcast(new CodeStemiStatusUpdated());
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Code STEMI selesai!',
-            'data' => [
-                'id' => $code->id,
-                'final_time' => $code->door_to_balloon_time
-            ]
-        ]);
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-        ], 500);
     }
-}
+
     /**
      * Hitung dan update duration.
      */
