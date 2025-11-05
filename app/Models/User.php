@@ -43,4 +43,9 @@ class User extends Authenticatable
         $setting = $this->settings()->where('key', $key)->first();
         return $setting ? $setting->value : $default;
     }
+
+    public function codeStemis()
+    {
+        return $this->hasMany(CodeStemi::class);
+    }
 }

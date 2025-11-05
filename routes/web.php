@@ -98,11 +98,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [SettingController::class, 'index'])->name('setting.index');
         Route::post('/profile', [SettingController::class, 'updateProfile'])->name('setting.profile.update');
         Route::post('/password', [SettingController::class, 'updatePassword'])->name('setting.password.update');
-        Route::post('/notifications', [SettingController::class, 'updateNotifications'])->name('setting.notifications.update');
+
         Route::post('/photo/upload', [SettingController::class, 'uploadPhoto'])->name('setting.photo.upload');
         Route::post('/photo/remove', [SettingController::class, 'removePhoto'])->name('setting.photo.remove');
-        Route::post('/account/deactivate', [SettingController::class, 'deactivateAccount'])->name('setting.account.deactivate');
+
         Route::post('/account/delete', [SettingController::class, 'deleteAccount'])->name('setting.account.delete');
+Route::get('/temp-update-codestemi', [SettingController::class, 'tempUpdateCodeStemi']);
     });
 
     /*

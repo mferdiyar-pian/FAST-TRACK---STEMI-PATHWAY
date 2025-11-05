@@ -331,61 +331,7 @@
                             </form>
                         </div>
 
-                        {{-- Notification Settings --}}
-                        <div class="bg-white rounded-xl shadow-sm p-6">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-6">Notification Settings</h3>
 
-                            <form action="{{ route('setting.update-notifications') }}" method="POST">
-                                @csrf
-                                <div class="space-y-4">
-                                    <div class="flex items-center justify-between py-3 border-b border-gray-100">
-                                        <div>
-                                            <p class="font-medium text-gray-800 text-sm">Email Notifications</p>
-                                            <p class="text-xs text-gray-500">Receive notifications via email</p>
-                                        </div>
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" name="email_notifications" value="1" 
-                                                {{ ($settings['email_notifications'] ?? '1') == '1' ? 'checked' : '' }} class="sr-only peer">
-                                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
-                                            </div>
-                                        </label>
-                                    </div>
-
-                                    <div class="flex items-center justify-between py-3 border-b border-gray-100">
-                                        <div>
-                                            <p class="font-medium text-gray-800 text-sm">SMS Notifications</p>
-                                            <p class="text-xs text-gray-500">Receive notifications via SMS</p>
-                                        </div>
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" name="sms_notifications" value="1"
-                                                {{ ($settings['sms_notifications'] ?? '1') == '1' ? 'checked' : '' }} class="sr-only peer">
-                                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
-                                            </div>
-                                        </label>
-                                    </div>
-
-                                    <div class="flex items-center justify-between py-3">
-                                        <div>
-                                            <p class="font-medium text-gray-800 text-sm">Emergency Alerts</p>
-                                            <p class="text-xs text-gray-500">Receive critical emergency notifications</p>
-                                        </div>
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" name="emergency_alerts" value="1"
-                                                {{ ($settings['emergency_alerts'] ?? '1') == '1' ? 'checked' : '' }} class="sr-only peer">
-                                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
-                                            </div>
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <div class="flex justify-end mt-6">
-                                    <button type="submit"
-                                        class="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm">
-                                        Save Notification Settings
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
                     </div>
 
                     {{-- Right Side --}}
@@ -433,15 +379,15 @@
                             <div class="space-y-4">
                                 <div class="flex justify-between items-center">
                                     <span class="text-sm text-gray-600 font-medium">Cases Handled</span>
-                                    <span class="font-semibold text-gray-800">375</span>
+                                    <span class="font-semibold text-gray-800">{{ $totalCases }}</span>
                                 </div>
                                 <div class="flex justify-between items-center">
                                     <span class="text-sm text-gray-600 font-medium">Active Cases</span>
-                                    <span class="font-semibold text-gray-800">20</span>
+                                    <span class="font-semibold text-gray-800">{{ $activeCases }}</span>
                                 </div>
                                 <div class="flex justify-between items-center">
                                     <span class="text-sm text-gray-600 font-medium">Success Rate</span>
-                                    <span class="font-semibold text-green-600">98.5%</span>
+                                    <span class="font-semibold text-green-600">{{ $successRate }}%</span>
                                 </div>
                                 <div class="flex justify-between items-center">
                                     <span class="text-sm text-gray-600 font-medium">Member Since</span>
@@ -450,21 +396,7 @@
                             </div>
                         </div>
 
-                        {{-- Danger Zone --}}
-                        <div class="bg-white rounded-xl shadow-sm p-6 border border-red-200">
-                            <h3 class="text-lg font-semibold text-red-600 mb-4">Danger Zone</h3>
 
-                            <div class="space-y-3">
-                                <button
-                                    class="w-full px-4 py-2 bg-red-50 text-red-600 text-sm rounded-lg hover:bg-red-100 transition font-medium">
-                                    Deactivate Account
-                                </button>
-                                <button
-                                    class="w-full px-4 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition font-medium">
-                                    Delete Account
-                                </button>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -495,26 +427,7 @@
             window.location.href = url.toString();
         }
 
-        // Danger zone buttons
-        const deactivateButton = document.querySelector('button:contains("Deactivate Account")');
-        if (deactivateButton) {
-            deactivateButton.addEventListener('click', function() {
-                if (confirm('Are you sure you want to deactivate your account? This action can be reversed.')) {
-                    // Deactivate account logic
-                    alert('Account deactivated!');
-                }
-            });
-        }
 
-        const deleteButton = document.querySelector('button:contains("Delete Account")');
-        if (deleteButton) {
-            deleteButton.addEventListener('click', function() {
-                if (confirm('WARNING: This will permanently delete your account and all associated data. This action cannot be undone. Are you sure?')) {
-                    // Delete account logic
-                    alert('Account deleted!');
-                }
-            });
-        }
     </script>
 </body>
 

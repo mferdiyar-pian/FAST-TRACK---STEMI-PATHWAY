@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use App\Models\Setting;
 use App\Models\User;
+use App\Models\CodeStemi;
 
 
 /**
@@ -28,8 +29,18 @@ class SettingController extends Controller
         
         // Ambil semua settings user
         $settings = $user->settings->pluck('value', 'key')->toArray();
+
+        // Ambil statistik Code STEMI untuk user yang sedang login
+        $totalCases = CodeStemi::where('user_id', $user->id)->count();
+        $activeCases = CodeStemi::where('user_id', $user->id)->where('status', 'Running')->count();
+        $finishedCases = CodeStemi::where('user_id', $user->id)->where('status', 'Finished')->count();
+
+        $successRate = 0;
+        if ($totalCases > 0) {
+            $successRate = round(($finishedCases / $totalCases) * 100, 1);
+        }
         
-        return view('setting.index', compact('user', 'settings'));
+        return view('setting.index', compact('user', 'settings', 'totalCases', 'activeCases', 'successRate'));
     }
 
     public function updateProfile(Request $request)
@@ -238,5 +249,37 @@ class SettingController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function deactivateAccount(Request $request)
+    {
+        $user = Auth::user();
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        // Optionally, you can mark the user as deactivated in the database
+        // $user->update(['is_active' => false]);
+
+        return redirect('/login')->with('success', 'Your account has been deactivated.');
+    }
+
+    public function deleteAccount(Request $request)
+    {
+        $user = Auth::user();
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        $user->delete();
+
+        return redirect('/register')->with('success', 'Your account has been permanently deleted.');
+    }
+
+    public function tempUpdateCodeStemi()
+    {
+        $user = Auth::user();
+        CodeStemi::whereNull('user_id')->update(['user_id' => $user->id]);
+        return redirect('/setting')->with('success', 'Account stats have been updated.');
     }
 }

@@ -53,6 +53,11 @@ class CodeStemi extends Model
         return $this->start_time ? $this->start_time->format('d M, Y') : '-';
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
     // Scope untuk data running
     public function scopeRunning($query)
     {
