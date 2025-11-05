@@ -263,24 +263,40 @@
                                             </select>
                                         </div>
 
-                                        <!-- Date Range Filter -->
+                                        <!-- Tanggal Filter -->
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">Rentang
-                                                Tanggal</label>
-                                            <div class="grid grid-cols-2 gap-2">
-                                                <div>
-                                                    <input type="date" name="start_date" id="filterStartDate"
-                                                        value="{{ request('start_date') }}"
-                                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
-                                                    <label class="text-xs text-gray-500 mt-1">Dari Tanggal</label>
-                                                </div>
-                                                <div>
-                                                    <input type="date" name="end_date" id="filterEndDate"
-                                                        value="{{ request('end_date') }}"
-                                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
-                                                    <label class="text-xs text-gray-500 mt-1">Sampai Tanggal</label>
-                                                </div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Admitted</label>
+                                            <input type="date" name="date" id="filterDate"
+                                                value="{{ request('date') }}"
+                                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                                            <label class="text-xs text-gray-500 mt-1">Pilih tanggal spesifik</label>
+                                        </div>
+
+                                        <!-- Checklist Filter -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Checklist</label>
+                                            <div class="space-y-2 max-h-40 overflow-y-auto">
+                                                @php
+                                                    $checklistItems = [
+                                                        'Anamnesis' => 'Anamnesis',
+                                                        'Rongten Thorax' => 'Rongten Thorax',
+                                                        'Laboratorium' => 'Laboratorium',
+                                                        'EKG' => 'EKG',
+                                                        'Pemeriksaan Fisik' => 'Pemeriksaan Fisik',
+                                                        'Informed Consent' => 'Informed Consent',
+                                                    ];
+                                                @endphp
+
+                                                @foreach ($checklistItems as $key => $label)
+                                                    <label class="flex items-center gap-2 cursor-pointer">
+                                                        <input type="checkbox" name="checklist_filter[]" value="{{ $key }}"
+                                                            class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                                            {{ in_array($key, request('checklist_filter', [])) ? 'checked' : '' }}>
+                                                        <span class="text-sm text-gray-700">{{ $label }}</span>
+                                                    </label>
+                                                @endforeach
                                             </div>
+                                            <label class="text-xs text-gray-500 mt-1">Filter berdasarkan checklist yang dicentang</label>
                                         </div>
 
                                         <!-- Action Buttons -->
@@ -311,29 +327,41 @@
                             </button>
                         </span>
                     @endif
-                    @if (request('start_date'))
+                    @if (request('date'))
                         <span
                             class="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full flex items-center gap-1">
-                            Dari: {{ request('start_date') }}
-                            <button onclick="removeFilter('start_date')" class="text-green-600 hover:text-green-800">
+                            Tanggal: {{ request('date') }}
+                            <button onclick="removeFilter('date')" class="text-green-600 hover:text-green-800">
                                 <i class="fas fa-times text-xs"></i>
                             </button>
                         </span>
                     @endif
-                    @if (request('end_date'))
-                        <span
-                            class="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full flex items-center gap-1">
-                            Sampai: {{ request('end_date') }}
-                            <button onclick="removeFilter('end_date')" class="text-green-600 hover:text-green-800">
-                                <i class="fas fa-times text-xs"></i>
-                            </button>
-                        </span>
+                    @if (request('checklist_filter'))
+                        @php
+                            $checklistLabels = [
+                                'Anamnesis' => 'Anamnesis',
+                                'Rongten Thorax' => 'Rongten Thorax',
+                                'Laboratorium' => 'Laboratorium',
+                                'EKG' => 'EKG',
+                                'Pemeriksaan Fisik' => 'Pemeriksaan Fisik',
+                                'Informed Consent' => 'Informed Consent',
+                            ];
+                        @endphp
+                        @foreach (request('checklist_filter') as $checklistItem)
+                            <span
+                                class="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full flex items-center gap-1">
+                                Checklist: {{ $checklistLabels[$checklistItem] ?? $checklistItem }}
+                                <button onclick="removeChecklistFilter('{{ $checklistItem }}')" class="text-purple-600 hover:text-purple-800">
+                                    <i class="fas fa-times text-xs"></i>
+                                </button>
+                            </span>
+                        @endforeach
                     @endif
                     @if (request('search'))
                         <span
-                            class="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full flex items-center gap-1">
+                            class="bg-indigo-100 text-indigo-800 text-xs px-3 py-1 rounded-full flex items-center gap-1">
                             Pencarian: "{{ request('search') }}"
-                            <button onclick="removeFilter('search')" class="text-purple-600 hover:text-purple-800">
+                            <button onclick="removeFilter('search')" class="text-indigo-600 hover:text-indigo-800">
                                 <i class="fas fa-times text-xs"></i>
                             </button>
                         </span>
@@ -366,7 +394,9 @@
                                         data-id="{{ $item->id }}"
                                         data-start-time="{{ $item->start_time->toISOString() }}"
                                         data-status="{{ $item->status }}"
-                                        data-end-time="{{ $item->end_time ? $item->end_time->toISOString() : '' }}">
+                                        data-end-time="{{ $item->end_time ? $item->end_time->toISOString() : '' }}"
+                                        data-date="{{ $item->start_time->format('Y-m-d') }}"
+                                        data-checklist="{{ json_encode($item->checklist ?? []) }}">
                                         <td class="px-6 py-4 text-sm text-gray-700">{{ $item->formatted_date }}</td>
                                         <td class="px-6 py-4">
                                             <span
@@ -480,7 +510,6 @@
                                         <i class="fas fa-download"></i> Export
                                     </button>
 
-
                                     <div class="flex items-center gap-3 text-sm text-gray-600">
                                         <span class="font-medium text-gray-700">Page</span>
                                         <div class="relative">
@@ -503,28 +532,87 @@
                                 </div>
                             </div>
                         </div>
+                   @else
+    <table class="w-full">
+        <thead>
+            <tr class="bg-white">
+                <th
+                    class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    ADMITTED</th>
+                <th
+                    class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    STATUS</th>
+                <th
+                    class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    DOOR TO BALLOON TIME</th>
+                <th
+                    class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    ACTION</th>
+                <th class="px-6 py-3"></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                    <i class="fas fa-inbox text-4xl mb-2 block"></i>
+                    @if (request()->anyFilled(['status', 'date', 'checklist_filter', 'search']))
+                        Tidak ada data yang sesuai dengan filter
                     @else
-                        <div class="text-center py-12">
-                            <i class="fas fa-file-alt text-4xl text-gray-300 mb-4"></i>
-                            <p class="text-gray-500 text-lg">Belum ada data Code STEMI</p>
-                            @if (request()->anyFilled(['status', 'start_date', 'end_date', 'search']))
-                                <p class="text-gray-400 text-sm mt-2">Tidak ada data yang sesuai dengan filter</p>
-                                <button onclick="resetFilter()"
-                                    class="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                                    Reset Filter
-                                </button>
-                            @else
-                                <button onclick="openAddModal()"
-                                    class="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                                    <i class="fas fa-plus"></i> Aktivasi Code STEMI Pertama
-                                </button>
-                            @endif
-                        </div>
+                        Belum ada data Code STEMI
                     @endif
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    {{-- Pagination untuk kondisi tidak ada data --}}
+    <div class="border-t border-gray-200 px-6 py-4">
+        <div class="flex items-center justify-between">
+            {{-- Left: Pagination Navigation --}}
+            <div class="flex items-center gap-1">
+                {{-- Previous Button --}}
+                <span class="px-4 py-2 text-gray-400 rounded transition text-sm flex items-center gap-2 pagination-disabled">
+                    <i class="fas fa-chevron-left text-xs"></i>Previous
+                </span>
+
+                {{-- Page Numbers --}}
+                <span class="px-3 py-2 rounded font-medium text-sm min-w-[40px] text-center bg-blue-500 text-white pagination-active">
+                    1
+                </span>
+
+                {{-- Next Button --}}
+                <span class="px-4 py-2 text-gray-400 rounded transition text-sm flex items-center gap-2 pagination-disabled">
+                    Next<i class="fas fa-chevron-right text-xs"></i>
+                </span>
+            </div>
+
+            {{-- Right: Export and Page Info --}}
+            <div class="flex items-center gap-4">
+                {{-- Export Button --}}
+                <button type="button"
+                    class="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 transition font-medium text-sm">
+                    <i class="fas fa-download"></i> Export
+                </button>
+
+                <!-- Page Info -->
+                <div class="flex items-center gap-3 text-sm text-gray-600">
+                    <span class="font-medium text-gray-700">Page</span>
+                    <div class="relative">
+                        <select
+                            class="appearance-none bg-white border border-gray-300 rounded-lg px-3 py-1.5 pr-8 text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200">
+                            <option value="1" selected>1</option>
+                        </select>
+                        <div
+                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-gray-500">
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
+                    <span>of <span class="font-medium text-gray-800">1</span></span>
                 </div>
             </div>
-        </main>
+        </div>
     </div>
+@endif
 
     {{-- Context Menu --}}
     <div id="contextMenu" class="fixed hidden bg-white shadow-lg rounded-lg py-2 z-50 border border-gray-200"
@@ -930,7 +1018,12 @@
 
             for (let [key, value] of formData) {
                 if (value) {
-                    params.append(key, value);
+                    if (key === 'checklist_filter') {
+                        // Untuk checklist, tambahkan semua nilai yang dipilih
+                        params.append(key, value);
+                    } else {
+                        params.append(key, value);
+                    }
                 }
             }
 
@@ -947,6 +1040,20 @@
         function removeFilter(filterName) {
             const url = new URL(window.location.href);
             url.searchParams.delete(filterName);
+            url.searchParams.set('page', 1);
+            window.location.href = url.toString();
+        }
+
+        function removeChecklistFilter(checklistItem) {
+            const url = new URL(window.location.href);
+            const currentChecklist = url.searchParams.getAll('checklist_filter[]');
+            const newChecklist = currentChecklist.filter(item => item !== checklistItem);
+            
+            url.searchParams.delete('checklist_filter[]');
+            newChecklist.forEach(item => {
+                url.searchParams.append('checklist_filter[]', item);
+            });
+            
             url.searchParams.set('page', 1);
             window.location.href = url.toString();
         }
@@ -1303,14 +1410,26 @@
                 const response = await fetch(`/code-stemi/${id}`);
                 const data = await response.json();
 
-                const checklistItems = ['Anamnesis', 'EKG', 'Rongten Thorax', 'Pemeriksaan Fisik', 'Laboratorium',
-                    'Informed Consent'
-                ];
-                let checklistHTML = '';
+                // Buat checklist dalam 2 kolom seperti gambar
+                const leftColumnItems = ['Anamnesis', 'Rongten Thorax', 'Laboratorium'];
+                const rightColumnItems = ['EKG', 'Pemeriksaan Fisik', 'Informed Consent'];
 
-                checklistItems.forEach(item => {
+                let leftColumnHTML = '';
+                let rightColumnHTML = '';
+
+                leftColumnItems.forEach(item => {
                     const isChecked = data.checklist && data.checklist.includes(item);
-                    checklistHTML += `
+                    leftColumnHTML += `
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" ${isChecked ? 'checked' : ''} disabled class="w-4 h-4 text-blue-600 rounded border-gray-300">
+                        <span class="text-sm text-gray-700 ${isChecked ? 'font-medium' : 'text-gray-400'}">${item}</span>
+                    </label>
+                `;
+                });
+
+                rightColumnItems.forEach(item => {
+                    const isChecked = data.checklist && data.checklist.includes(item);
+                    rightColumnHTML += `
                     <label class="flex items-center gap-2">
                         <input type="checkbox" ${isChecked ? 'checked' : ''} disabled class="w-4 h-4 text-blue-600 rounded border-gray-300">
                         <span class="text-sm text-gray-700 ${isChecked ? 'font-medium' : 'text-gray-400'}">${item}</span>
@@ -1319,34 +1438,53 @@
                 });
 
                 document.getElementById('detailContent').innerHTML = `
-                <div class="grid grid-cols-2 gap-2">
-                    ${checklistHTML}
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-800 mb-2">Pesan Broadcast</label>
-                    <p class="text-xs text-gray-600 mb-2">Fast Track STEMI Pathway</p>
-                    <div class="bg-blue-50 rounded-lg p-3 space-y-1">
-                        <p class="text-xs text-blue-900 font-semibold">CODE STEMI AKTIF</p>
-                        <p class="text-xs text-blue-800">Pasien STEMI telah berada di IGD RS Otak M Hatta Bukittinggi.</p>
-                        <p class="text-xs text-blue-800">Seluruh unit terkait dimohon segera siaga.</p>
-                        <p class="text-xs text-blue-800">Fast Track STEMI Pathway aktif.</p>
-                        <p class="text-xs text-blue-800">Waktu Door-to-balloon dimulai.</p>
-                        ${data.custom_message ? `<p class="text-xs text-blue-800 mt-2 font-semibold">Pesan Tambahan:</p><p class="text-xs text-blue-800">${data.custom_message}</p>` : ''}
+                <div class="space-y-4">
+                    <!-- Checklist Section -->
+                    <div>
+                        <h4 class="text-sm font-semibold text-gray-800 mb-3">DETAIL CODE STEMI</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                ${leftColumnHTML}
+                            </div>
+                            <div class="space-y-2">
+                                <p class="text-xs font-semibold text-teal-600 mb-2">FAST TRACK STEMI PATHWAY</p>
+                                ${rightColumnHTML}
+                            </div>
+                        </div>
                     </div>
-                    <p class="text-xs text-gray-400 italic mt-1">Dapat menambahkan custom messages disini</p>
-                </div>
 
-                <div class="bg-white border border-gray-200 rounded-lg p-4 text-center">
-                    <p class="text-sm font-semibold text-gray-800 mb-2">DOOR TO BALLOON TIME</p>
-                    <div id="detail-time-${data.id}" class="text-3xl font-bold text-blue-600 tracking-wider timer-text">${data.door_to_balloon_time}</div>
-                </div>
+                    <!-- Broadcast Message Section -->
+                    <div class="border-t pt-4">
+                        <h4 class="text-sm font-semibold text-gray-800 mb-2">Pesan Broadcast</h4>
+                        <p class="text-xs text-gray-600 mb-2">Fast Track STEMI Pathway</p>
+                        <div class="bg-blue-50 rounded-lg p-3 space-y-1 border border-blue-200">
+                            <p class="text-xs text-blue-900 font-semibold">CODE STEMI AKTIF</p>
+                            <p class="text-xs text-blue-800">Pasien STEMI telah berada di IGD RS Otak M Hatta Bukittinggi.</p>
+                            <p class="text-xs text-blue-800">Seluruh unit terkait dimohon segera siaga.</p>
+                            <p class="text-xs text-blue-800">Fast Track STEMI Pathway aktif.</p>
+                            <p class="text-xs text-blue-800">Waktu Door-to-balloon dimulai.</p>
+                            ${data.custom_message ? `
+                                <div class="mt-2 pt-2 border-t border-blue-200">
+                                    <p class="text-xs text-blue-900 font-semibold">Pesan Tambahan:</p>
+                                    <p class="text-xs text-blue-800">${data.custom_message}</p>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
 
-                ${data.status === 'Running' ? `
-                    <button onclick="confirmFinish(${data.id})" class="w-full py-2.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition text-sm">
-                        AKTIVASI CODE STEMI SELESAI
-                    </button>
+                    <!-- Door-to-Balloon Time Section -->
+                    <div class="bg-white border border-gray-200 rounded-lg p-4 text-center">
+                        <p class="text-sm font-semibold text-gray-800 mb-2">DOOR TO BALLOON TIME</p>
+                        <div id="detail-time-${data.id}" class="text-3xl font-bold text-blue-600 tracking-wider timer-text">${data.door_to_balloon_time}</div>
+                    </div>
+
+                    <!-- Finish Button untuk yang masih Running -->
+                    ${data.status === 'Running' ? `
+                        <button onclick="confirmFinish(${data.id})" class="w-full py-2.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition text-sm">
+                            AKTIVASI CODE STEMI SELESAI
+                        </button>
                     ` : ''}
+                </div>
             `;
 
                 if (data.status === 'Running') {
@@ -1440,5 +1578,4 @@
         });
     </script>
 </body>
-
 </html>

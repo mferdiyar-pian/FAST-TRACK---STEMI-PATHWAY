@@ -20,14 +20,9 @@ class DataNakesController extends Controller
             $query->where('status', $request->status);
         }
         
-        // Filter berdasarkan tanggal mulai
-        if ($request->has('start_date') && $request->start_date != '') {
-            $query->whereDate('admitted_date', '>=', $request->start_date);
-        }
-        
-        // Filter berdasarkan tanggal akhir
-        if ($request->has('end_date') && $request->end_date != '') {
-            $query->whereDate('admitted_date', '<=', $request->end_date);
+        // Filter berdasarkan tanggal (mengganti start_date dan end_date dengan date)
+        if ($request->has('date') && $request->date != '') {
+            $query->whereDate('admitted_date', $request->date);
         }
         
         // Filter berdasarkan pencarian nama
@@ -129,8 +124,15 @@ class DataNakesController extends Controller
         $data_nakes = DataNakes::findOrFail($id);
         return response()->json($data_nakes);
     }
+
+    public function edit($id)
+    {
+        $data_nakes = DataNakes::findOrFail($id);
+        return response()->json($data_nakes);
+    }
+
     public function export()
     {
-    return Excel::download(new DataNakesExport, 'data_nakes.xlsx');
+        return Excel::download(new DataNakesExport, 'data_nakes.xlsx');
     }
 }

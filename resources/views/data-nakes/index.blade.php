@@ -274,24 +274,13 @@
                                             </select>
                                         </div>
 
-                                        <!-- Date Range Filter -->
+                                        <!-- Tanggal Filter Sederhana -->
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">Rentang
-                                                Tanggal</label>
-                                            <div class="grid grid-cols-2 gap-2">
-                                                <div>
-                                                    <input type="date" name="start_date" id="filterStartDate"
-                                                        value="{{ request('start_date') }}"
-                                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
-                                                    <label class="text-xs text-gray-500 mt-1">Dari Tanggal</label>
-                                                </div>
-                                                <div>
-                                                    <input type="date" name="end_date" id="filterEndDate"
-                                                        value="{{ request('end_date') }}"
-                                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
-                                                    <label class="text-xs text-gray-500 mt-1">Sampai Tanggal</label>
-                                                </div>
-                                            </div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal</label>
+                                            <input type="date" name="date" id="filterDate"
+                                                value="{{ request('date') }}"
+                                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                                            <label class="text-xs text-gray-500 mt-1">Pilih tanggal spesifik</label>
                                         </div>
 
                                         <!-- Action Buttons -->
@@ -322,20 +311,11 @@
                             </button>
                         </span>
                     @endif
-                    @if (request('start_date'))
+                    @if (request('date'))
                         <span
                             class="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full flex items-center gap-1">
-                            Dari: {{ request('start_date') }}
-                            <button onclick="removeFilter('start_date')" class="text-green-600 hover:text-green-800">
-                                <i class="fas fa-times text-xs"></i>
-                            </button>
-                        </span>
-                    @endif
-                    @if (request('end_date'))
-                        <span
-                            class="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full flex items-center gap-1">
-                            Sampai: {{ request('end_date') }}
-                            <button onclick="removeFilter('end_date')" class="text-green-600 hover:text-green-800">
+                            Tanggal: {{ request('date') }}
+                            <button onclick="removeFilter('date')" class="text-green-600 hover:text-green-800">
                                 <i class="fas fa-times text-xs"></i>
                             </button>
                         </span>
@@ -410,7 +390,7 @@
                                 <tr>
                                     <td colspan="5" class="px-6 py-8 text-center text-gray-500">
                                         <i class="fas fa-inbox text-4xl mb-2 block"></i>
-                                        @if (request()->anyFilled(['status', 'start_date', 'end_date', 'search']))
+                                        @if (request()->anyFilled(['status', 'date', 'search']))
                                             Tidak ada data yang sesuai dengan filter
                                         @else
                                             Tidak ada data nakes
@@ -869,5 +849,4 @@
         });
     </script>
 </body>
-
 </html>

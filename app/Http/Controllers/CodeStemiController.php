@@ -27,14 +27,18 @@ class CodeStemiController extends Controller
             $query->where('status', $request->status);
         }
         
-        // Filter berdasarkan tanggal mulai
-        if ($request->has('start_date') && $request->start_date != '') {
-            $query->whereDate('start_time', '>=', $request->start_date);
+        // Filter berdasarkan tanggal spesifik (mengganti start_date dan end_date)
+        if ($request->has('date') && $request->date != '') {
+            $query->whereDate('start_time', $request->date);
         }
         
-        // Filter berdasarkan tanggal akhir
-        if ($request->has('end_date') && $request->end_date != '') {
-            $query->whereDate('start_time', '<=', $request->end_date);
+        // Filter berdasarkan checklist
+        if ($request->has('checklist_filter') && !empty($request->checklist_filter)) {
+            $query->where(function($q) use ($request) {
+                foreach ($request->checklist_filter as $checklistItem) {
+                    $q->orWhereJsonContains('checklist', $checklistItem);
+                }
+            });
         }
         
         // Filter berdasarkan pencarian
@@ -374,12 +378,16 @@ class CodeStemiController extends Controller
             $query->where('status', $request->status);
         }
 
-        if ($request->has('start_date') && $request->start_date != '') {
-            $query->whereDate('start_time', '>=', $request->start_date);
+        if ($request->has('date') && $request->date != '') {
+            $query->whereDate('start_time', $request->date);
         }
 
-        if ($request->has('end_date') && $request->end_date != '') {
-            $query->whereDate('start_time', '<=', $request->end_date);
+        if ($request->has('checklist_filter') && !empty($request->checklist_filter)) {
+            $query->where(function($q) use ($request) {
+                foreach ($request->checklist_filter as $checklistItem) {
+                    $q->orWhereJsonContains('checklist', $checklistItem);
+                }
+            });
         }
 
         if ($request->has('search') && $request->search != '') {
@@ -402,5 +410,41 @@ class CodeStemiController extends Controller
 
         // CodeStemiExport harus menerima collection di constructor
         return Excel::download(new CodeStemiExport($data), $fileName);
+    }
+
+    /**
+     * Helper method untuk mengupdate duration_minutes untuk data existing
+     * Bisa dijalankan sekali via artisan command atau route khusus
+     */
+    public function updateDurationMinutes()
+    {
+        try {
+            $codeStemis = CodeStemi::where('status', 'Finished')->get();
+            $updatedCount = 0;
+
+            foreach ($codeStemis as $code) {
+                if ($code->start_time && $code->end_time) {
+                    $start = Carbon::parse($code->start_time);
+                    $end = Carbon::parse($code->end_time);
+                    $diff = $end->diff($start);
+                    
+                    $totalMinutes = ($diff->h * 60) + $diff->i;
+                    
+                    $code->update(['duration_minutes' => $totalMinutes]);
+                    $updatedCount++;
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => "Berhasil update {$updatedCount} data dengan duration_minutes"
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal update duration_minutes: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
