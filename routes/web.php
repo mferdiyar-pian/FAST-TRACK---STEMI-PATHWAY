@@ -39,7 +39,7 @@ Route::prefix('dashboard')->group(function () {
     Route::get('/monthly-stats', [DashboardController::class, 'getMonthlyStats'])->name('dashboard.monthly-stats');
     Route::get('/chart-stats', [DashboardController::class, 'getChartStats'])->name('dashboard.chart-stats');
     Route::get('/get-code-stemi-by-date', [DashboardController::class, 'getCodeStemiByDate'])->name('dashboard.get-code-stemi-by-date');
-    Route::get('/stats', [CodeStemiController::class, 'getStats'])->name('dashboard.stats');
+    Route::get('/live-stats', [DashboardController::class, 'getLiveStats'])->name('dashboard.live-stats');
     Route::get('/debug-date/{date}', [DashboardController::class, 'debugDate'])->name('dashboard.debug-date');
 });
 

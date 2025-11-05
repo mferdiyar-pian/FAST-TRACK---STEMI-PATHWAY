@@ -6,9 +6,10 @@
     <title>Fast Track STEMI Pathway - Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Tambahkan Alpine.js -->
+    <script src="//unpkg.com/alpinejs" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://js.pusher.com/7.2/pusher.min.js"></script>
     <style>
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -35,39 +36,33 @@
             cursor: pointer;
         }
         
-        /* State default untuk semua tanggal */
         .calendar-day {
             background-color: transparent !important;
             color: #374151 !important;
         }
         
-        /* Hover state */
         .calendar-day:hover {
             background-color: #3b82f6 !important;
             color: white !important;
         }
         
-        /* Hari ini - hanya background biru muda */
         .calendar-day.today {
             background-color: #dbeafe !important;
             color: #1e40af !important;
             font-weight: 600;
         }
         
-        /* Tanggal yang dipilih - background biru tua */
         .calendar-day.selected {
             background-color: #1d4ed8 !important;
             color: white !important;
             font-weight: 600;
         }
         
-        /* Hari ini yang dipilih - tetap biru tua */
         .calendar-day.today.selected {
             background-color: #1d4ed8 !important;
             color: white !important;
         }
         
-        /* Non-interactive days (bulan lain) */
         .calendar-day.other-month {
             color: #d1d5db !important;
             cursor: default;
@@ -76,20 +71,6 @@
         .calendar-day.other-month:hover {
             background-color: transparent !important;
             color: #d1d5db !important;
-        }
-
-        .loading-spinner {
-            border: 2px solid #f3f4f6;
-            border-top: 2px solid #3b82f6;
-            border-radius: 50%;
-            width: 16px;
-            height: 16px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
         }
 
         .sidebar-active {
@@ -138,12 +119,15 @@
 
         <!-- Main Content -->
         <main class="flex-1 overflow-y-auto">
+            <!-- Header dengan dropdown yang SAMA PERSIS seperti di Code STEMI -->
             <header class="bg-white shadow-sm px-8 py-4">
                 <div class="flex items-center justify-between">
                     <div></div>
                     <div class="flex items-center gap-6">
-                        <form class="relative flex items-center">
-                            <input type="text" placeholder="Search type of keywords"
+                        <form id="searchForm" method="GET" action="{{ route('dashboard.index') }}"
+                            class="relative flex items-center">
+                            <input type="text" name="search" id="searchInput" placeholder="Search type of keywords"
+                                value="{{ request('search') }}"
                                 class="w-80 pl-4 pr-10 py-2 border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm transition-all duration-200" />
                             <button type="submit"
                                 class="absolute right-3 text-gray-400 hover:text-blue-600 transition-all duration-150">
@@ -154,14 +138,27 @@
                             <i class="fas fa-bell text-gray-500 text-xl"></i>
                             <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                         </button>
-                        <div class="flex items-center gap-3">
-                            <span class="text-gray-700 font-medium text-sm">{{ Auth::user()->name }}</span>
-                            <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+                        <div x-data="{ isOpen: false }" class="relative">
+                            <button @click="isOpen = !isOpen" class="flex items-center gap-3 focus:outline-none">
+                                <span class="text-gray-700 font-medium text-sm">{{ Auth::user()->name }}</span>
+                                <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+                            </button>
+
+                            <div x-show="isOpen" @click.away="isOpen = false"
+                                class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-10">
+                                <a href="{{ route('setting.index') }}"
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil</a>
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit"
+                                        class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
             </header>
-
+            
             <!-- Dashboard Content -->
             <div class="p-8">
                 <div class="grid grid-cols-3 gap-6">
@@ -203,10 +200,10 @@
                         </div>
 
                         <!-- Chart -->
-                        <div class="bg-white rounded-xl p-6 shadow-sm chart-container">
+                        <div class="bg-white rounded-xl p-6 shadow-sm">
                             <div class="flex items-center justify-between mb-6">
                                 <div>
-                                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Overview - Code STEMI Activities</h3>
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-2" id="chartTitle">Overview - Monthly Code STEMI Activities</h3>
                                     <div class="flex items-center gap-6 text-sm">
                                         <div class="flex items-center gap-2">
                                             <span class="w-3 h-3 bg-pink-500 rounded-full"></span>
@@ -253,182 +250,217 @@
     </div>
 
     <script>
-        // Variabel global
+        // ==================== GLOBAL VARIABLES ====================
         let currentDate = new Date();
         let selectedDate = null;
         let chart = null;
-        let realTimeInterval = null;
-        let chartInterval = null;
         let currentTimeRange = 'monthly';
 
-        // Data chart dari PHP (default)
-        const chartLabels = <?php echo isset($chartData) ? json_encode(array_column($chartData, 'month')) : '[]' ?>;
-        const chartRunning = <?php echo isset($chartData) ? json_encode(array_column($chartData, 'running')) : '[]' ?>;
-        const chartFinished = <?php echo isset($chartData) ? json_encode(array_column($chartData, 'finished')) : '[]' ?>;
+        // Data ASLI dari PHP - langsung dari database Code STEMI
+        const chartLabels = <?php echo isset($chartData) && !empty($chartData) ? json_encode(array_column($chartData, 'month')) : '["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]' ?>;
+        const chartRunning = <?php echo isset($chartData) && !empty($chartData) ? json_encode(array_column($chartData, 'running')) : '[0,0,0,0,0,0,0,0,0,0,0,0]' ?>;
+        const chartFinished = <?php echo isset($chartData) && !empty($chartData) ? json_encode(array_column($chartData, 'finished')) : '[0,0,0,0,0,0,0,0,0,0,0,0]' ?>;
 
-        // Initialize Chart - DIPERBAIKI
-        function initializeChart(labels = null, runningData = null, finishedData = null, range = 'monthly') {
-            const ctx = document.getElementById('overviewChart').getContext('2d');
-            
-            // Gunakan data yang diberikan atau data default
-            const finalLabels = labels || chartLabels;
-            const finalRunning = runningData || chartRunning;
-            const finalFinished = finishedData || chartFinished;
-            
+        // ==================== CHART FUNCTIONS ====================
+
+        /**
+         * Initialize chart dengan DATA ASLI dari Code STEMI
+         */
+        function initializeChart() {
+            const ctx = document.getElementById('overviewChart');
+            if (!ctx) {
+                console.error('Chart canvas element not found!');
+                return;
+            }
+
+            // Pastikan data valid
+            const finalLabels = Array.isArray(chartLabels) && chartLabels.length > 0 ? chartLabels : ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            const finalRunning = Array.isArray(chartRunning) && chartRunning.length > 0 ? chartRunning : [0,0,0,0,0,0,0,0,0,0,0,0];
+            const finalFinished = Array.isArray(chartFinished) && chartFinished.length > 0 ? chartFinished : [0,0,0,0,0,0,0,0,0,0,0,0];
+
+            // Hitung max value untuk skala Y
             const maxRunning = Math.max(...finalRunning);
             const maxFinished = Math.max(...finalFinished);
             const maxValue = Math.max(maxRunning, maxFinished, 10) + 2;
 
-            // Hancurkan chart yang ada jika ada
-            if (chart) {
-                chart.destroy();
-            }
+            console.log('📊 Initializing chart with REAL DATA from Code STEMI:', {
+                labels: finalLabels,
+                running: finalRunning,
+                finished: finalFinished
+            });
 
-            // Konfigurasi chart berdasarkan range
-            const chartConfig = {
-                type: 'line',
-                data: {
-                    labels: finalLabels,
-                    datasets: [{
-                        label: 'Finished',
-                        data: finalFinished,
-                        borderColor: '#EC4899',
-                        backgroundColor: 'rgba(236, 72, 153, 0.1)',
-                        tension: 0.4,
-                        borderWidth: 3,
-                        fill: true
-                    }, {
-                        label: 'Running',
-                        data: finalRunning,
-                        borderColor: '#3B82F6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        tension: 0.4,
-                        borderWidth: 3,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: { 
-                        legend: { 
-                            display: false 
-                        },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false,
-                            callbacks: {
-                                title: function(tooltipItems) {
-                                    if (range === 'yearly') {
-                                        return `Year: ${tooltipItems[0].label}`;
+            try {
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: finalLabels,
+                        datasets: [{
+                            label: 'Finished',
+                            data: finalFinished,
+                            borderColor: '#EC4899',
+                            backgroundColor: 'rgba(236, 72, 153, 0.1)',
+                            tension: 0.4,
+                            borderWidth: 3,
+                            fill: true,
+                            pointBackgroundColor: '#EC4899',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }, {
+                            label: 'Running',
+                            data: finalRunning,
+                            borderColor: '#3B82F6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4,
+                            borderWidth: 3,
+                            fill: true,
+                            pointBackgroundColor: '#3B82F6',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { 
+                            legend: { 
+                                display: false 
+                            },
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                titleColor: '#1f2937',
+                                bodyColor: '#1f2937',
+                                borderColor: '#e5e7eb',
+                                borderWidth: 1,
+                                padding: 12,
+                                callbacks: {
+                                    title: function(tooltipItems) {
+                                        return `Month: ${tooltipItems[0].label}`;
+                                    },
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        label += context.parsed.y;
+                                        return label;
                                     }
-                                    return tooltipItems[0].label;
                                 }
                             }
-                        }
-                    },
-                    scales: {
-                        y: { 
-                            beginAtZero: true, 
-                            max: maxValue,
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        scales: {
+                            y: { 
+                                beginAtZero: true,
+                                max: maxValue,
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)',
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    precision: 0,
+                                    stepSize: Math.ceil(maxValue / 5)
+                                }
                             },
-                            ticks: {
-                                stepSize: Math.ceil(maxValue / 5),
-                                precision: 0
+                            x: { 
+                                grid: { 
+                                    display: false 
+                                },
+                                ticks: {
+                                    autoSkip: false,
+                                    maxRotation: 0
+                                }
                             }
                         },
-                        x: { 
-                            grid: { 
-                                display: false 
-                            }
+                        interaction: {
+                            mode: 'nearest',
+                            axis: 'x',
+                            intersect: false
                         }
-                    },
-                    interaction: {
-                        mode: 'nearest',
-                        axis: 'x',
-                        intersect: false
                     }
-                }
-            };
+                });
 
-            chart = new Chart(ctx, chartConfig);
-            
-            // Update chart title berdasarkan range
-            updateChartTitle(range);
-        }
+                console.log('✅ Chart initialized successfully with REAL DATA');
 
-        // Update chart title berdasarkan range
-        function updateChartTitle(range) {
-            const chartTitle = document.querySelector('.chart-container h3');
-            if (chartTitle) {
-                if (range === 'yearly') {
-                    chartTitle.textContent = 'Overview - Yearly Code STEMI Activities';
-                } else {
-                    chartTitle.textContent = 'Overview - Monthly Code STEMI Activities';
-                }
+            } catch (error) {
+                console.error('Chart initialization error:', error);
             }
         }
 
-        // Function untuk memuat data chart berdasarkan time range - DIPERBAIKI
+        /**
+         * Load chart data berdasarkan range (manual - hanya ketika user mengganti filter)
+         */
         async function loadChartData(timeRange) {
             try {
                 console.log('Loading chart data for:', timeRange);
                 
-                // Tampilkan loading state
-                const chartContainer = document.querySelector('.chart-container');
-                const timeRangeSelect = document.getElementById('timeRange');
-                
-                chartContainer.classList.add('opacity-50');
-                timeRangeSelect.disabled = true;
-                
                 const response = await fetch(`/dashboard/chart-stats?range=${timeRange}`);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
                 const data = await response.json();
-                
-                console.log('Chart data response:', data);
                 
                 if (data.success) {
                     // Update chart dengan data baru
-                    initializeChart(data.labels, data.running, data.finished, timeRange);
+                    updateChart(data.labels, data.running, data.finished, timeRange);
                     currentTimeRange = timeRange;
                     
-                    // Show success message
-                    showNotification(`Chart updated to ${timeRange} view`, 'success');
-                } else {
-                    console.error('Failed to load chart data:', data.message);
-                    // Fallback ke data default
-                    initializeChart();
-                    showNotification('Failed to load chart data, using default', 'error');
+                    // Update chart title
+                    updateChartTitle(timeRange);
                 }
             } catch (error) {
                 console.error('Error loading chart data:', error);
-                // Fallback ke data default
-                initializeChart();
-                showNotification('Error loading chart data', 'error');
-            } finally {
-                // Hilangkan loading state
-                chartContainer.classList.remove('opacity-50');
-                timeRangeSelect.disabled = false;
             }
         }
 
-        // Notification function
-        function showNotification(message, type = 'info') {
-            // Simple notification - bisa diganti dengan library notifikasi
-            console.log(`${type.toUpperCase()}: ${message}`);
+        /**
+         * Update chart dengan data baru
+         */
+        function updateChart(labels, runningData, finishedData, range) {
+            if (!chart) return;
+
+            chart.data.labels = labels;
+            chart.data.datasets[0].data = finishedData;
+            chart.data.datasets[1].data = runningData;
+            
+            // Update scales jika diperlukan
+            const maxRunning = Math.max(...runningData);
+            const maxFinished = Math.max(...finishedData);
+            const maxValue = Math.max(maxRunning, maxFinished, 10) + 2;
+            
+            chart.options.scales.y.max = maxValue;
+            chart.options.scales.y.ticks.stepSize = Math.ceil(maxValue / 5);
+            
+            chart.update();
         }
 
-        // Function untuk generate kalender - DIPERBAIKI
+        /**
+         * Update chart title berdasarkan range
+         */
+        function updateChartTitle(range) {
+            const chartTitle = document.getElementById('chartTitle');
+            if (chartTitle) {
+                chartTitle.textContent = range === 'yearly' 
+                    ? 'Overview - Yearly Code STEMI Activities' 
+                    : 'Overview - Monthly Code STEMI Activities';
+            }
+        }
+
+        // ==================== CALENDAR FUNCTIONS ====================
+
+        /**
+         * Generate calendar
+         */
         function generateCalendar(year, month) {
             const calendarGrid = document.getElementById('calendarGrid');
             const currentMonthElement = document.getElementById('currentMonth');
             
+            if (!calendarGrid || !currentMonthElement) {
+                console.error('Calendar elements not found!');
+                return;
+            }
+
             currentMonthElement.textContent = new Date(year, month).toLocaleString('en-US', { 
                 month: 'long', 
                 year: 'numeric' 
@@ -463,22 +495,17 @@
                 calendarGrid.appendChild(dayElement);
             }
 
-            // Hari bulan ini - DIPERBAIKI dengan data fetching
+            // Hari bulan ini
             for (let i = 1; i <= daysInMonth; i++) {
                 const dayElement = document.createElement('div');
                 const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
                 const dateFormatted = new Date(dateString).toISOString().split('T')[0];
                 
-                // Base class untuk semua tanggal
                 let className = 'w-10 h-10 flex items-center justify-center rounded-lg text-sm font-medium calendar-day ';
                 
-                // Cek jika hari ini
                 const isToday = dateFormatted === todayFormatted;
-                
-                // Cek jika selected
                 const isSelected = selectedDate === dateFormatted;
                 
-                // APPLY LOGIC: selected > today > normal
                 if (isSelected) {
                     className += 'selected';
                 } else if (isToday) {
@@ -490,9 +517,7 @@
                 dayElement.className = className;
                 dayElement.textContent = i;
                 dayElement.setAttribute('data-date', dateFormatted);
-                dayElement.setAttribute('title', `Click to view data for ${dateFormatted}`);
                 
-                // Tambahkan event listener untuk semua tanggal di bulan yang ditampilkan
                 dayElement.addEventListener('click', function() {
                     handleDateClick(dateFormatted);
                 });
@@ -511,14 +536,15 @@
             }
         }
 
-        // Function untuk handle klik tanggal - DIPERBAIKI
+        /**
+         * Handle klik tanggal
+         */
         function handleDateClick(date) {
             console.log('Date clicked:', date);
             
             // Jika mengklik tanggal yang sama, reset selection
             if (selectedDate === date) {
                 resetCalendarSelection();
-                showNotification('Date filter cleared', 'info');
                 return;
             }
             
@@ -543,7 +569,6 @@
             const clickedElement = document.querySelector(`[data-date="${date}"]`);
             if (clickedElement) {
                 clickedElement.classList.add('selected');
-                // Hapus today class jika yang diklik adalah hari ini
                 clickedElement.classList.remove('today');
             }
             
@@ -552,11 +577,11 @@
             
             // Ambil data untuk tanggal yang dipilih
             fetchDateData(date);
-            
-            showNotification(`Showing data for ${date}`, 'success');
         }
 
-        // Function untuk update info tanggal yang dipilih - DIPERBAIKI
+        /**
+         * Update info tanggal yang dipilih
+         */
         function updateSelectedDateInfo(date) {
             const selectedDateElement = document.getElementById('selectedDateInfo');
             const selectedDateFinishedElement = document.getElementById('selectedDateInfoFinished');
@@ -570,21 +595,27 @@
                     year: 'numeric'
                 });
                 
-                selectedDateElement.textContent = ` - ${formattedDate}`;
-                selectedDateFinishedElement.textContent = ` - ${formattedDate}`;
-                selectedDateElement.classList.remove('hidden');
-                selectedDateFinishedElement.classList.remove('hidden');
-                dataSourceElement.textContent = 'Selected date data';
-                dataSourceFinishedElement.textContent = 'Selected date data';
+                if (selectedDateElement) {
+                    selectedDateElement.textContent = ` - ${formattedDate}`;
+                    selectedDateElement.classList.remove('hidden');
+                }
+                if (selectedDateFinishedElement) {
+                    selectedDateFinishedElement.textContent = ` - ${formattedDate}`;
+                    selectedDateFinishedElement.classList.remove('hidden');
+                }
+                if (dataSourceElement) dataSourceElement.textContent = 'Selected date data';
+                if (dataSourceFinishedElement) dataSourceFinishedElement.textContent = 'Selected date data';
             } else {
-                selectedDateElement.classList.add('hidden');
-                selectedDateFinishedElement.classList.add('hidden');
-                dataSourceElement.textContent = 'All time data';
-                dataSourceFinishedElement.textContent = 'All time data';
+                if (selectedDateElement) selectedDateElement.classList.add('hidden');
+                if (selectedDateFinishedElement) selectedDateFinishedElement.classList.add('hidden');
+                if (dataSourceElement) dataSourceElement.textContent = 'All time data';
+                if (dataSourceFinishedElement) dataSourceFinishedElement.textContent = 'All time data';
             }
         }
 
-        // Function untuk reset selection - DIPERBAIKI
+        /**
+         * Reset calendar selection
+         */
         function resetCalendarSelection() {
             selectedDate = null;
             
@@ -601,175 +632,96 @@
                 }
             });
             
-            // Update info
             updateSelectedDateInfo(null);
             
-            // Reset ke data real-time (ALL TIME DATA)
-            fetchRealTimeStats();
+            // Reset ke data awal
+            document.getElementById('runningCount').textContent = '{{ $runningCount ?? 0 }}';
+            document.getElementById('finishedCount').textContent = '{{ $finishedCount ?? 0 }}';
         }
 
-        // Function untuk ambil data berdasarkan tanggal - DIPERBAIKI
+        /**
+         * Ambil data berdasarkan tanggal
+         */
         async function fetchDateData(date) {
             try {
-                console.log('Fetching data for date:', date);
-                
-                // Show loading states
-                document.getElementById('runningCount').innerHTML = '<div class="loading-spinner inline-block"></div>';
-                document.getElementById('finishedCount').innerHTML = '<div class="loading-spinner inline-block"></div>';
-
                 const response = await fetch(`/dashboard/date-data?date=${date}`);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
                 const data = await response.json();
-                
-                console.log('API Response:', data);
                 
                 if (data.success) {
                     document.getElementById('runningCount').textContent = data.running_count;
                     document.getElementById('finishedCount').textContent = data.finished_count;
-                    
-                    console.log(`Data for ${date}: Running=${data.running_count}, Finished=${data.finished_count}`);
-                    
-                    // Refresh chart juga untuk konsistensi
-                    loadChartData(currentTimeRange);
                 } else {
-                    console.error('API returned error:', data.message);
-                    // Fallback: set ke 0 jika tidak ada data
-                    document.getElementById('runningCount').textContent = 0;
-                    document.getElementById('finishedCount').textContent = 0;
-                    showNotification('No data available for selected date', 'warning');
+                    document.getElementById('runningCount').textContent = '0';
+                    document.getElementById('finishedCount').textContent = '0';
                 }
             } catch (error) {
                 console.error('Error fetching date data:', error);
-                // Fallback: set ke 0 jika error
-                document.getElementById('runningCount').textContent = 0;
-                document.getElementById('finishedCount').textContent = 0;
-                showNotification('Error loading date data', 'error');
+                document.getElementById('runningCount').textContent = '0';
+                document.getElementById('finishedCount').textContent = '0';
             }
         }
 
-        // Function untuk ambil data real-time stats (ALL TIME DATA) - DIPERBAIKI
-        async function fetchRealTimeStats() {
-            try {
-                const response = await fetch('/dashboard/dashboard-stats');
-                const data = await response.json();
-                
-                if (data.success) {
-                    // HANYA update jika tidak ada tanggal yang dipilih
-                    if (!selectedDate) {
-                        document.getElementById('runningCount').textContent = data.stats.total_running;
-                        document.getElementById('finishedCount').textContent = data.stats.total_finished;
-                        updateSelectedDateInfo(null);
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching real-time stats:', error);
-            }
-        }
+        // ==================== INITIALIZATION ====================
 
-        // Function untuk setup intervals
-        function setupIntervals() {
-            // Clear existing intervals
-            if (realTimeInterval) clearInterval(realTimeInterval);
-            if (chartInterval) clearInterval(chartInterval);
+        /**
+         * Initialize dashboard
+         */
+        function initializeDashboard() {
+            console.log('🚀 Initializing dashboard...');
             
-            // Real-time stats interval - hanya update jika tidak ada selected date
-            realTimeInterval = setInterval(() => {
-                if (!selectedDate) {
-                    fetchRealTimeStats();
-                }
-            }, 30000); // 30 detik
-            
-            // Chart refresh interval - 1 menit
-            chartInterval = setInterval(() => {
-                loadChartData(currentTimeRange);
-            }, 60000); // 1 menit
-        }
-
-        // Event Listeners - DIPERBAIKI
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize chart dengan data default
+            // Initialize chart dengan DATA ASLI (langsung muncul)
             initializeChart();
             
             // Generate calendar
-            const currentYear = currentDate.getFullYear();
-            const currentMonth = currentDate.getMonth();
-            generateCalendar(currentYear, currentMonth);
+            generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
             
-            // Event listener untuk prev/next month
-            document.getElementById('prevMonth').addEventListener('click', function() {
-                currentDate.setMonth(currentDate.getMonth() - 1);
-                generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
-                resetCalendarSelection();
-            });
+            // Setup event listeners
+            setupEventListeners();
             
-            document.getElementById('nextMonth').addEventListener('click', function() {
-                currentDate.setMonth(currentDate.getMonth() + 1);
-                generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
-                resetCalendarSelection();
-            });
-            
-            // Event listener untuk time range selector - DIPERBAIKI
-            document.getElementById('timeRange').addEventListener('change', function(e) {
-                const newRange = e.target.value;
-                console.log('Time range changed to:', newRange);
-                loadChartData(newRange);
-            });
-            
-            // Setup intervals
-            setupIntervals();
-            
-            // Load initial data
-            fetchRealTimeStats();
-            
-            console.log('Dashboard initialized successfully');
-        });
-
-        // Real-time functionality dengan Pusher - DIPERBAIKI
-        try {
-            const pusher = new Pusher('{{ config("broadcasting.connections.pusher.key", "local") }}', {
-                cluster: '{{ config("broadcasting.connections.pusher.options.cluster", "mt1") }}',
-                encrypted: true
-            });
-
-            const channel = pusher.subscribe('code-stemi');
-            channel.bind('CodeStemiStatusUpdated', function(data) {
-                console.log('Real-time update received:', data);
-                
-                // Jika ada tanggal yang dipilih, refresh data tanggal tersebut
-                // Jika tidak ada tanggal yang dipilih, refresh data real-time
-                if (selectedDate) {
-                    console.log('Refreshing selected date data:', selectedDate);
-                    fetchDateData(selectedDate);
-                } else {
-                    console.log('Refreshing all-time data');
-                    fetchRealTimeStats();
-                }
-                
-                // Refresh chart data juga
-                loadChartData(currentTimeRange);
-                
-                showNotification('Data updated in real-time', 'info');
-            });
-
-        } catch (error) {
-            console.log('Pusher initialization error:', error);
+            console.log('✅ Dashboard initialized successfully');
         }
 
-        // Export functions untuk debugging
-        window.dashboardDebug = {
-            getCurrentState: () => ({
-                selectedDate,
-                currentTimeRange,
-                currentDate: currentDate.toISOString(),
-                chart: chart ? 'Initialized' : 'Not initialized'
-            }),
-            reloadChart: () => loadChartData(currentTimeRange),
-            resetFilter: () => resetCalendarSelection()
-        };
+        /**
+         * Setup event listeners
+         */
+        function setupEventListeners() {
+            // Previous month button
+            const prevMonthBtn = document.getElementById('prevMonth');
+            if (prevMonthBtn) {
+                prevMonthBtn.addEventListener('click', function() {
+                    currentDate.setMonth(currentDate.getMonth() - 1);
+                    generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+                    resetCalendarSelection();
+                });
+            }
+            
+            // Next month button
+            const nextMonthBtn = document.getElementById('nextMonth');
+            if (nextMonthBtn) {
+                nextMonthBtn.addEventListener('click', function() {
+                    currentDate.setMonth(currentDate.getMonth() + 1);
+                    generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+                    resetCalendarSelection();
+                });
+            }
+            
+            // Time range selector - hanya load data ketika user mengganti
+            const timeRangeSelect = document.getElementById('timeRange');
+            if (timeRangeSelect) {
+                timeRangeSelect.addEventListener('change', function(e) {
+                    const newRange = e.target.value;
+                    console.log('Time range changed to:', newRange);
+                    loadChartData(newRange);
+                });
+            }
+        }
+
+        // ==================== START DASHBOARD ====================
+
+        // Initialize ketika DOM ready
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDashboard();
+        });
     </script>
 </body>
 </html>

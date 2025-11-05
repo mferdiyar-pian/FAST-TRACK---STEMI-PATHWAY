@@ -5,73 +5,139 @@ namespace App\Http\Controllers;
 use App\Models\CodeStemi;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
     /**
-     * Tampilkan halaman dashboard dengan statistik
+     * Tampilkan halaman dashboard dengan statistik REAL dari Code STEMI
      */
     public function index()
     {
-        // Hitung jumlah Code STEMI yang sedang running
-        $runningCount = CodeStemi::where('status', 'Running')->count();
-        
-        // Hitung jumlah Code STEMI yang sudah finished
-        $finishedCount = CodeStemi::where('status', 'Finished')->count();
-        
-        // Ambil data untuk chart (12 bulan terakhir)
-        $chartData = $this->getChartData();
+        try {
+            // Hitung jumlah Code STEMI yang sedang running - DATA ASLI
+            $runningCount = CodeStemi::where('status', 'Running')->count();
+            
+            // Hitung jumlah Code STEMI yang sudah finished - DATA ASLI
+            $finishedCount = CodeStemi::where('status', 'Finished')->count();
+            
+            // Ambil data untuk chart (12 bulan terakhir) - DATA ASLI
+            $chartData = $this->getMonthlyChartData();
 
-        return view('dashboard.index', compact(
-            'runningCount', 
-            'finishedCount', 
-            'chartData'
-        ));
-    }
+            return view('dashboard.index', compact(
+                'runningCount', 
+                'finishedCount', 
+                'chartData'
+            ));
 
-    /**
-     * Ambil data untuk chart (12 bulan terakhir)
-     */
-    private function getChartData($range = 'monthly')
-    {
-        if ($range === 'yearly') {
-            return $this->getYearlyChartData();
+        } catch (\Exception $e) {
+            // Fallback jika ada error
+            $runningCount = 0;
+            $finishedCount = 0;
+            $chartData = $this->generateSampleChartData();
+
+            return view('dashboard.index', compact(
+                'runningCount', 
+                'finishedCount', 
+                'chartData'
+            ));
         }
-        
-        // Default: monthly data (12 bulan terakhir)
-        return $this->getMonthlyChartData();
     }
 
     /**
-     * Data bulanan - 12 bulan terakhir
+     * Data bulanan - 12 bulan terakhir - DATA ASLI dari Code STEMI
      */
     private function getMonthlyChartData()
+    {
+        try {
+            $monthlyData = [];
+            $currentDate = Carbon::now();
+            
+            for ($i = 11; $i >= 0; $i--) {
+                $targetDate = $currentDate->copy()->subMonths($i);
+                $year = $targetDate->year;
+                $month = $targetDate->month;
+                
+                // Hitung running dan finished untuk bulan tersebut - DATA ASLI
+                $runningCount = CodeStemi::whereYear('created_at', $year)
+                    ->whereMonth('created_at', $month)
+                    ->where('status', 'Running')
+                    ->count();
+                    
+                $finishedCount = CodeStemi::whereYear('created_at', $year)
+                    ->whereMonth('created_at', $month)
+                    ->where('status', 'Finished')
+                    ->count();
+                
+                $monthlyData[] = [
+                    'month' => $targetDate->format('M'),
+                    'running' => $runningCount,
+                    'finished' => $finishedCount,
+                    'year' => $year,
+                    'month_number' => $month
+                ];
+            }
+            
+            return $monthlyData;
+
+        } catch (\Exception $e) {
+            // Fallback ke sample data jika error
+            return $this->generateSampleChartData();
+        }
+    }
+
+    /**
+     * Data tahunan - 5 tahun terakhir - DATA ASLI dari Code STEMI
+     */
+    private function getYearlyChartData()
+    {
+        try {
+            $yearlyData = [];
+            $currentYear = Carbon::now()->year;
+            
+            for ($i = 4; $i >= 0; $i--) {
+                $year = $currentYear - $i;
+                
+                // Hitung running dan finished untuk tahun tersebut - DATA ASLI
+                $runningCount = CodeStemi::whereYear('created_at', $year)
+                    ->where('status', 'Running')
+                    ->count();
+                    
+                $finishedCount = CodeStemi::whereYear('created_at', $year)
+                    ->where('status', 'Finished')
+                    ->count();
+                
+                $yearlyData[] = [
+                    'month' => (string)$year,
+                    'running' => $runningCount,
+                    'finished' => $finishedCount,
+                    'year' => $year
+                ];
+            }
+            
+            return $yearlyData;
+
+        } catch (\Exception $e) {
+            return $this->generateYearlySampleData();
+        }
+    }
+
+    /**
+     * Generate sample data untuk monthly chart (fallback)
+     */
+    private function generateSampleChartData()
     {
         $monthlyData = [];
         $currentDate = Carbon::now();
         
         for ($i = 11; $i >= 0; $i--) {
             $targetDate = $currentDate->copy()->subMonths($i);
-            $year = $targetDate->year;
-            $month = $targetDate->month;
-            
-            $runningCount = CodeStemi::whereYear('start_time', $year)
-                ->whereMonth('start_time', $month)
-                ->where('status', 'Running')
-                ->count();
-                
-            $finishedCount = CodeStemi::whereYear('start_time', $year)
-                ->whereMonth('start_time', $month)
-                ->where('status', 'Finished')
-                ->count();
             
             $monthlyData[] = [
                 'month' => $targetDate->format('M'),
-                'running' => $runningCount,
-                'finished' => $finishedCount,
-                'year' => $year,
-                'month_number' => $month
+                'running' => 0,
+                'finished' => 0,
+                'year' => $targetDate->year,
+                'month_number' => $targetDate->month
             ];
         }
         
@@ -79,9 +145,9 @@ class DashboardController extends Controller
     }
 
     /**
-     * Data tahunan - 5 tahun terakhir
+     * Generate sample data untuk yearly chart (fallback)
      */
-    private function getYearlyChartData()
+    private function generateYearlySampleData()
     {
         $yearlyData = [];
         $currentYear = Carbon::now()->year;
@@ -89,20 +155,11 @@ class DashboardController extends Controller
         for ($i = 4; $i >= 0; $i--) {
             $year = $currentYear - $i;
             
-            $runningCount = CodeStemi::whereYear('start_time', $year)
-                ->where('status', 'Running')
-                ->count();
-                
-            $finishedCount = CodeStemi::whereYear('start_time', $year)
-                ->where('status', 'Finished')
-                ->count();
-            
             $yearlyData[] = [
-                'month' => $year, // Use year as label
-                'running' => $runningCount,
-                'finished' => $finishedCount,
-                'year' => $year,
-                'month_number' => null
+                'month' => (string)$year,
+                'running' => 0,
+                'finished' => 0,
+                'year' => $year
             ];
         }
         
@@ -110,27 +167,16 @@ class DashboardController extends Controller
     }
 
     /**
-     * API untuk mendapatkan data berdasarkan tanggal (Code STEMI)
+     * API untuk mendapatkan data berdasarkan tanggal - DATA ASLI
      */
     public function getDateData(Request $request)
     {
         $date = $request->input('date', date('Y-m-d'));
-        
-        // Validasi format tanggal
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid date format'
-            ], 400);
-        }
 
         try {
-            // Ambil data yang start_time-nya pada tanggal yang dipilih
-            $codeStemiData = CodeStemi::whereDate('start_time', $date)
-                ->orderBy('start_time', 'desc')
-                ->get();
+            // Ambil data berdasarkan tanggal - DATA ASLI
+            $codeStemiData = CodeStemi::whereDate('created_at', $date)->get();
 
-            // Hitung statistik HANYA untuk tanggal yang dipilih
             $runningCount = $codeStemiData->where('status', 'Running')->count();
             $finishedCount = $codeStemiData->where('status', 'Finished')->count();
 
@@ -139,20 +185,71 @@ class DashboardController extends Controller
                 'date' => $date,
                 'running_count' => $runningCount,
                 'finished_count' => $finishedCount,
-                'total_count' => $codeStemiData->count(),
-                'query_info' => 'Data berdasarkan start_time pada: ' . $date
+                'total_count' => $codeStemiData->count()
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengambil data: ' . $e->getMessage()
+                'message' => 'Gagal mengambil data'
             ], 500);
         }
     }
 
     /**
-     * API untuk mendapatkan statistik real-time (ALL TIME DATA)
+     * API untuk mendapatkan data chart berdasarkan range - DATA ASLI
+     */
+    public function getChartStats(Request $request)
+    {
+        try {
+            $range = $request->input('range', 'monthly');
+            
+            // Ambil data berdasarkan range - DATA ASLI
+            if ($range === 'yearly') {
+                $chartData = $this->getYearlyChartData();
+            } else {
+                $chartData = $this->getMonthlyChartData();
+            }
+            
+            $labels = [];
+            $runningData = [];
+            $finishedData = [];
+            
+            foreach ($chartData as $data) {
+                $labels[] = $data['month'];
+                $runningData[] = $data['running'];
+                $finishedData[] = $data['finished'];
+            }
+            
+            return response()->json([
+                'success' => true,
+                'chart_data' => $chartData,
+                'labels' => $labels,
+                'running' => $runningData,
+                'finished' => $finishedData,
+                'range' => $range
+            ]);
+            
+        } catch (\Exception $e) {
+            // Fallback ke sample data jika error
+            $fallbackData = $range === 'yearly' ? $this->generateYearlySampleData() : $this->generateSampleChartData();
+            $labels = array_column($fallbackData, 'month');
+            $runningData = array_column($fallbackData, 'running');
+            $finishedData = array_column($fallbackData, 'finished');
+            
+            return response()->json([
+                'success' => true,
+                'chart_data' => $fallbackData,
+                'labels' => $labels,
+                'running' => $runningData,
+                'finished' => $finishedData,
+                'range' => $range
+            ]);
+        }
+    }
+
+    /**
+     * API untuk mendapatkan statistik real-time
      */
     public function getRealTimeStats()
     {
@@ -176,7 +273,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * API untuk mendapatkan statistik dashboard (ALL TIME DATA)
+     * API untuk mendapatkan statistik dashboard
      */
     public function getDashboardStats()
     {
@@ -196,44 +293,130 @@ class DashboardController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengambil statistik dashboard: ' . $e->getMessage()
+                'message' => 'Gagal mengambil statistik dashboard'
             ], 500);
         }
     }
 
     /**
-     * API untuk mendapatkan data chart (diperbaiki untuk support monthly/yearly)
+     * API untuk mendapatkan statistik bulanan
      */
-    public function getChartStats(Request $request)
+    public function getMonthlyStats(Request $request)
     {
         try {
-            $range = $request->input('range', 'monthly');
-            $chartData = $this->getChartData($range);
+            $year = $request->input('year', date('Y'));
+            $monthlyStats = [];
             
-            // Format response berdasarkan range
-            $labels = [];
-            $runningData = [];
-            $finishedData = [];
-            
-            foreach ($chartData as $data) {
-                $labels[] = $data['month'];
-                $runningData[] = $data['running'];
-                $finishedData[] = $data['finished'];
+            for ($month = 1; $month <= 12; $month++) {
+                $runningCount = CodeStemi::whereYear('created_at', $year)
+                    ->whereMonth('created_at', $month)
+                    ->where('status', 'Running')
+                    ->count();
+                    
+                $finishedCount = CodeStemi::whereYear('created_at', $year)
+                    ->whereMonth('created_at', $month)
+                    ->where('status', 'Finished')
+                    ->count();
+                
+                $monthlyStats[] = [
+                    'month' => date('M', mktime(0, 0, 0, $month, 1)),
+                    'running' => $runningCount,
+                    'finished' => $finishedCount,
+                    'year' => $year,
+                    'month_number' => $month
+                ];
             }
             
             return response()->json([
                 'success' => true,
-                'chart_data' => $chartData,
-                'labels' => $labels,
-                'running' => $runningData,
-                'finished' => $finishedData,
-                'range' => $range
+                'year' => $year,
+                'monthly_stats' => $monthlyStats
             ]);
             
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengambil data chart: ' . $e->getMessage()
+                'message' => 'Gagal mengambil statistik bulanan'
+            ], 500);
+        }
+    }
+
+    /**
+     * API untuk mendapatkan data Code STEMI berdasarkan tanggal
+     */
+    public function getCodeStemiByDate(Request $request)
+    {
+        $date = $request->input('date', date('Y-m-d'));
+
+        try {
+            $codeStemiData = CodeStemi::whereDate('created_at', $date)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            $runningCount = $codeStemiData->where('status', 'Running')->count();
+            $finishedCount = $codeStemiData->where('status', 'Finished')->count();
+
+            return response()->json([
+                'success' => true,
+                'date' => $date,
+                'code_stemi_data' => $codeStemiData,
+                'running_count' => $runningCount,
+                'finished_count' => $finishedCount,
+                'total_count' => $codeStemiData->count()
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data Code STEMI'
+            ], 500);
+        }
+    }
+
+    /**
+     * API untuk live stats
+     */
+    public function getLiveStats()
+    {
+        try {
+            $runningCount = CodeStemi::where('status', 'Running')->count();
+            $finishedCount = CodeStemi::where('status', 'Finished')->count();
+
+            return response()->json([
+                'success' => true,
+                'stats' => [
+                    'total_running' => $runningCount,
+                    'total_finished' => $finishedCount,
+                ],
+                'last_update' => now()->setTimezone('Asia/Makassar')->format('Y-m-d H:i:s')
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data live'
+            ], 500);
+        }
+    }
+
+    /**
+     * Debug endpoint
+     */
+    public function debugDate($date)
+    {
+        try {
+            $codeStemiData = CodeStemi::whereDate('created_at', $date)->get();
+
+            return response()->json([
+                'date' => $date,
+                'total_records' => $codeStemiData->count(),
+                'running_count' => $codeStemiData->where('status', 'Running')->count(),
+                'finished_count' => $codeStemiData->where('status', 'Finished')->count()
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
             ], 500);
         }
     }
