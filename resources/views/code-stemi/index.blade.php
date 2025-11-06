@@ -17,6 +17,7 @@
             font-weight: 400;
             line-height: 1.5;
             letter-spacing: -0.011em;
+            overflow: hidden; /* Prevent whole page scrolling */
         }
 
         .font-semibold {
@@ -143,6 +144,30 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
+        /* Custom scrollbar for data area only */
+        .data-scroll-container {
+            height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+
+        .data-scroll-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .data-scroll-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .data-scroll-container::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+
+        .data-scroll-container::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
     </style>
 </head>
 
@@ -184,15 +209,14 @@
         </aside>
 
         {{-- Main Content --}}
-        <main class="flex-1 overflow-y-auto">
-            <header class="bg-white shadow-sm px-8 py-4">
+        <main class="flex-1 flex flex-col">
+            <header class="bg-white shadow-sm px-8 py-4 flex-shrink-0">
                 <div class="flex items-center justify-between">
                     <div></div>
                     <div class="flex items-center gap-6">
                         <form id="searchForm" method="GET" action="{{ route('code-stemi.index') }}"
                             class="relative flex items-center">
-                            <input type="text" name="search" id="searchInput" 
-                                placeholder="Search type of keywords"
+                            <input type="text" name="search" id="searchInput" placeholder="Search type of keywords"
                                 value="{{ request('search') }}"
                                 class="w-80 pl-4 pr-10 py-2 border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm transition-all duration-200 search-input" />
                             <button type="submit"
@@ -200,22 +224,23 @@
                                 <i class="fas fa-search"></i>
                             </button>
                         </form>
-                        
+
                         {{-- User Profile with Photo --}}
                         <div x-data="{ isOpen: false }" class="relative">
-                            <button @click="isOpen = !isOpen" class="flex items-center gap-3 focus:outline-none hover:bg-gray-50 rounded-lg px-3 py-2 transition-all duration-200">
+                            <button @click="isOpen = !isOpen"
+                                class="flex items-center gap-3 focus:outline-none hover:bg-gray-50 rounded-lg px-3 py-2 transition-all duration-200">
                                 {{-- Profile Photo --}}
-                                @if(Auth::user()->profile_photo_path)
-                                    <img src="{{ asset('storage/' . Auth::user()->profile_photo_path) }}" 
-                                         alt="{{ Auth::user()->name }}" 
-                                         class="profile-image">
+                                @if (Auth::user()->profile_photo_path)
+                                    <img src="{{ asset('storage/' . Auth::user()->profile_photo_path) }}"
+                                        alt="{{ Auth::user()->name }}" class="profile-image">
                                 @else
                                     {{-- Default avatar with initial --}}
-                                    <div class="profile-image bg-blue-500 flex items-center justify-center text-white font-semibold text-sm">
+                                    <div
+                                        class="profile-image bg-blue-500 flex items-center justify-center text-white font-semibold text-sm">
                                         {{ substr(Auth::user()->name, 0, 1) }}
                                     </div>
                                 @endif
-                                
+
                                 <div class="flex flex-col items-start">
                                     <span class="text-gray-700 font-medium text-sm">{{ Auth::user()->name }}</span>
                                     <span class="text-gray-500 text-xs">{{ Auth::user()->role ?? 'Admin' }}</span>
@@ -228,22 +253,24 @@
                                 {{-- Profile Header in Dropdown --}}
                                 <div class="px-4 py-3 border-b border-gray-100">
                                     <div class="flex items-center gap-3">
-                                        @if(Auth::user()->profile_photo_path)
-                                            <img src="{{ asset('storage/' . Auth::user()->profile_photo_path) }}" 
-                                                 alt="{{ Auth::user()->name }}" 
-                                                 class="w-10 h-10 rounded-full object-cover">
+                                        @if (Auth::user()->profile_photo_path)
+                                            <img src="{{ asset('storage/' . Auth::user()->profile_photo_path) }}"
+                                                alt="{{ Auth::user()->name }}"
+                                                class="w-10 h-10 rounded-full object-cover">
                                         @else
-                                            <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
+                                            <div
+                                                class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
                                                 {{ substr(Auth::user()->name, 0, 1) }}
                                             </div>
                                         @endif
                                         <div class="flex flex-col">
-                                            <span class="text-sm font-medium text-gray-900">{{ Auth::user()->name }}</span>
+                                            <span
+                                                class="text-sm font-medium text-gray-900">{{ Auth::user()->name }}</span>
                                             <span class="text-xs text-gray-500">{{ Auth::user()->email }}</span>
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <a href="{{ route('setting.index') }}"
                                     class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                                     <i class="fas fa-user-circle text-gray-400 w-4"></i>
@@ -270,7 +297,7 @@
             </header>
 
             {{-- Code STEMI Content --}}
-            <div class="p-8">
+            <div class="p-8 flex-1 data-scroll-container">
                 {{-- Notifications --}}
                 @if (session('success'))
                     <div
@@ -295,11 +322,11 @@
                         </button>
 
                         {{-- Delete All Button --}}
-                        @if($data->count() > 0)
-                        <button onclick="confirmDeleteAll()"
-                            class="flex items-center gap-2 px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition font-medium text-sm">
-                            <i class="fas fa-trash-alt"></i>Delete All
-                        </button>
+                        @if ($data->count() > 0)
+                            <button onclick="confirmDeleteAll()"
+                                class="flex items-center gap-2 px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition font-medium text-sm">
+                                <i class="fas fa-trash-alt"></i>Delete All
+                            </button>
                         @endif
 
                         <!-- Filter Button with Dropdown -->
@@ -334,7 +361,8 @@
 
                                         <!-- Date Filter -->
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">Admitted</label>
+                                            <label
+                                                class="block text-sm font-medium text-gray-700 mb-2">Admitted</label>
                                             <input type="date" name="date" id="filterDate"
                                                 value="{{ request('date') }}"
                                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
@@ -343,7 +371,8 @@
 
                                         <!-- Checklist Filter -->
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">Checklist</label>
+                                            <label
+                                                class="block text-sm font-medium text-gray-700 mb-2">Checklist</label>
                                             <div class="space-y-2 max-h-40 overflow-y-auto">
                                                 @php
                                                     $checklistItems = [
@@ -358,14 +387,16 @@
 
                                                 @foreach ($checklistItems as $key => $label)
                                                     <label class="flex items-center gap-2 cursor-pointer">
-                                                        <input type="checkbox" name="checklist_filter[]" value="{{ $key }}"
+                                                        <input type="checkbox" name="checklist_filter[]"
+                                                            value="{{ $key }}"
                                                             class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
                                                             {{ in_array($key, request('checklist_filter', [])) ? 'checked' : '' }}>
                                                         <span class="text-sm text-gray-700">{{ $label }}</span>
                                                     </label>
                                                 @endforeach
                                             </div>
-                                            <label class="text-xs text-gray-500 mt-1">Filter by checked checklist items</label>
+                                            <label class="text-xs text-gray-500 mt-1">Filter by checked checklist
+                                                items</label>
                                         </div>
 
                                         <!-- Action Buttons -->
@@ -420,7 +451,8 @@
                             <span
                                 class="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full flex items-center gap-1">
                                 Checklist: {{ $checklistLabels[$checklistItem] ?? $checklistItem }}
-                                <button onclick="removeChecklistFilter('{{ $checklistItem }}')" class="text-purple-600 hover:text-purple-800">
+                                <button onclick="removeChecklistFilter('{{ $checklistItem }}')"
+                                    class="text-purple-600 hover:text-purple-800">
                                     <i class="fas fa-times text-xs"></i>
                                 </button>
                             </span>
@@ -523,7 +555,8 @@
                                             <i class="fas fa-chevron-left text-xs"></i>Previous
                                         </a>
                                     @else
-                                        <span class="px-4 py-2 text-gray-400 rounded transition text-sm flex items-center gap-2 pagination-disabled">
+                                        <span
+                                            class="px-4 py-2 text-gray-400 rounded transition text-sm flex items-center gap-2 pagination-disabled">
                                             <i class="fas fa-chevron-left text-xs"></i>Previous
                                         </span>
                                     @endif
@@ -572,7 +605,8 @@
                                             Next<i class="fas fa-chevron-right text-xs"></i>
                                         </a>
                                     @else
-                                        <span class="px-4 py-2 text-gray-400 rounded transition text-sm flex items-center gap-2 pagination-disabled">
+                                        <span
+                                            class="px-4 py-2 text-gray-400 rounded transition text-sm flex items-center gap-2 pagination-disabled">
                                             Next<i class="fas fa-chevron-right text-xs"></i>
                                         </span>
                                     @endif
@@ -645,15 +679,18 @@
                         <div class="border-t border-gray-200 px-6 py-4">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-1">
-                                    <span class="px-4 py-2 text-gray-400 rounded transition text-sm flex items-center gap-2 pagination-disabled">
+                                    <span
+                                        class="px-4 py-2 text-gray-400 rounded transition text-sm flex items-center gap-2 pagination-disabled">
                                         <i class="fas fa-chevron-left text-xs"></i>Previous
                                     </span>
 
-                                    <span class="px-3 py-2 rounded font-medium text-sm min-w-[40px] text-center bg-blue-500 text-white pagination-active">
+                                    <span
+                                        class="px-3 py-2 rounded font-medium text-sm min-w-[40px] text-center bg-blue-500 text-white pagination-active">
                                         1
                                     </span>
 
-                                    <span class="px-4 py-2 text-gray-400 rounded transition text-sm flex items-center gap-2 pagination-disabled">
+                                    <span
+                                        class="px-4 py-2 text-gray-400 rounded transition text-sm flex items-center gap-2 pagination-disabled">
                                         Next<i class="fas fa-chevron-right text-xs"></i>
                                     </span>
                                 </div>
@@ -705,7 +742,7 @@
         class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-md transform transition-all">
             <div class="flex items-center justify-between p-4 border-b border-gray-200">
-                <h3 class="text-lg font-bold text-gray-800">CODE STEMI REGISTRATION</h3>
+                <h3 class="text-lg font-bold text-gray-800">REGISTRASI CODE STEMI</h3>
                 <div class="flex items-center gap-3">
                     <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway"
                         class="h-10 object-contain">
@@ -726,52 +763,65 @@
                 <div class="p-5 space-y-4">
                     {{-- Checklist Section --}}
                     <div>
-                        <label class="block text-sm font-semibold text-gray-800 mb-2">Registration Checklist</label>
+                        <label class="block text-sm font-semibold text-gray-800 mb-2">Checklist Registrasi</label>
                         <div class="grid grid-cols-2 gap-2">
-                            @php
-                                $checklistItems = [
-                                    'Anamnesis' => 'Anamnesis',
-                                    'EKG' => 'ECG',
-                                    'Rongten Thorax' => 'Chest X-Ray',
-                                    'Pemeriksaan Fisik' => 'Physical Examination',
-                                    'Laboratorium' => 'Laboratory',
-                                    'Informed Consent' => 'Informed Consent',
-                                ];
-                            @endphp
-
-                            @foreach ($checklistItems as $key => $label)
-                                <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="checkbox" name="checklist[]" value="{{ $key }}"
-                                        class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
-                                    <span class="text-sm text-gray-700">{{ $label }}</span>
-                                </label>
-                            @endforeach
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="checklist[]" value="Anamnesis"
+                                    class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700">Anamnesis</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="checklist[]" value="EKG"
+                                    class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700">EKG</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="checklist[]" value="Rongten Thorax"
+                                    class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700">Rongten Thorax</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="checklist[]" value="Pemeriksaan Fisik"
+                                    class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700">Pemeriksaan Fisik</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="checklist[]" value="Laboratorium"
+                                    class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700">Laboratorium</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="checklist[]" value="Informed Consent"
+                                    class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700">Informed Consent</span>
+                            </label>
                         </div>
                     </div>
 
                     {{-- Custom Message Section --}}
                     <div>
-                        <label class="block text-sm font-semibold text-gray-800 mb-2">Custom Broadcast Message</label>
+                        <label class="block text-sm font-semibold text-gray-800 mb-2">Pesan Custom Broadcast</label>
                         <p class="text-xs text-gray-600 mb-2">Fast Track STEMI Pathway</p>
 
                         <div class="bg-gray-100 rounded-lg p-3 space-y-1 mb-2">
-                            <p class="text-xs text-gray-700 font-semibold">CODE STEMI ACTIVE</p>
-                            <p class="text-xs text-gray-600">STEMI patient has arrived at the Emergency Department of M Hatta Brain Hospital Bukittinggi.</p>
-                            <p class="text-xs text-gray-600">All related units are requested to be on standby immediately.</p>
-                            <p class="text-xs text-gray-600">Fast Track STEMI Pathway is active.</p>
-                            <p class="text-xs text-gray-600">Door-to-balloon time has started.</p>
+                            <p class="text-xs text-gray-700 font-semibold">CODE STEMI AKTIF</p>
+                            <p class="text-xs text-gray-600">Pasien STEMI telah berada di IGD RS Otak M Hatta
+                                Bukittinggi.</p>
+                            <p class="text-xs text-gray-600">Seluruh unit terkait dimohon segera siaga.</p>
+                            <p class="text-xs text-gray-600">Fast Track STEMI Pathway aktif.</p>
+                            <p class="text-xs text-gray-600">Waktu Door-to-balloon dimulai.</p>
                         </div>
 
-                        <textarea name="custom_message" placeholder="Add custom message here (optional)"
+                        <textarea name="custom_message" placeholder="Tambahkan pesan custom disini (opsional)"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
                             rows="2"></textarea>
-                        <p class="text-xs text-gray-400 italic mt-1">This message will be added at the end of the broadcast</p>
+                        <p class="text-xs text-gray-400 italic mt-1">Pesan ini akan ditambahkan di akhir broadcast</p>
                     </div>
 
                     {{-- Submit Button --}}
                     <button type="button" onclick="confirmActivation()"
                         class="w-full py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition text-sm">
-                        ACTIVATE CODE STEMI STARTED
+                        AKTIVASI CODE STEMI DIMULAI
                     </button>
                 </div>
             </form>
@@ -839,14 +889,16 @@
                     <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
                 </div>
                 <h3 class="text-xl font-bold text-gray-800 text-center mb-2">Delete All Confirmation</h3>
-                <p class="text-gray-600 text-center mb-6">Are you sure you want to delete <span class="font-bold text-red-600">ALL</span> Code STEMI data? This action cannot be undone!</p>
+                <p class="text-gray-600 text-center mb-6">Are you sure you want to delete <span
+                        class="font-bold text-red-600">ALL</span> Code STEMI data? This action cannot be undone!</p>
 
                 <div class="flex gap-3">
                     <button onclick="closeDeleteAllModal()"
                         class="flex-1 py-3 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition">
                         <i class="fas fa-times mr-2"></i>CANCEL
                     </button>
-                    <form id="deleteAllForm" method="POST" action="{{ route('code-stemi.delete-all') }}" class="flex-1">
+                    <form id="deleteAllForm" method="POST" action="{{ route('code-stemi.delete-all') }}"
+                        class="flex-1">
                         @csrf
                         @method('DELETE')
                         <button type="button" onclick="handleDeleteAllSubmit()"
@@ -916,8 +968,10 @@
 
                         <div class="bg-gray-100 rounded-lg p-3 space-y-1 mb-2">
                             <p class="text-xs text-gray-700 font-semibold">CODE STEMI ACTIVE</p>
-                            <p class="text-xs text-gray-600">STEMI patient has arrived at the Emergency Department of M Hatta Brain Hospital Bukittinggi.</p>
-                            <p class="text-xs text-gray-600">All related units are requested to be on standby immediately.</p>
+                            <p class="text-xs text-gray-600">STEMI patient has arrived at the Emergency Department of M
+                                Hatta Brain Hospital Bukittinggi.</p>
+                            <p class="text-xs text-gray-600">All related units are requested to be on standby
+                                immediately.</p>
                             <p class="text-xs text-gray-600">Fast Track STEMI Pathway is active.</p>
                             <p class="text-xs text-gray-600">Door-to-balloon time has started.</p>
                         </div>
@@ -925,7 +979,8 @@
                         <textarea name="custom_message" id="editCustomMessage" placeholder="Add custom message here (optional)"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
                             rows="2"></textarea>
-                        <p class="text-xs text-gray-400 italic mt-1">This message will be added at the end of the broadcast</p>
+                        <p class="text-xs text-gray-400 italic mt-1">This message will be added at the end of the
+                            broadcast</p>
                     </div>
 
                     {{-- Submit Button --}}
@@ -943,7 +998,7 @@
         class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-md transform transition-all">
             <div class="flex items-center justify-between p-4 border-b border-gray-200">
-                <h3 class="text-lg font-bold text-gray-800">CODE STEMI DETAILS</h3>
+                <h3 class="text-lg font-bold text-gray-800">DETAIL CODE STEMI</h3>
                 <div class="flex items-center gap-3">
                     <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway"
                         class="h-10 object-contain">
@@ -1147,12 +1202,12 @@
             const url = new URL(window.location.href);
             const currentChecklist = url.searchParams.getAll('checklist_filter[]');
             const newChecklist = currentChecklist.filter(item => item !== checklistItem);
-            
+
             url.searchParams.delete('checklist_filter[]');
             newChecklist.forEach(item => {
                 url.searchParams.append('checklist_filter[]', item);
             });
-            
+
             url.searchParams.set('page', 1);
             window.location.href = url.toString();
         }
@@ -1310,7 +1365,8 @@
                     closeFinishConfirmModal();
                     updateTableAfterFinish(itemId);
                     showSuccessNotification(
-                        'Code STEMI activation has been successfully completed. Door-to-balloon time has been recorded.');
+                        'Code STEMI activation has been successfully completed. Door-to-balloon time has been recorded.'
+                        );
 
                     // Auto refresh after 2 seconds
                     setTimeout(() => {
@@ -1558,90 +1614,81 @@
                 const response = await fetch(`/code-stemi/${id}`);
                 const data = await response.json();
 
-                // Create checklist in 2 columns like the image
-                const leftColumnItems = ['Anamnesis', 'Rongten Thorax', 'Laboratorium'];
-                const rightColumnItems = ['EKG', 'Pemeriksaan Fisik', 'Informed Consent'];
+                // Format checklist items sesuai permintaan
+                const checklistItems = ['Anamnesis', 'Rongten Thorax', 'Laboratorium'];
 
-                let leftColumnHTML = '';
-                let rightColumnHTML = '';
-
-                leftColumnItems.forEach(item => {
+                let checklistHTML = '';
+                checklistItems.forEach(item => {
                     const isChecked = data.checklist && data.checklist.includes(item);
-                    leftColumnHTML += `
+                    checklistHTML += `
                     <label class="flex items-center gap-2">
-                        <input type="checkbox" ${isChecked ? 'checked' : ''} disabled class="w-4 h-4 text-blue-600 rounded border-gray-300">
-                        <span class="text-sm text-gray-700 ${isChecked ? 'font-medium' : 'text-gray-400'}">${item === 'Rongten Thorax' ? 'Chest X-Ray' : item === 'Laboratorium' ? 'Laboratory' : item}</span>
+                        <input type="checkbox" ${isChecked ? 'checked' : ''} disabled 
+                            class="w-4 h-4 text-blue-600 rounded border-gray-300">
+                        <span class="text-sm text-gray-700 ${isChecked ? 'font-medium' : 'text-gray-400'}">
+                            ${item}
+                        </span>
                     </label>
-                `;
+                    `;
                 });
 
-                rightColumnItems.forEach(item => {
-                    const isChecked = data.checklist && data.checklist.includes(item);
-                    rightColumnHTML += `
-                    <label class="flex items-center gap-2">
-                        <input type="checkbox" ${isChecked ? 'checked' : ''} disabled class="w-4 h-4 text-blue-600 rounded border-gray-300">
-                        <span class="text-sm text-gray-700 ${isChecked ? 'font-medium' : 'text-gray-400'}">${item === 'EKG' ? 'ECG' : item === 'Pemeriksaan Fisik' ? 'Physical Examination' : item}</span>
-                    </label>
-                `;
-                });
+                // Format waktu
+                const doorToBalloonTime = data.door_to_balloon_time || '00h : 00m : 00s';
 
                 document.getElementById('detailContent').innerHTML = `
-                <div class="space-y-4">
-                    <!-- Checklist Section -->
-                    <div>
-                        <h4 class="text-sm font-semibold text-gray-800 mb-3">CODE STEMI DETAILS</h4>
-                        <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-4">
+                        <!-- Checklist Section -->
+                        <div>
+                            <h4 class="text-sm font-semibold text-gray-800 mb-3">Checklist Registrasi</h4>
                             <div class="space-y-2">
-                                ${leftColumnHTML}
-                            </div>
-                            <div class="space-y-2">
-                                <p class="text-xs font-semibold text-teal-600 mb-2">FAST TRACK STEMI PATHWAY</p>
-                                ${rightColumnHTML}
+                                ${checklistHTML}
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Broadcast Message Section -->
-                    <div class="border-t pt-4">
-                        <h4 class="text-sm font-semibold text-gray-800 mb-2">Broadcast Message</h4>
-                        <p class="text-xs text-gray-600 mb-2">Fast Track STEMI Pathway</p>
-                        <div class="bg-blue-50 rounded-lg p-3 space-y-1 border border-blue-200">
-                            <p class="text-xs text-blue-900 font-semibold">CODE STEMI ACTIVE</p>
-                            <p class="text-xs text-blue-800">STEMI patient has arrived at the Emergency Department of M Hatta Brain Hospital Bukittinggi.</p>
-                            <p class="text-xs text-blue-800">All related units are requested to be on standby immediately.</p>
-                            <p class="text-xs text-blue-800">Fast Track STEMI Pathway is active.</p>
-                            <p class="text-xs text-blue-800">Door-to-balloon time has started.</p>
-                            ${data.custom_message ? `
-                                <div class="mt-2 pt-2 border-t border-blue-200">
-                                    <p class="text-xs text-blue-900 font-semibold">Additional Message:</p>
-                                    <p class="text-xs text-blue-800">${data.custom_message}</p>
-                                </div>
-                            ` : ''}
+                        <!-- Broadcast Message Section -->
+                        <div class="border-t pt-4">
+                            <h4 class="text-sm font-semibold text-gray-800 mb-2">Pesan Broadcast</h4>
+                            <p class="text-xs text-gray-600 mb-2">Fast Track STEMI Pathway</p>
+                            <div class="bg-blue-50 rounded-lg p-3 space-y-1 border border-blue-200">
+                                <p class="text-xs text-blue-900 font-semibold">CODE STEMI AKTIF</p>
+                                <p class="text-xs text-blue-800">Pasien STEMI telah berada di IGD RS Otak M Hatta Bukittinggi.</p>
+                                <p class="text-xs text-blue-800">Seluruh unit terkait dimohon segera siaga.</p>
+                                <p class="text-xs text-blue-800">Fast Track STEMI Pathway aktif.</p>
+                                <p class="text-xs text-blue-800">Waktu Door-to-balloon dimulai.</p>
+                                ${data.custom_message ? `
+                                    <div class="mt-2 pt-2 border-t border-blue-200">
+                                        <p class="text-xs text-blue-900 font-semibold">Pesan Tambahan:</p>
+                                        <p class="text-xs text-blue-800">${data.custom_message}</p>
+                                    </div>
+                                ` : ''}
+                            </div>
                         </div>
+
+                        <!-- Door-to-Balloon Time Section -->
+                        <div class="bg-white border border-gray-200 rounded-lg p-4 text-center">
+                            <p class="text-sm font-semibold text-gray-800 mb-2">DOOR TO BALLOON TIME</p>
+                            <div id="detail-time-${data.id}" class="text-3xl font-bold text-blue-600 tracking-wider timer-text">
+                                ${doorToBalloonTime}
+                            </div>
+                        </div>
+
+                        <!-- Complete Button untuk status Running -->
+                        ${data.status === 'Running' ? `
+                            <button onclick="confirmFinish(${data.id})" 
+                                class="w-full py-2.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition text-sm">
+                                COMPLETE CODE STEMI ACTIVATION
+                            </button>
+                        ` : ''}
                     </div>
+                `;
 
-                    <!-- Door-to-Balloon Time Section -->
-                    <div class="bg-white border border-gray-200 rounded-lg p-4 text-center">
-                        <p class="text-sm font-semibold text-gray-800 mb-2">DOOR TO BALLOON TIME</p>
-                        <div id="detail-time-${data.id}" class="text-3xl font-bold text-blue-600 tracking-wider timer-text">${data.door_to_balloon_time}</div>
-                    </div>
-
-                    <!-- Finish Button for those still Running -->
-                    ${data.status === 'Running' ? `
-                        <button onclick="confirmFinish(${data.id})" class="w-full py-2.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition text-sm">
-                            COMPLETE CODE STEMI ACTIVATION
-                        </button>
-                    ` : ''}
-                </div>
-            `;
-
+                // Jika status Running, mulai timer
                 if (data.status === 'Running') {
                     startDetailTimer(data.id, data.start_time);
                 }
 
             } catch (error) {
                 console.error('Error loading detail:', error);
-                showErrorModal('Failed to load detail data');
+                showErrorModal('Gagal memuat data detail');
             }
         }
 
@@ -1726,4 +1773,5 @@
         });
     </script>
 </body>
+
 </html>

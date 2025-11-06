@@ -6,7 +6,6 @@
     <title>Fast Track STEMI Pathway - Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Tambahkan Alpine.js -->
     <script src="//unpkg.com/alpinejs" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -82,6 +81,22 @@
         .sidebar-item:hover {
             background-color: #f9fafb;
         }
+
+        /* Profile image styling */
+        .profile-image {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #e5e7eb;
+        }
+
+        /* Search input styling untuk placeholder yang panjang */
+        .search-input::placeholder {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
 </head>
 
@@ -119,39 +134,84 @@
 
         <!-- Main Content -->
         <main class="flex-1 overflow-y-auto">
-            <!-- Header dengan dropdown yang SAMA PERSIS seperti di Code STEMI -->
+            <!-- Header yang SAMA PERSIS dengan halaman Data Nakes -->
             <header class="bg-white shadow-sm px-8 py-4">
                 <div class="flex items-center justify-between">
                     <div></div>
                     <div class="flex items-center gap-6">
                         <form id="searchForm" method="GET" action="{{ route('dashboard.index') }}"
                             class="relative flex items-center">
-                            <input type="text" name="search" id="searchInput" placeholder="Search type of keywords"
+                            <input type="text" name="search" id="searchInput" 
+                                placeholder="Search type of keywords"
                                 value="{{ request('search') }}"
-                                class="w-80 pl-4 pr-10 py-2 border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm transition-all duration-200" />
+                                class="w-80 pl-4 pr-10 py-2 border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm transition-all duration-200 search-input" />
                             <button type="submit"
                                 class="absolute right-3 text-gray-400 hover:text-blue-600 transition-all duration-150">
                                 <i class="fas fa-search"></i>
                             </button>
                         </form>
-                        <button class="relative">
-                            <i class="fas fa-bell text-gray-500 text-xl"></i>
-                            <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                        </button>
+                        
+                        {{-- User Profile dengan Foto --}}
                         <div x-data="{ isOpen: false }" class="relative">
-                            <button @click="isOpen = !isOpen" class="flex items-center gap-3 focus:outline-none">
-                                <span class="text-gray-700 font-medium text-sm">{{ Auth::user()->name }}</span>
+                            <button @click="isOpen = !isOpen" class="flex items-center gap-3 focus:outline-none hover:bg-gray-50 rounded-lg px-3 py-2 transition-all duration-200">
+                                {{-- Foto Profil --}}
+                                @if(Auth::user()->profile_photo_path)
+                                    <img src="{{ asset('storage/' . Auth::user()->profile_photo_path) }}" 
+                                         alt="{{ Auth::user()->name }}" 
+                                         class="profile-image">
+                                @else
+                                    {{-- Default avatar dengan inisial --}}
+                                    <div class="profile-image bg-blue-500 flex items-center justify-center text-white font-semibold text-sm">
+                                        {{ substr(Auth::user()->name, 0, 1) }}
+                                    </div>
+                                @endif
+                                
+                                <div class="flex flex-col items-start">
+                                    <span class="text-gray-700 font-medium text-sm">{{ Auth::user()->name }}</span>
+                                    <span class="text-gray-500 text-xs">{{ Auth::user()->role ?? 'Admin' }}</span>
+                                </div>
                                 <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
                             </button>
 
-                            <div x-show="isOpen" @click.away="isOpen = false"
-                                class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-10">
+                            <div x-show="isOpen" @click.away="isOpen = false" x-transition
+                                class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl z-50 border border-gray-200 py-2">
+                                {{-- Header Profil di Dropdown --}}
+                                <div class="px-4 py-3 border-b border-gray-100">
+                                    <div class="flex items-center gap-3">
+                                        @if(Auth::user()->profile_photo_path)
+                                            <img src="{{ asset('storage/' . Auth::user()->profile_photo_path) }}" 
+                                                 alt="{{ Auth::user()->name }}" 
+                                                 class="w-10 h-10 rounded-full object-cover">
+                                        @else
+                                            <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
+                                                {{ substr(Auth::user()->name, 0, 1) }}
+                                            </div>
+                                        @endif
+                                        <div class="flex flex-col">
+                                            <span class="text-sm font-medium text-gray-900">{{ Auth::user()->name }}</span>
+                                            <span class="text-xs text-gray-500">{{ Auth::user()->email }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
                                 <a href="{{ route('setting.index') }}"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil</a>
+                                    class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-user-circle text-gray-400 w-4"></i>
+                                    <span>Profil Saya</span>
+                                </a>
+                                <a href="{{ route('setting.index') }}?tab=password"
+                                    class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-key text-gray-400 w-4"></i>
+                                    <span>Ubah Password</span>
+                                </a>
+                                <div class="border-t border-gray-100 my-1"></div>
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
                                     <button type="submit"
-                                        class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
+                                        class="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                        <i class="fas fa-sign-out-alt text-gray-400 w-4"></i>
+                                        <span>Logout</span>
+                                    </button>
                                 </form>
                             </div>
                         </div>
@@ -260,6 +320,36 @@
         const chartLabels = <?php echo isset($chartData) && !empty($chartData) ? json_encode(array_column($chartData, 'month')) : '["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]' ?>;
         const chartRunning = <?php echo isset($chartData) && !empty($chartData) ? json_encode(array_column($chartData, 'running')) : '[0,0,0,0,0,0,0,0,0,0,0,0]' ?>;
         const chartFinished = <?php echo isset($chartData) && !empty($chartData) ? json_encode(array_column($chartData, 'finished')) : '[0,0,0,0,0,0,0,0,0,0,0,0]' ?>;
+
+        // ==================== SEARCH FUNCTION ====================
+
+        // Handle search form submission
+        document.getElementById('searchForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const searchValue = document.getElementById('searchInput').value;
+            const url = new URL(window.location.href);
+
+            if (searchValue) {
+                url.searchParams.set('search', searchValue);
+            } else {
+                url.searchParams.delete('search');
+            }
+
+            // Reset to page 1 when searching
+            url.searchParams.set('page', 1);
+            window.location.href = url.toString();
+        });
+
+        // Real-time search (opsional)
+        let searchTimeout;
+        document.getElementById('searchInput')?.addEventListener('input', function(e) {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                if (this.value.length >= 3 || this.value.length === 0) {
+                    document.getElementById('searchForm').dispatchEvent(new Event('submit'));
+                }
+            }, 500);
+        });
 
         // ==================== CHART FUNCTIONS ====================
 

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fast Track STEMI Pathway - Data Nakes</title>
+    <title>Fast Track STEMI Pathway - Healthcare Workers Data</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
@@ -181,7 +181,7 @@
                 </a>
                 <a href="{{ route('setting.index') }}"
                     class="flex items-center gap-3 px-6 py-3 text-gray-500 hover:bg-gray-50">
-                    <i class="fas fa-cog w-5"></i><span class="font-medium">Setting</span>
+                    <i class="fas fa-cog w-5"></i><span class="font-medium">Settings</span>
                 </a>
             </nav>
         </aside>
@@ -193,7 +193,6 @@
                     <div class="flex items-center gap-6">
                         <form id="searchForm" method="GET" action="{{ route('data-nakes.index') }}"
                             class="relative flex items-center">
-                            {{-- PERBAIKAN: Search input dengan placeholder yang benar --}}
                             <input type="text" name="search" id="searchInput" 
                                 placeholder="Search type of keywords"
                                 value="{{ request('search') }}"
@@ -204,16 +203,16 @@
                             </button>
                         </form>
                         
-                        {{-- User Profile dengan Foto --}}
+                        {{-- User Profile with Photo --}}
                         <div x-data="{ isOpen: false }" class="relative">
                             <button @click="isOpen = !isOpen" class="flex items-center gap-3 focus:outline-none hover:bg-gray-50 rounded-lg px-3 py-2 transition-all duration-200">
-                                {{-- Foto Profil --}}
+                                {{-- Profile Photo --}}
                                 @if(Auth::user()->profile_photo_path)
                                     <img src="{{ asset('storage/' . Auth::user()->profile_photo_path) }}" 
                                          alt="{{ Auth::user()->name }}" 
                                          class="profile-image">
                                 @else
-                                    {{-- Default avatar dengan inisial --}}
+                                    {{-- Default avatar with initial --}}
                                     <div class="profile-image bg-blue-500 flex items-center justify-center text-white font-semibold text-sm">
                                         {{ substr(Auth::user()->name, 0, 1) }}
                                     </div>
@@ -228,7 +227,7 @@
 
                             <div x-show="isOpen" @click.away="isOpen = false" x-transition
                                 class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl z-50 border border-gray-200 py-2">
-                                {{-- Header Profil di Dropdown --}}
+                                {{-- Profile Header in Dropdown --}}
                                 <div class="px-4 py-3 border-b border-gray-100">
                                     <div class="flex items-center gap-3">
                                         @if(Auth::user()->profile_photo_path)
@@ -250,12 +249,12 @@
                                 <a href="{{ route('setting.index') }}"
                                     class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                                     <i class="fas fa-user-circle text-gray-400 w-4"></i>
-                                    <span>Profil Saya</span>
+                                    <span>My Profile</span>
                                 </a>
                                 <a href="{{ route('setting.index') }}?tab=password"
                                     class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                                     <i class="fas fa-key text-gray-400 w-4"></i>
-                                    <span>Ubah Password</span>
+                                    <span>Change Password</span>
                                 </a>
                                 <div class="border-t border-gray-100 my-1"></div>
                                 <form method="POST" action="{{ route('logout') }}">
@@ -300,18 +299,18 @@
                     <div class="flex gap-3">
                         <button onclick="openModal('add')"
                             class="flex items-center gap-2 px-5 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition font-medium text-sm">
-                            <i class="fas fa-plus"></i>Tambah Data
+                            <i class="fas fa-plus"></i>Add Data
                         </button>
 
-                        {{-- Tombol Hapus Semua --}}
+                        {{-- Delete All Button --}}
                         @if($data_nakes->count() > 0)
                         <button onclick="confirmDeleteAll()"
                             class="flex items-center gap-2 px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition font-medium text-sm">
-                            <i class="fas fa-trash-alt"></i>Hapus Semua
+                            <i class="fas fa-trash-alt"></i>Delete All
                         </button>
                         @endif
 
-                        <!-- Tombol Filter dengan Dropdown -->
+                        <!-- Filter Button with Dropdown -->
                         <div class="relative">
                             <button onclick="toggleFilterDropdown()"
                                 class="flex items-center gap-2 px-5 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-sm">
@@ -319,7 +318,7 @@
                                 <i class="fas fa-chevron-down text-xs ml-1"></i>
                             </button>
 
-                            <!-- Dropdown Filter -->
+                            <!-- Filter Dropdown -->
                             <div id="filterDropdown"
                                 class="filter-dropdown absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
                                 <div class="p-4">
@@ -331,33 +330,33 @@
                                             <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
                                             <select name="status" id="filterStatus"
                                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
-                                                <option value="">Semua Status</option>
-                                                <option value="Dokter"
-                                                    {{ request('status') == 'Dokter' ? 'selected' : '' }}>Dokter
+                                                <option value="">All Status</option>
+                                                <option value="Doctor"
+                                                    {{ request('status') == 'Doctor' ? 'selected' : '' }}>Doctor
                                                 </option>
-                                                <option value="Perawat"
-                                                    {{ request('status') == 'Perawat' ? 'selected' : '' }}>Perawat
+                                                <option value="Nurse"
+                                                    {{ request('status') == 'Nurse' ? 'selected' : '' }}>Nurse
                                                 </option>
-                                                <option value="Laboran"
-                                                    {{ request('status') == 'Laboran' ? 'selected' : '' }}>Laboran
+                                                <option value="Laboratory Staff"
+                                                    {{ request('status') == 'Laboratory Staff' ? 'selected' : '' }}>Laboratory Staff
                                                 </option>
                                             </select>
                                         </div>
 
-                                        <!-- Tanggal Filter Sederhana -->
+                                        <!-- Simple Date Filter -->
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal</label>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Admitted</label>
                                             <input type="date" name="date" id="filterDate"
                                                 value="{{ request('date') }}"
                                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
-                                            <label class="text-xs text-gray-500 mt-1">Pilih tanggal spesifik</label>
+                                            <label class="text-xs text-gray-500 mt-1">Select specific date</label>
                                         </div>
 
                                         <!-- Action Buttons -->
                                         <div class="flex gap-2 pt-2">
                                             <button type="button" onclick="applyFilter()"
                                                 class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition font-medium text-sm">
-                                                Terapkan Filter
+                                                Apply Filter
                                             </button>
                                             <button type="button" onclick="resetFilter()"
                                                 class="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition font-medium text-sm">
@@ -371,7 +370,7 @@
                     </div>
                 </div>
 
-                <!-- Filter Active Badges -->
+                <!-- Active Filter Badges -->
                 <div id="activeFilters" class="mb-6 flex flex-wrap gap-2">
                     @if (request('status'))
                         <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full flex items-center gap-1">
@@ -384,7 +383,7 @@
                     @if (request('date'))
                         <span
                             class="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full flex items-center gap-1">
-                            Tanggal: {{ request('date') }}
+                            Date: {{ request('date') }}
                             <button onclick="removeFilter('date')" class="text-green-600 hover:text-green-800">
                                 <i class="fas fa-times text-xs"></i>
                             </button>
@@ -393,7 +392,7 @@
                     @if (request('search'))
                         <span
                             class="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full flex items-center gap-1">
-                            Pencarian: "{{ request('search') }}"
+                            Search: "{{ request('search') }}"
                             <button onclick="removeFilter('search')" class="text-purple-600 hover:text-purple-800">
                                 <i class="fas fa-times text-xs"></i>
                             </button>
@@ -407,16 +406,16 @@
                             <tr class="bg-white">
                                 <th
                                     class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                    TANGGAL</th>
+                                    ADMITTED</th>
                                 <th
                                     class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                    NAMA</th>
+                                    NAME</th>
                                 <th
                                     class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                     STATUS</th>
                                 <th
                                     class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                    KONTAK</th>
+                                    CONTACT</th>
                                 <th class="px-6 py-3"></th>
                             </tr>
                         </thead>
@@ -430,8 +429,8 @@
                                     <td class="px-6 py-4 text-sm text-gray-800 font-medium">{{ $item->nama }}</td>
                                     <td class="px-6 py-4">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium status-badge
-                                            {{ $item->status === 'Dokter' ? 'bg-blue-100 text-blue-800' : 
-                                               ($item->status === 'Perawat' ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800') }}">
+                                            {{ $item->status === 'Doctor' ? 'bg-blue-100 text-blue-800' : 
+                                               ($item->status === 'Nurse' ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800') }}">
                                             {{ $item->status }}
                                         </span>
                                     </td>
@@ -461,9 +460,9 @@
                                     <td colspan="5" class="px-6 py-8 text-center text-gray-500">
                                         <i class="fas fa-inbox text-4xl mb-2 block"></i>
                                         @if (request()->anyFilled(['status', 'date', 'search']))
-                                            Tidak ada data yang sesuai dengan filter
+                                            No data matching the filter criteria
                                         @else
-                                            Tidak ada data nakes
+                                            No healthcare workers data available
                                         @endif
                                     </td>
                                 </tr>
@@ -479,12 +478,12 @@
                                 {{-- Previous Button --}}
                                 @if ($data_nakes->onFirstPage())
                                     <span class="px-4 py-2 text-gray-400 rounded transition text-sm flex items-center gap-2 pagination-disabled">
-                                        <i class="fas fa-chevron-left text-xs"></i>Sebelumnya
+                                        <i class="fas fa-chevron-left text-xs"></i>Previous
                                     </span>
                                 @else
                                     <a href="{{ $data_nakes->previousPageUrl() }}"
                                         class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm flex items-center gap-2">
-                                        <i class="fas fa-chevron-left text-xs"></i>Sebelumnya
+                                        <i class="fas fa-chevron-left text-xs"></i>Previous
                                     </a>
                                 @endif
 
@@ -532,11 +531,11 @@
                                 @if ($data_nakes->hasMorePages())
                                     <a href="{{ $data_nakes->nextPageUrl() }}"
                                         class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm flex items-center gap-2">
-                                        Selanjutnya<i class="fas fa-chevron-right text-xs"></i>
+                                        Next<i class="fas fa-chevron-right text-xs"></i>
                                     </a>
                                 @else
                                     <span class="px-4 py-2 text-gray-400 rounded transition text-sm flex items-center gap-2 pagination-disabled">
-                                        Selanjutnya<i class="fas fa-chevron-right text-xs"></i>
+                                        Next<i class="fas fa-chevron-right text-xs"></i>
                                     </span>
                                 @endif
                             </div>
@@ -550,9 +549,9 @@
                         <i class="fas fa-download"></i> Export
                         </button>
 
-                                <!-- 📄 Page Info (Rapi & Centered) -->
+                                <!-- 📄 Page Info (Neat & Centered) -->
                                 <div class="flex items-center gap-3 text-sm text-gray-600">
-                                    <span class="font-medium text-gray-700">Halaman</span>
+                                    <span class="font-medium text-gray-700">Page</span>
                                     <div class="relative">
                                         <select id="pageSelect"
                                             class="appearance-none bg-white border border-gray-300 rounded-lg px-3 py-1.5 pr-8 text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200">
@@ -567,7 +566,7 @@
                                             <i class="fas fa-chevron-down text-xs"></i>
                                         </div>
                                     </div>
-                                    <span>dari <span class="font-medium text-gray-800">{{ $data_nakes->lastPage() }}</span></span>
+                                    <span>of <span class="font-medium text-gray-800">{{ $data_nakes->lastPage() }}</span></span>
                                 </div>
                             </div>
                         </div>
@@ -586,7 +585,7 @@
         </button>
         <button onclick="deleteFromMenu()"
             class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-700 flex items-center gap-2">
-            <i class="fas fa-trash-alt text-red-500 w-4"></i>Hapus
+            <i class="fas fa-trash-alt text-red-500 w-4"></i>Delete
         </button>
     </div>
 
@@ -610,7 +609,7 @@
             </div>
 
             <div class="p-6">
-                <h3 id="modalTitle" class="text-xl font-bold text-gray-800 mb-6">REGISTRASI DATA NAKES</h3>
+                <h3 id="modalTitle" class="text-xl font-bold text-gray-800 mb-6">REGISTER Data Nakes</h3>
 
                 <form id="dataNakesForm" method="POST" class="space-y-4">
                     @csrf
@@ -618,9 +617,9 @@
                     <input type="hidden" id="dataNakesId" name="id">
 
                     <div>
-                        <label class="block text-sm text-gray-600 mb-2 font-medium">Nama <span
+                        <label class="block text-sm text-gray-600 mb-2 font-medium">Name <span
                                 class="text-red-500">*</span></label>
-                        <input type="text" id="nama" name="nama" placeholder="Masukkan nama lengkap"
+                        <input type="text" id="nama" name="nama" placeholder="Enter full name"
                             class="w-full px-4 py-3 bg-blue-50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 text-sm"
                             required>
                     </div>
@@ -631,15 +630,15 @@
                         <select id="status" name="status"
                             class="w-full px-4 py-3 bg-blue-50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700 text-sm"
                             required>
-                            <option value="" selected disabled>Pilih Status</option>
-                            <option value="Dokter">Dokter</option>
-                            <option value="Perawat">Perawat</option>
-                            <option value="Laboran">Laboran</option>
+                            <option value="" selected disabled>Select Status</option>
+                            <option value="Doctor">Doctor</option>
+                            <option value="Nurse">Nurse</option>
+                            <option value="Laboratory Staff">Laboratory Staff</option>
                         </select>
                     </div>
 
                     <div>
-                        <label class="block text-sm text-gray-600 mb-2 font-medium">Kontak (WhatsApp) <span
+                        <label class="block text-sm text-gray-600 mb-2 font-medium">Contact (WhatsApp) <span
                                 class="text-red-500">*</span></label>
                         <input type="tel" id="contact" name="contact" placeholder="081234567890"
                             class="w-full px-4 py-3 bg-blue-50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 text-sm"
@@ -649,7 +648,7 @@
 
                     <button type="submit"
                         class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition mt-6 text-sm">
-                        <i class="fas fa-save mr-2"></i>SIMPAN
+                        <i class="fas fa-save mr-2"></i>SAVE
                     </button>
                 </form>
             </div>
@@ -663,20 +662,20 @@
                 <div class="flex items-center justify-center w-16 h-16 mx-auto bg-red-100 rounded-full mb-4">
                     <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
                 </div>
-                <h3 class="text-xl font-bold text-gray-800 text-center mb-2">Konfirmasi Hapus</h3>
-                <p class="text-gray-600 text-center mb-6 text-sm">Apakah Anda yakin ingin menghapus data nakes ini?</p>
+                <h3 class="text-xl font-bold text-gray-800 text-center mb-2">Confirm Deletion</h3>
+                <p class="text-gray-600 text-center mb-6 text-sm">Are you sure you want to delete this data nakes?</p>
 
                 <div class="flex gap-3">
                     <button onclick="closeDeleteModal()"
                         class="flex-1 py-3 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition text-sm">
-                        <i class="fas fa-times mr-2"></i>BATAL
+                        <i class="fas fa-times mr-2"></i>CANCEL
                     </button>
                     <form id="deleteForm" method="POST" class="flex-1">
                         @csrf
                         @method('DELETE')
                         <button type="submit"
                             class="w-full py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition text-sm">
-                            <i class="fas fa-trash mr-2"></i>HAPUS
+                            <i class="fas fa-trash mr-2"></i>DELETE
                         </button>
                     </form>
                 </div>
@@ -691,20 +690,20 @@
                 <div class="flex items-center justify-center w-16 h-16 mx-auto bg-red-100 rounded-full mb-4">
                     <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
                 </div>
-                <h3 class="text-xl font-bold text-gray-800 text-center mb-2">Konfirmasi Hapus Semua</h3>
-                <p class="text-gray-600 text-center mb-6 text-sm">Apakah Anda yakin ingin menghapus <span class="font-bold text-red-600">SEMUA</span> data nakes? Tindakan ini tidak dapat dibatalkan!</p>
+                <h3 class="text-xl font-bold text-gray-800 text-center mb-2">Confirm Delete All</h3>
+                <p class="text-gray-600 text-center mb-6 text-sm">Are you sure you want to delete <span class="font-bold text-red-600">ALL</span> healthcare workers data? This action cannot be undone!</p>
 
                 <div class="flex gap-3">
                     <button onclick="closeDeleteAllModal()"
                         class="flex-1 py-3 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition text-sm">
-                        <i class="fas fa-times mr-2"></i>BATAL
+                        <i class="fas fa-times mr-2"></i>CANCEL
                     </button>
                     <form id="deleteAllForm" method="POST" action="{{ route('data-nakes.delete-all') }}" class="flex-1">
                         @csrf
                         @method('DELETE')
                         <button type="submit"
                             class="w-full py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition text-sm">
-                            <i class="fas fa-trash mr-2"></i>HAPUS SEMUA
+                            <i class="fas fa-trash mr-2"></i>DELETE ALL
                         </button>
                     </form>
                 </div>
@@ -719,15 +718,15 @@
         // ==================== CONTACT FORMATTING ====================
 
         function formatContactNumber(input) {
-            // Hilangkan semua karakter non-digit
+            // Remove all non-digit characters
             let numbers = input.replace(/\D/g, '');
             
-            // Jika diawali dengan 62, ubah menjadi 0
+            // If starts with 62, change to 0
             if (numbers.startsWith('62')) {
                 numbers = '0' + numbers.substring(2);
             }
             
-            // Jika diawali dengan +62, ubah menjadi 0
+            // If starts with +62, change to 0
             if (numbers.startsWith('+62')) {
                 numbers = '0' + numbers.substring(3);
             }
@@ -735,7 +734,7 @@
             return numbers;
         }
 
-        // Event listener untuk input contact
+        // Event listener for contact input
         document.getElementById('contact').addEventListener('blur', function(e) {
             this.value = formatContactNumber(this.value);
         });
@@ -857,7 +856,7 @@
             const methodInput = document.getElementById('formMethod');
 
             if (action === 'add') {
-                title.textContent = 'REGISTRASI DATA NAKES';
+                title.textContent = 'Register Data Nakes';
                 form.reset();
                 form.action = "{{ route('data-nakes.store') }}";
                 methodInput.value = 'POST';
@@ -873,7 +872,7 @@
             const form = document.getElementById('dataNakesForm');
             const methodInput = document.getElementById('formMethod');
 
-            title.textContent = 'EDIT DATA NAKES';
+            title.textContent = 'EDIT HEALTHCARE WORKER DATA';
 
             const submitBtn = form.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerHTML;
@@ -906,7 +905,7 @@
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
-                        text: 'Gagal memuat data nakes',
+                        text: 'Failed to load healthcare worker data',
                         confirmButtonColor: '#3b82f6'
                     });
                 });
@@ -971,13 +970,13 @@
         });
 
         document.getElementById('dataNakesForm').addEventListener('submit', function(e) {
-            // Format contact number sebelum submit
+            // Format contact number before submit
             const contactInput = document.getElementById('contact');
             contactInput.value = formatContactNumber(contactInput.value);
             
             const submitBtn = this.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
             submitBtn.disabled = true;
         });
 
@@ -987,12 +986,12 @@
             });
         }, 5000);
 
-        // Validasi input contact untuk hanya menerima angka
+        // Validate contact input to only accept numbers
         document.getElementById('contact').addEventListener('input', function(e) {
             this.value = this.value.replace(/[^0-9]/g, '');
         });
 
-        // Real-time search (opsional)
+        // Real-time search (optional)
         let searchTimeout;
         document.getElementById('searchInput').addEventListener('input', function(e) {
             clearTimeout(searchTimeout);
