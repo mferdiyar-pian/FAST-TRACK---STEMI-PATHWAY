@@ -90,13 +90,6 @@
             object-fit: cover;
             border: 2px solid #e5e7eb;
         }
-
-        /* Search input styling untuk placeholder yang panjang */
-        .search-input::placeholder {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
     </style>
 </head>
 
@@ -134,23 +127,11 @@
 
         <!-- Main Content -->
         <main class="flex-1 overflow-y-auto">
-            <!-- Header yang SAMA PERSIS dengan halaman Data Nakes -->
+            <!-- Header tanpa bagian search -->
             <header class="bg-white shadow-sm px-8 py-4">
                 <div class="flex items-center justify-between">
                     <div></div>
                     <div class="flex items-center gap-6">
-                        <form id="searchForm" method="GET" action="{{ route('dashboard.index') }}"
-                            class="relative flex items-center">
-                            <input type="text" name="search" id="searchInput" 
-                                placeholder="Search type of keywords"
-                                value="{{ request('search') }}"
-                                class="w-80 pl-4 pr-10 py-2 border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm transition-all duration-200 search-input" />
-                            <button type="submit"
-                                class="absolute right-3 text-gray-400 hover:text-blue-600 transition-all duration-150">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </form>
-                        
                         {{-- User Profile dengan Foto --}}
                         <div x-data="{ isOpen: false }" class="relative">
                             <button @click="isOpen = !isOpen" class="flex items-center gap-3 focus:outline-none hover:bg-gray-50 rounded-lg px-3 py-2 transition-all duration-200">
@@ -320,36 +301,6 @@
         const chartLabels = <?php echo isset($chartData) && !empty($chartData) ? json_encode(array_column($chartData, 'month')) : '["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]' ?>;
         const chartRunning = <?php echo isset($chartData) && !empty($chartData) ? json_encode(array_column($chartData, 'running')) : '[0,0,0,0,0,0,0,0,0,0,0,0]' ?>;
         const chartFinished = <?php echo isset($chartData) && !empty($chartData) ? json_encode(array_column($chartData, 'finished')) : '[0,0,0,0,0,0,0,0,0,0,0,0]' ?>;
-
-        // ==================== SEARCH FUNCTION ====================
-
-        // Handle search form submission
-        document.getElementById('searchForm')?.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const searchValue = document.getElementById('searchInput').value;
-            const url = new URL(window.location.href);
-
-            if (searchValue) {
-                url.searchParams.set('search', searchValue);
-            } else {
-                url.searchParams.delete('search');
-            }
-
-            // Reset to page 1 when searching
-            url.searchParams.set('page', 1);
-            window.location.href = url.toString();
-        });
-
-        // Real-time search (opsional)
-        let searchTimeout;
-        document.getElementById('searchInput')?.addEventListener('input', function(e) {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                if (this.value.length >= 3 || this.value.length === 0) {
-                    document.getElementById('searchForm').dispatchEvent(new Event('submit'));
-                }
-            }, 500);
-        });
 
         // ==================== CHART FUNCTIONS ====================
 

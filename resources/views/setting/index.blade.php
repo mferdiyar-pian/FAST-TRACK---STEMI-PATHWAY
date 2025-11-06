@@ -126,13 +126,6 @@
             border: 2px solid #e5e7eb;
         }
 
-        /* Search input styling untuk placeholder yang panjang */
-        .search-input::placeholder {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
         /* Custom scrollbar for data area only */
         .data-scroll-container {
             height: calc(100vh - 200px);
@@ -213,18 +206,6 @@
                 <div class="flex items-center justify-between">
                     <div></div>
                     <div class="flex items-center gap-6">
-                        <!-- Search Form -->
-                        <form id="searchForm" method="GET" action="{{ route('setting.index') }}"
-                            class="relative flex items-center">
-                            <input type="text" name="search" id="searchInput" placeholder="Search type of keywords"
-                                value="{{ request('search') }}"
-                                class="w-80 pl-4 pr-10 py-2 border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm transition-all duration-200 search-input" />
-                            <button type="submit"
-                                class="absolute right-3 text-gray-400 hover:text-blue-600 transition-all duration-150">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </form>
-                        
                         {{-- User Profile dengan Foto --}}
                         <div x-data="{ isOpen: false }" class="relative">
                             <button @click="isOpen = !isOpen" class="flex items-center gap-3 focus:outline-none hover:bg-gray-50 rounded-lg px-3 py-2 transition-all duration-200">
@@ -355,7 +336,7 @@
                                 <div class="space-y-4">
                                     <div class="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
                                             <input type="text" name="name" value="{{ old('name', $user->name) }}"
                                                 class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
                                             @error('name')
@@ -488,32 +469,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // ==================== SEARCH FUNCTION ====================
-            document.getElementById('searchForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                const searchValue = document.getElementById('searchInput').value;
-                const url = new URL(window.location.href);
-
-                if (searchValue) {
-                    url.searchParams.set('search', searchValue);
-                } else {
-                    url.searchParams.delete('search');
-                }
-
-                window.location.href = url.toString();
-            });
-
-            // Real-time search (opsional)
-            let searchTimeout;
-            document.getElementById('searchInput').addEventListener('input', function(e) {
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(() => {
-                    if (this.value.length >= 3 || this.value.length === 0) {
-                        document.getElementById('searchForm').dispatchEvent(new Event('submit'));
-                    }
-                }, 500);
-            });
-
             // Auto remove notifications after 5 seconds
             setTimeout(() => {
                 document.querySelectorAll('.auto-remove-notification').forEach(notification => {
