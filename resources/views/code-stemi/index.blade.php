@@ -17,7 +17,8 @@
             font-weight: 400;
             line-height: 1.5;
             letter-spacing: -0.011em;
-            overflow: hidden; /* Prevent whole page scrolling */
+            overflow: hidden;
+            /* Prevent whole page scrolling */
         }
 
         .font-semibold {
@@ -968,7 +969,8 @@
 
                         <div class="bg-gray-100 rounded-lg p-3 space-y-1 mb-2">
                             <p class="text-xs text-gray-700 font-semibold">CODE STEMI AKTIF</p>
-                            <p class="text-xs text-gray-600">Pasien STEMI telah berada di IGD RS Otak M Hatta Bukittinggi.</p>
+                            <p class="text-xs text-gray-600">Pasien STEMI telah berada di IGD RS Otak M Hatta
+                                Bukittinggi.</p>
                             <p class="text-xs text-gray-600">Seluruh unit terkait dimohon segera siaga.</p>
                             <p class="text-xs text-gray-600">Fast Track STEMI Pathway aktif.</p>
                             <p class="text-xs text-gray-600">Waktu Door-to-balloon dimulai.</p>
@@ -1364,7 +1366,7 @@
                     updateTableAfterFinish(itemId);
                     showSuccessNotification(
                         'Code STEMI activation has been successfully completed. Door-to-balloon time has been recorded.'
-                        );
+                    );
 
                     // Auto refresh after 2 seconds
                     setTimeout(() => {
@@ -1612,72 +1614,74 @@
                 const response = await fetch(`/code-stemi/${id}`);
                 const data = await response.json();
 
-                // Format checklist items sesuai permintaan
-                const checklistItems = ['Anamnesis', 'Rongten Thorax', 'Laboratorium'];
+                // Format checklist items - SEMUA 6 ITEM
+                const checklistItems = ['Anamnesis', 'Rongten Thorax', 'Laboratorium', 'EKG', 'Pemeriksaan Fisik',
+                    'Informed Consent'
+                ];
 
                 let checklistHTML = '';
                 checklistItems.forEach(item => {
                     const isChecked = data.checklist && data.checklist.includes(item);
                     checklistHTML += `
-                    <label class="flex items-center gap-2">
-                        <input type="checkbox" ${isChecked ? 'checked' : ''} disabled 
-                            class="w-4 h-4 text-blue-600 rounded border-gray-300">
-                        <span class="text-sm text-gray-700 ${isChecked ? 'font-medium' : 'text-gray-400'}">
-                            ${item}
-                        </span>
-                    </label>
-                    `;
+            <label class="flex items-center gap-2">
+                <input type="checkbox" ${isChecked ? 'checked' : ''} disabled 
+                    class="w-4 h-4 text-blue-600 rounded border-gray-300">
+                <span class="text-sm text-gray-700 ${isChecked ? 'font-medium' : 'text-gray-400'}">
+                    ${item}
+                </span>
+            </label>
+            `;
                 });
 
                 // Format waktu
                 const doorToBalloonTime = data.door_to_balloon_time || '00h : 00m : 00s';
 
                 document.getElementById('detailContent').innerHTML = `
-                    <div class="space-y-4">
-                        <!-- Checklist Section -->
-                        <div>
-                            <h4 class="text-sm font-semibold text-gray-800 mb-3">Checklist Registrasi</h4>
-                            <div class="space-y-2">
-                                ${checklistHTML}
-                            </div>
-                        </div>
-
-                        <!-- Broadcast Message Section -->
-                        <div class="border-t pt-4">
-                            <h4 class="text-sm font-semibold text-gray-800 mb-2">Pesan Broadcast</h4>
-                            <p class="text-xs text-gray-600 mb-2">Fast Track STEMI Pathway</p>
-                            <div class="bg-blue-50 rounded-lg p-3 space-y-1 border border-blue-200">
-                                <p class="text-xs text-blue-900 font-semibold">CODE STEMI AKTIF</p>
-                                <p class="text-xs text-blue-800">Pasien STEMI telah berada di IGD RS Otak M Hatta Bukittinggi.</p>
-                                <p class="text-xs text-blue-800">Seluruh unit terkait dimohon segera siaga.</p>
-                                <p class="text-xs text-blue-800">Fast Track STEMI Pathway aktif.</p>
-                                <p class="text-xs text-blue-800">Waktu Door-to-balloon dimulai.</p>
-                                ${data.custom_message ? `
-                                    <div class="mt-2 pt-2 border-t border-blue-200">
-                                        <p class="text-xs text-blue-900 font-semibold">Pesan Tambahan:</p>
-                                        <p class="text-xs text-blue-800">${data.custom_message}</p>
-                                    </div>
-                                ` : ''}
-                            </div>
-                        </div>
-
-                        <!-- Door-to-Balloon Time Section -->
-                        <div class="bg-white border border-gray-200 rounded-lg p-4 text-center">
-                            <p class="text-sm font-semibold text-gray-800 mb-2">DOOR TO BALLOON TIME</p>
-                            <div id="detail-time-${data.id}" class="text-3xl font-bold text-blue-600 tracking-wider timer-text">
-                                ${doorToBalloonTime}
-                            </div>
-                        </div>
-
-                        <!-- Complete Button untuk status Running -->
-                        ${data.status === 'Running' ? `
-                            <button onclick="confirmFinish(${data.id})" 
-                                class="w-full py-2.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition text-sm">
-                                COMPLETE CODE STEMI ACTIVATION
-                            </button>
-                        ` : ''}
+            <div class="space-y-4">
+                <!-- Checklist Section -->
+                <div>
+                    <h4 class="text-sm font-semibold text-gray-800 mb-3">Checklist Registrasi</h4>
+                    <div class="grid grid-cols-2 gap-2">
+                        ${checklistHTML}
                     </div>
-                `;
+                </div>
+
+                <!-- Broadcast Message Section -->
+                <div class="border-t pt-4">
+                    <h4 class="text-sm font-semibold text-gray-800 mb-2">Pesan Broadcast</h4>
+                    <p class="text-xs text-gray-600 mb-2">Fast Track STEMI Pathway</p>
+                    <div class="bg-blue-50 rounded-lg p-3 space-y-1 border border-blue-200">
+                        <p class="text-xs text-blue-900 font-semibold">CODE STEMI AKTIF</p>
+                        <p class="text-xs text-blue-800">Pasien STEMI telah berada di IGD RS Otak M Hatta Bukittinggi.</p>
+                        <p class="text-xs text-blue-800">Seluruh unit terkait dimohon segera siaga.</p>
+                        <p class="text-xs text-blue-800">Fast Track STEMI Pathway aktif.</p>
+                        <p class="text-xs text-blue-800">Waktu Door-to-balloon dimulai.</p>
+                        ${data.custom_message ? `
+                                <div class="mt-2 pt-2 border-t border-blue-200">
+                                    <p class="text-xs text-blue-900 font-semibold">Pesan Tambahan:</p>
+                                    <p class="text-xs text-blue-800">${data.custom_message}</p>
+                                </div>
+                            ` : ''}
+                    </div>
+                </div>
+
+                <!-- Door-to-Balloon Time Section -->
+                <div class="bg-white border border-gray-200 rounded-lg p-4 text-center">
+                    <p class="text-sm font-semibold text-gray-800 mb-2">DOOR TO BALLOON TIME</p>
+                    <div id="detail-time-${data.id}" class="text-3xl font-bold text-blue-600 tracking-wider timer-text">
+                        ${doorToBalloonTime}
+                    </div>
+                </div>
+
+                <!-- Complete Button untuk status Running -->
+                ${data.status === 'Running' ? `
+                        <button onclick="confirmFinish(${data.id})" 
+                            class="w-full py-2.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition text-sm">
+                            COMPLETE CODE STEMI ACTIVATION
+                        </button>
+                    ` : ''}
+            </div>
+        `;
 
                 // Jika status Running, mulai timer
                 if (data.status === 'Running') {
