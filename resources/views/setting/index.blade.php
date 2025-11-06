@@ -454,41 +454,6 @@
 
                     {{-- Right Side --}}
                     <div class="space-y-6">
-                        {{-- Profile Picture --}}
-                        <div class="bg-white rounded-xl shadow-sm p-6">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-6">Profile Picture</h3>
-
-                            <div class="flex flex-col items-center">
-                                @if($user->profile_photo)
-                                    <img src="{{ asset('storage/profile-photos/' . $user->profile_photo) }}" 
-                                         alt="Profile Photo" 
-                                         class="w-32 h-32 rounded-full object-cover mb-4">
-                                @else
-                                    <div class="w-32 h-32 bg-gradient-to-br from-blue-500 to-teal-500 rounded-full flex items-center justify-center text-white text-4xl font-bold mb-4">
-                                        {{ substr($user->name, 0, 2) }}
-                                    </div>
-                                @endif
-
-                                <form action="{{ route('setting.update-profile-photo') }}" method="POST" enctype="multipart/form-data" class="text-center">
-                                    @csrf
-                                    <input type="file" name="profile_photo" id="profile_photo" accept="image/*" class="hidden" onchange="this.form.submit()">
-                                    <button type="button" onclick="document.getElementById('profile_photo').click()"
-                                        class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition font-medium mb-2">
-                                        Upload Photo
-                                    </button>
-                                </form>
-
-                                @if($user->profile_photo)
-                                    <form action="{{ route('setting.remove-profile-photo') }}" method="POST" class="text-center">
-                                        @csrf
-                                        <button type="submit" 
-                                            class="px-4 py-2 text-red-600 text-sm hover:bg-red-50 rounded-lg transition font-medium">
-                                            Remove Photo
-                                        </button>
-                                    </form>
-                                @endif
-                            </div>
-                        </div>
 
                         {{-- Quick Stats --}}
                         <div class="bg-white rounded-xl shadow-sm p-6">
