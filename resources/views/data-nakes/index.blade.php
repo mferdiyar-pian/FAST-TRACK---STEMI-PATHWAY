@@ -922,7 +922,7 @@
             const form = document.getElementById('dataNakesForm');
             const methodInput = document.getElementById('formMethod');
 
-            title.textContent = 'EDIT HEALTHCARE WORKER DATA';
+            title.textContent = 'EDIT Data Nakes';
 
             const submitBtn = form.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerHTML;
