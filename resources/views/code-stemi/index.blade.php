@@ -376,12 +376,12 @@
                                             <div class="space-y-2 max-h-40 overflow-y-auto">
                                                 @php
                                                     $checklistItems = [
-                                                        'Anamnesis' => 'Anamnesis',
-                                                        'Rongten Thorax' => 'Chest X-Ray',
-                                                        'Laboratorium' => 'Laboratory',
+                                                        'Anamnesis',
+                                                        'Rongten Thorax',
+                                                        'Laboratorium',
                                                         'EKG' => 'ECG',
-                                                        'Pemeriksaan Fisik' => 'Physical Examination',
-                                                        'Informed Consent' => 'Informed Consent',
+                                                        'Pemeriksaan Fisik',
+                                                        'Informed Consent',
                                                     ];
                                                 @endphp
 
@@ -439,12 +439,12 @@
                     @if (request('checklist_filter'))
                         @php
                             $checklistLabels = [
-                                'Anamnesis' => 'Anamnesis',
-                                'Rongten Thorax' => 'Chest X-Ray',
-                                'Laboratorium' => 'Laboratory',
-                                'EKG' => 'ECG',
-                                'Pemeriksaan Fisik' => 'Physical Examination',
-                                'Informed Consent' => 'Informed Consent',
+                                'Anamnesis',
+                                'Rongten Thorax',
+                                'Laboratorium',
+                                'EKG',
+                                'Pemeriksaan Fisik',
+                                'Informed Consent',
                             ];
                         @endphp
                         @foreach (request('checklist_filter') as $checklistItem)
@@ -942,12 +942,12 @@
                         <div class="grid grid-cols-2 gap-2" id="editChecklistContainer">
                             @php
                                 $checklistItems = [
-                                    'Anamnesis' => 'Anamnesis',
-                                    'EKG' => 'ECG',
-                                    'Rongten Thorax' => 'Chest X-Ray',
-                                    'Pemeriksaan Fisik' => 'Physical Examination',
-                                    'Laboratorium' => 'Laboratory',
-                                    'Informed Consent' => 'Informed Consent',
+                                    'Anamnesis',
+                                    'EKG',
+                                    'Rongten Thorax',
+                                    'Pemeriksaan Fisik',
+                                    'Laboratorium',
+                                    'Informed Consent',
                                 ];
                             @endphp
 
@@ -967,13 +967,11 @@
                         <p class="text-xs text-gray-600 mb-2">Fast Track STEMI Pathway</p>
 
                         <div class="bg-gray-100 rounded-lg p-3 space-y-1 mb-2">
-                            <p class="text-xs text-gray-700 font-semibold">CODE STEMI ACTIVE</p>
-                            <p class="text-xs text-gray-600">STEMI patient has arrived at the Emergency Department of M
-                                Hatta Brain Hospital Bukittinggi.</p>
-                            <p class="text-xs text-gray-600">All related units are requested to be on standby
-                                immediately.</p>
-                            <p class="text-xs text-gray-600">Fast Track STEMI Pathway is active.</p>
-                            <p class="text-xs text-gray-600">Door-to-balloon time has started.</p>
+                            <p class="text-xs text-gray-700 font-semibold">CODE STEMI AKTIF</p>
+                            <p class="text-xs text-gray-600">Pasien STEMI telah berada di IGD RS Otak M Hatta Bukittinggi.</p>
+                            <p class="text-xs text-gray-600">Seluruh unit terkait dimohon segera siaga.</p>
+                            <p class="text-xs text-gray-600">Fast Track STEMI Pathway aktif.</p>
+                            <p class="text-xs text-gray-600">Waktu Door-to-balloon dimulai.</p>
                         </div>
 
                         <textarea name="custom_message" id="editCustomMessage" placeholder="Add custom message here (optional)"

@@ -331,14 +331,14 @@
                                             <select name="status" id="filterStatus"
                                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
                                                 <option value="">All Status</option>
-                                                <option value="Doctor"
-                                                    {{ request('status') == 'Doctor' ? 'selected' : '' }}>Doctor
+                                                <option value="Dokter"
+                                                    {{ request('status') == 'Dokter' ? 'selected' : '' }}>Dokter
                                                 </option>
-                                                <option value="Nurse"
-                                                    {{ request('status') == 'Nurse' ? 'selected' : '' }}>Nurse
+                                                <option value="Perawat"
+                                                    {{ request('status') == 'Perawat' ? 'selected' : '' }}>Perawat
                                                 </option>
-                                                <option value="Laboratory Staff"
-                                                    {{ request('status') == 'Laboratory Staff' ? 'selected' : '' }}>Laboratory Staff
+                                                <option value="Laboran"
+                                                    {{ request('status') == 'Laboran' ? 'selected' : '' }}>Laboran
                                                 </option>
                                             </select>
                                         </div>
@@ -429,8 +429,8 @@
                                     <td class="px-6 py-4 text-sm text-gray-800 font-medium">{{ $item->nama }}</td>
                                     <td class="px-6 py-4">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium status-badge
-                                            {{ $item->status === 'Doctor' ? 'bg-blue-100 text-blue-800' : 
-                                               ($item->status === 'Nurse' ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800') }}">
+                                            {{ $item->status === 'Dokter' ? 'bg-blue-100 text-blue-800' : 
+                                               ($item->status === 'Perawat' ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800') }}">
                                             {{ $item->status }}
                                         </span>
                                     </td>
@@ -631,9 +631,9 @@
                             class="w-full px-4 py-3 bg-blue-50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700 text-sm"
                             required>
                             <option value="" selected disabled>Select Status</option>
-                            <option value="Doctor">Doctor</option>
-                            <option value="Nurse">Nurse</option>
-                            <option value="Laboratory Staff">Laboratory Staff</option>
+                            <option value="Dokter">Dokter</option>
+                            <option value="Perawat">Perawat</option>
+                            <option value="Laboran">Laboran</option>
                         </select>
                     </div>
 
