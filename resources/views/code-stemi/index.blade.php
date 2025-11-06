@@ -380,7 +380,7 @@
                                                         'Anamnesis',
                                                         'Rongten Thorax',
                                                         'Laboratorium',
-                                                        'EKG' => 'ECG',
+                                                        'EKG',
                                                         'Pemeriksaan Fisik',
                                                         'Informed Consent',
                                                     ];
