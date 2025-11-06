@@ -40,19 +40,56 @@ class CodeStemiController extends Controller
             });
         }
         
-        // Filter berdasarkan pencarian
+        // PERBAIKAN: Filter berdasarkan pencarian yang lebih komprehensif
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
             $query->where(function($q) use ($search) {
+                // Cari di custom_message
                 $q->where('custom_message', 'like', "%{$search}%")
+                  // Cari di status
                   ->orWhere('status', 'like', "%{$search}%")
-                  ->orWhere('duration', 'like', "%{$search}%");
+                  // Cari di duration (kolom fisik di database)
+                  ->orWhere('duration', 'like', "%{$search}%")
+                  // Cari di checklist (dikonversi ke string untuk pencarian)
+                  ->orWhereRaw('JSON_UNQUOTE(JSON_EXTRACT(checklist, "$")) LIKE ?', ["%{$search}%"])
+                  // Cari di tanggal (format berbeda)
+                  ->orWhereDate('start_time', 'like', "%{$search}%")
+                  ->orWhereDate('end_time', 'like', "%{$search}%");
             });
         }
 
         $data = $query->orderBy('start_time', 'desc')->paginate(10);
         
+        // Tambahkan formatted_date untuk setiap item
+        $data->getCollection()->transform(function ($item) {
+            $item->formatted_date = $item->start_time->setTimezone('Asia/Makassar')->format('d M, Y');
+            $item->door_to_balloon_time = $this->calculateDoorToBalloonTime($item);
+            return $item;
+        });
+        
         return view('code-stemi.index', compact('data'));
+    }
+
+    /**
+     * Hitung door to balloon time
+     */
+    private function calculateDoorToBalloonTime($codeStemi)
+    {
+        if ($codeStemi->status === 'Finished' && $codeStemi->start_time && $codeStemi->end_time) {
+            $start = Carbon::parse($codeStemi->start_time)->setTimezone('Asia/Makassar');
+            $end = Carbon::parse($codeStemi->end_time)->setTimezone('Asia/Makassar');
+            $diff = $end->diff($start);
+            
+            return sprintf('%02dh : %02dm : %02ds', $diff->h, $diff->i, $diff->s);
+        } elseif ($codeStemi->status === 'Running' && $codeStemi->start_time) {
+            $start = Carbon::parse($codeStemi->start_time)->setTimezone('Asia/Makassar');
+            $now = now()->setTimezone('Asia/Makassar');
+            $diff = $now->diff($start);
+            
+            return sprintf('%02dh : %02dm : %02ds', $diff->h, $diff->i, $diff->s);
+        }
+        
+        return '00h : 00m : 00s';
     }
 
     /**
@@ -152,7 +189,7 @@ class CodeStemiController extends Controller
             'checklist' => $codeStemi->checklist,
             'custom_message' => $codeStemi->custom_message,
             'start_time' => $codeStemi->start_time->setTimezone('Asia/Makassar')->toISOString(),
-            'door_to_balloon_time' => $codeStemi->door_to_balloon_time,
+            'door_to_balloon_time' => $this->calculateDoorToBalloonTime($codeStemi),
         ]);
     }
 
@@ -293,7 +330,7 @@ class CodeStemiController extends Controller
             'id' => $codeStemi->id,
             'status' => $codeStemi->status,
             'checklist' => $codeStemi->checklist,
-            'door_to_balloon_time' => $codeStemi->door_to_balloon_time,
+            'door_to_balloon_time' => $this->calculateDoorToBalloonTime($codeStemi),
             'start_time' => $codeStemi->start_time->setTimezone('Asia/Makassar')->toISOString(),
             'end_time' => $codeStemi->end_time ? $codeStemi->end_time->setTimezone('Asia/Makassar')->toISOString() : null,
             'custom_message' => $codeStemi->custom_message,
@@ -331,7 +368,7 @@ class CodeStemiController extends Controller
                 'message' => 'Code STEMI selesai!',
                 'data' => [
                     'id' => $code->id,
-                    'final_time' => $code->door_to_balloon_time
+                    'final_time' => $this->calculateDoorToBalloonTime($code)
                 ]
             ]);
 
@@ -375,8 +412,8 @@ class CodeStemiController extends Controller
                     return [
                         'id' => $item->id,
                         'status' => $item->status,
-                        'formatted_date' => $item->formatted_date,
-                        'door_to_balloon_time' => $item->door_to_balloon_time,
+                        'formatted_date' => $item->start_time->format('d M, Y'),
+                        'door_to_balloon_time' => $this->calculateDoorToBalloonTime($item),
                         'user_name' => 'System'
                     ];
                 });
@@ -426,7 +463,8 @@ class CodeStemiController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('custom_message', 'like', "%{$search}%")
                   ->orWhere('status', 'like', "%{$search}%")
-                  ->orWhere('duration', 'like', "%{$search}%");
+                  ->orWhere('duration', 'like', "%{$search}%")
+                  ->orWhereRaw('JSON_UNQUOTE(JSON_EXTRACT(checklist, "$")) LIKE ?', ["%{$search}%"]);
             });
         }
 
