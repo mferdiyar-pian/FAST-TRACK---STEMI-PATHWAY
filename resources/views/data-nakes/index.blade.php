@@ -19,6 +19,7 @@
             font-weight: 400;
             line-height: 1.5;
             letter-spacing: -0.011em;
+            overflow: hidden; /* Prevent whole page scrolling */
         }
         
         /* Font Weight Adjustments */
@@ -146,6 +147,46 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
+        /* Custom scrollbar for data area only */
+        .data-scroll-container {
+            height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+
+        .data-scroll-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .data-scroll-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .data-scroll-container::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+
+        .data-scroll-container::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /* Auto remove notification styling */
+        .auto-remove-notification {
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 
@@ -186,8 +227,8 @@
             </nav>
         </aside>
 
-        <main class="flex-1 overflow-y-auto">
-            <header class="bg-white shadow-sm px-8 py-4">
+        <main class="flex-1 flex flex-col">
+            <header class="bg-white shadow-sm px-8 py-4 flex-shrink-0">
                 <div class="flex items-center justify-between">
                     <div></div>
                     <div class="flex items-center gap-6">
@@ -271,26 +312,35 @@
                 </div>
             </header>
 
-            <div class="p-8">
+            <div class="p-8 flex-1 data-scroll-container">
+                {{-- Notifications --}}
                 @if (session('success'))
-                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6 text-sm"
-                        role="alert">
-                        <span class="block sm:inline">{{ session('success') }}</span>
-                        <button onclick="this.parentElement.style.display='none'"
-                            class="absolute top-0 bottom-0 right-0 px-4 py-3">
-                            <i class="fas fa-times"></i>
-                        </button>
+                    <div
+                        class="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm auto-remove-notification">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i class="fas fa-check-circle mr-2"></i>
+                                <span>{{ session('success') }}</span>
+                            </div>
+                            <button onclick="this.parentElement.parentElement.remove()" class="text-green-600 hover:text-green-800">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
                     </div>
                 @endif
 
                 @if (session('error'))
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6 text-sm"
-                        role="alert">
-                        <span class="block sm:inline">{{ session('error') }}</span>
-                        <button onclick="this.parentElement.style.display='none'"
-                            class="absolute top-0 bottom-0 right-0 px-4 py-3">
-                            <i class="fas fa-times"></i>
-                        </button>
+                    <div
+                        class="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm auto-remove-notification">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i class="fas fa-exclamation-circle mr-2"></i>
+                                <span>{{ session('error') }}</span>
+                            </div>
+                            <button onclick="this.parentElement.parentElement.remove()" class="text-red-600 hover:text-red-800">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
                     </div>
                 @endif
 
@@ -391,9 +441,9 @@
                     @endif
                     @if (request('search'))
                         <span
-                            class="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full flex items-center gap-1">
+                            class="bg-indigo-100 text-indigo-800 text-xs px-3 py-1 rounded-full flex items-center gap-1">
                             Search: "{{ request('search') }}"
-                            <button onclick="removeFilter('search')" class="text-purple-600 hover:text-purple-800">
+                            <button onclick="removeFilter('search')" class="text-indigo-600 hover:text-indigo-800">
                                 <i class="fas fa-times text-xs"></i>
                             </button>
                         </span>
@@ -980,9 +1030,10 @@
             submitBtn.disabled = true;
         });
 
+        // Auto remove notifications after 5 seconds
         setTimeout(() => {
-            document.querySelectorAll('[role="alert"]').forEach(message => {
-                message.style.display = 'none';
+            document.querySelectorAll('.auto-remove-notification').forEach(notification => {
+                notification.remove();
             });
         }, 5000);
 
