@@ -952,11 +952,11 @@
                                 ];
                             @endphp
 
-                            @foreach ($checklistItems as $key => $label)
+                            @foreach ($checklistItems as $item)
                                 <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="checkbox" name="checklist[]" value="{{ $key }}"
+                                    <input type="checkbox" name="checklist[]" value="{{ $item }}"
                                         class="edit-checklist w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
-                                    <span class="text-sm text-gray-700">{{ $label }}</span>
+                                    <span class="text-sm text-gray-700">{{ $item }}</span>
                                 </label>
                             @endforeach
                         </div>
@@ -1597,9 +1597,25 @@
                 document.getElementById('editCodeStemiForm').action = `/code-stemi/${id}`;
 
                 const checkboxes = document.querySelectorAll('.edit-checklist');
+
+                console.log('Data dari server:', data);
+                console.log('Checklist data:', data.checklist);
+
+                // Reset semua checkbox terlebih dahulu
                 checkboxes.forEach(checkbox => {
-                    checkbox.checked = data.checklist && data.checklist.includes(checkbox.value);
+                    checkbox.checked = false;
                 });
+
+                // Centang checkbox yang sesuai dengan data
+                if (data.checklist && Array.isArray(data.checklist)) {
+                    checkboxes.forEach(checkbox => {
+                        // Cek apakah value checkbox ada dalam data checklist
+                        if (data.checklist.includes(checkbox.value)) {
+                            checkbox.checked = true;
+                            console.log('Checked checkbox with value:', checkbox.value);
+                        }
+                    });
+                }
 
                 document.getElementById('editCustomMessage').value = data.custom_message || '';
 
@@ -1608,7 +1624,6 @@
                 showErrorModal('Failed to load data for editing');
             }
         }
-
         async function loadDetailData(id) {
             try {
                 const response = await fetch(`/code-stemi/${id}`);
@@ -1657,11 +1672,11 @@
                         <p class="text-xs text-blue-800">Fast Track STEMI Pathway aktif.</p>
                         <p class="text-xs text-blue-800">Waktu Door-to-balloon dimulai.</p>
                         ${data.custom_message ? `
-                                <div class="mt-2 pt-2 border-t border-blue-200">
-                                    <p class="text-xs text-blue-900 font-semibold">Pesan Tambahan:</p>
-                                    <p class="text-xs text-blue-800">${data.custom_message}</p>
-                                </div>
-                            ` : ''}
+                                        <div class="mt-2 pt-2 border-t border-blue-200">
+                                            <p class="text-xs text-blue-900 font-semibold">Pesan Tambahan:</p>
+                                            <p class="text-xs text-blue-800">${data.custom_message}</p>
+                                        </div>
+                                    ` : ''}
                     </div>
                 </div>
 
@@ -1675,11 +1690,11 @@
 
                 <!-- Complete Button untuk status Running -->
                 ${data.status === 'Running' ? `
-                        <button onclick="confirmFinish(${data.id})" 
-                            class="w-full py-2.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition text-sm">
-                            COMPLETE CODE STEMI ACTIVATION
-                        </button>
-                    ` : ''}
+                                <button onclick="confirmFinish(${data.id})" 
+                                    class="w-full py-2.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition text-sm">
+                                    COMPLETE CODE STEMI ACTIVATION
+                                </button>
+                            ` : ''}
             </div>
         `;
 
