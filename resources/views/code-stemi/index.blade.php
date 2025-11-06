@@ -821,7 +821,7 @@
                     {{-- Submit Button --}}
                     <button type="button" onclick="confirmActivation()"
                         class="w-full py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition text-sm">
-                        AKTIVASI CODE STEMI DIMULAI
+                        AKTIVASI Code STEMI DIMULAI
                     </button>
                 </div>
             </form>
@@ -986,7 +986,7 @@
                     {{-- Submit Button --}}
                     <button type="submit"
                         class="w-full py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition text-sm">
-                        UPDATE CODE STEMI
+                        UPDATE Code STEMI
                     </button>
                 </div>
             </form>

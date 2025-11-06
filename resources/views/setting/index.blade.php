@@ -156,6 +156,22 @@
         .data-scroll-container::-webkit-scrollbar-thumb:hover {
             background: #a8a8a8;
         }
+
+        /* Auto remove notification styling */
+        .auto-remove-notification {
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 
@@ -200,7 +216,7 @@
                         <!-- Search Form -->
                         <form id="searchForm" method="GET" action="{{ route('setting.index') }}"
                             class="relative flex items-center">
-                            <input type="text" name="search" id="searchInput" placeholder="Search settings..."
+                            <input type="text" name="search" id="searchInput" placeholder="Search type of keywords"
                                 value="{{ request('search') }}"
                                 class="w-80 pl-4 pr-10 py-2 border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm transition-all duration-200 search-input" />
                             <button type="submit"
@@ -277,31 +293,49 @@
                 </div>
             </header>
 
-            {{-- Flash Messages --}}
-            @if(session('success'))
-                <div class="mx-8 mt-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
-                    {{ session('success') }}
-                </div>
-            @endif
-
-            @if(session('error'))
-                <div class="mx-8 mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
-                    {{ session('error') }}
-                </div>
-            @endif
-
             {{-- Setting Content --}}
             <div class="p-8 flex-1 data-scroll-container">
+                {{-- Notifications --}}
+                @if (session('success'))
+                    <div
+                        class="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm auto-remove-notification">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i class="fas fa-check-circle mr-2"></i>
+                                <span>{{ session('success') }}</span>
+                            </div>
+                            <button onclick="this.parentElement.parentElement.remove()" class="text-green-600 hover:text-green-800">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                @endif
+
+                @if (session('error'))
+                    <div
+                        class="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm auto-remove-notification">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i class="fas fa-exclamation-circle mr-2"></i>
+                                <span>{{ session('error') }}</span>
+                            </div>
+                            <button onclick="this.parentElement.parentElement.remove()" class="text-red-600 hover:text-red-800">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                @endif
+
                 {{-- Title --}}
                 <div class="flex items-center justify-between mb-8">
                     <h2 class="text-3xl font-bold text-gray-800">Setting</h2>
                     
-                    <!-- Filter Active Badges -->
+                    <!-- Active Filter Badges -->
                     <div id="activeFilters" class="flex flex-wrap gap-2">
                         @if (request('search'))
-                            <span class="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full flex items-center gap-1">
-                                Pencarian: "{{ request('search') }}"
-                                <button onclick="removeFilter('search')" class="text-purple-600 hover:text-purple-800">
+                            <span class="bg-indigo-100 text-indigo-800 text-xs px-3 py-1 rounded-full flex items-center gap-1">
+                                Search: "{{ request('search') }}"
+                                <button onclick="removeFilter('search')" class="text-indigo-600 hover:text-indigo-800">
                                     <i class="fas fa-times text-xs"></i>
                                 </button>
                             </span>
@@ -488,39 +522,88 @@
     </div>
 
     <script>
-        // ==================== SEARCH FUNCTION ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            // ==================== SEARCH FUNCTION ====================
+            document.getElementById('searchForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const searchValue = document.getElementById('searchInput').value;
+                const url = new URL(window.location.href);
 
-        // Handle search form submission
-        document.getElementById('searchForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const searchValue = document.getElementById('searchInput').value;
-            const url = new URL(window.location.href);
+                if (searchValue) {
+                    url.searchParams.set('search', searchValue);
+                } else {
+                    url.searchParams.delete('search');
+                }
 
-            if (searchValue) {
-                url.searchParams.set('search', searchValue);
-            } else {
-                url.searchParams.delete('search');
-            }
+                window.location.href = url.toString();
+            });
 
-            window.location.href = url.toString();
+            // Real-time search (opsional)
+            let searchTimeout;
+            document.getElementById('searchInput').addEventListener('input', function(e) {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    if (this.value.length >= 3 || this.value.length === 0) {
+                        document.getElementById('searchForm').dispatchEvent(new Event('submit'));
+                    }
+                }, 500);
+            });
+
+            // Auto remove notifications after 5 seconds
+            setTimeout(() => {
+                document.querySelectorAll('.auto-remove-notification').forEach(notification => {
+                    notification.remove();
+                });
+            }, 5000);
         });
 
+        // ==================== FILTER FUNCTIONS ====================
         function removeFilter(filterName) {
             const url = new URL(window.location.href);
             url.searchParams.delete(filterName);
             window.location.href = url.toString();
         }
 
-        // Real-time search (opsional)
-        let searchTimeout;
-        document.getElementById('searchInput').addEventListener('input', function(e) {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                if (this.value.length >= 3 || this.value.length === 0) {
-                    document.getElementById('searchForm').dispatchEvent(new Event('submit'));
+        // ==================== NOTIFICATION FUNCTIONS ====================
+        function showSuccessNotification(message) {
+            // Remove old notifications if any
+            const oldNotifications = document.querySelectorAll('.auto-remove-notification');
+            oldNotifications.forEach(notification => notification.remove());
+
+            // Create new notification
+            const notification = document.createElement('div');
+            notification.className =
+                'auto-remove-notification mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm';
+            notification.innerHTML = `
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    <span>${message}</span>
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" class="text-green-600 hover:text-green-800">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+
+            // Insert notification above content
+            const content = document.querySelector('.p-8');
+            content.insertBefore(notification, content.firstChild);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
                 }
-            }, 500);
-        });
+            }, 5000);
+        }
+
+        // ==================== ERROR MODAL FUNCTIONS ====================
+        function showErrorModal(message) {
+            // You can implement SweetAlert2 here if needed
+            console.error('Error:', message);
+            alert('Error: ' + message);
+        }
     </script>
 </body>
 
