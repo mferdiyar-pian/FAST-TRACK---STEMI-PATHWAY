@@ -1,4 +1,5 @@
 <?php
+// app/Http/Controllers/CodeStemiController.php
 
 namespace App\Http\Controllers;
 
@@ -8,8 +9,6 @@ use Illuminate\Support\Facades\Http;
 use App\Models\DataNakes;
 use Carbon\Carbon;
 use App\Events\CodeStemiStatusUpdated;
-
-// tambahkan use untuk export
 use App\Exports\CodeStemiExport;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -27,7 +26,7 @@ class CodeStemiController extends Controller
             $query->where('status', $request->status);
         }
         
-        // Filter berdasarkan tanggal spesifik (mengganti start_date dan end_date)
+        // Filter berdasarkan tanggal spesifik
         if ($request->has('date') && $request->date != '') {
             $query->whereDate('start_time', $request->date);
         }
@@ -218,6 +217,39 @@ class CodeStemiController extends Controller
     }
 
     /**
+     * Hapus semua data Code STEMI.
+     */
+    public function deleteAll()
+    {
+        try {
+            $count = CodeStemi::count();
+            
+            if ($count > 0) {
+                CodeStemi::truncate();
+                
+                // ✅ TRIGGER REAL-TIME UPDATE
+                broadcast(new CodeStemiStatusUpdated());
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Semua data Code STEMI ($count data) berhasil dihapus!"
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada data yang dapat dihapus.'
+                ], 400);
+            }
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus semua data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Update checklist dari modal detail.
      */
     public function updateChecklist(Request $request, $id)
@@ -367,7 +399,6 @@ class CodeStemiController extends Controller
 
     /**
      * Export data Code STEMI ke Excel.
-     * Menggunakan filter yang sama dengan halaman index.
      */
     public function export(Request $request)
     {
@@ -405,46 +436,8 @@ class CodeStemiController extends Controller
             return back()->with('error', 'Tidak ada data Code STEMI yang dapat diexport.');
         }
 
-        // Nama file dinamis
         $fileName = 'code_stemi_' . now()->format('Ymd_His') . '.xlsx';
 
-        // CodeStemiExport harus menerima collection di constructor
         return Excel::download(new CodeStemiExport($data), $fileName);
-    }
-
-    /**
-     * Helper method untuk mengupdate duration_minutes untuk data existing
-     * Bisa dijalankan sekali via artisan command atau route khusus
-     */
-    public function updateDurationMinutes()
-    {
-        try {
-            $codeStemis = CodeStemi::where('status', 'Finished')->get();
-            $updatedCount = 0;
-
-            foreach ($codeStemis as $code) {
-                if ($code->start_time && $code->end_time) {
-                    $start = Carbon::parse($code->start_time);
-                    $end = Carbon::parse($code->end_time);
-                    $diff = $end->diff($start);
-                    
-                    $totalMinutes = ($diff->h * 60) + $diff->i;
-                    
-                    $code->update(['duration_minutes' => $totalMinutes]);
-                    $updatedCount++;
-                }
-            }
-
-            return response()->json([
-                'success' => true,
-                'message' => "Berhasil update {$updatedCount} data dengan duration_minutes"
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal update duration_minutes: ' . $e->getMessage()
-            ], 500);
-        }
     }
 }

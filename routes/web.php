@@ -70,6 +70,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{id}/edit', [DataNakesController::class, 'edit'])->name('data-nakes.edit');
         Route::put('/{id}', [DataNakesController::class, 'update'])->name('data-nakes.update');
         Route::delete('/{id}', [DataNakesController::class, 'destroy'])->name('data-nakes.destroy');
+        Route::get('/data-nakes/export', [DataNakesController::class, 'export'])->name('data-nakes.export');
+        Route::delete('/data-nakes/delete-all', [DataNakesController::class, 'deleteAll'])->name('data-nakes.delete-all');
     });
 
     /*
@@ -87,6 +89,7 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/{id}', [CodeStemiController::class, 'destroy'])->name('code-stemi.destroy');
         Route::patch('/{id}/finish', [CodeStemiController::class, 'finish'])->name('code-stemi.finish');
         Route::post('/{id}/checklist', [CodeStemiController::class, 'updateChecklist'])->name('code-stemi.update-checklist');
+        Route::delete('/code-stemi/delete-all', [CodeStemiController::class, 'deleteAll'])->name('code-stemi.delete-all');
     });
 
     /*
@@ -103,7 +106,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/photo/remove', [SettingController::class, 'removePhoto'])->name('setting.photo.remove');
 
         Route::post('/account/delete', [SettingController::class, 'deleteAccount'])->name('setting.account.delete');
-Route::get('/temp-update-codestemi', [SettingController::class, 'tempUpdateCodeStemi']);
+        Route::get('/temp-update-codestemi', [SettingController::class, 'tempUpdateCodeStemi']);
     });
 
     /*

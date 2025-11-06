@@ -130,6 +130,22 @@
         input, select, textarea {
             font-family: 'Inter', sans-serif;
         }
+
+        /* Profile image styling */
+        .profile-image {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #e5e7eb;
+        }
+
+        /* Search input styling untuk placeholder yang panjang */
+        .search-input::placeholder {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
 </head>
 
@@ -177,32 +193,78 @@
                     <div class="flex items-center gap-6">
                         <form id="searchForm" method="GET" action="{{ route('data-nakes.index') }}"
                             class="relative flex items-center">
-                            <input type="text" name="search" id="searchInput" placeholder="Search type of keywords"
+                            {{-- PERBAIKAN: Search input dengan placeholder yang benar --}}
+                            <input type="text" name="search" id="searchInput" 
+                                placeholder="Search type of keywords"
                                 value="{{ request('search') }}"
-                                class="w-80 pl-4 pr-10 py-2 border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm transition-all duration-200" />
+                                class="w-80 pl-4 pr-10 py-2 border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm transition-all duration-200 search-input" />
                             <button type="submit"
                                 class="absolute right-3 text-gray-400 hover:text-blue-600 transition-all duration-150">
                                 <i class="fas fa-search"></i>
                             </button>
                         </form>
-                        <button class="relative">
-                            <i class="fas fa-bell text-gray-500 text-xl"></i>
-                            <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                        </button>
+                        
+                        {{-- User Profile dengan Foto --}}
                         <div x-data="{ isOpen: false }" class="relative">
-                            <button @click="isOpen = !isOpen" class="flex items-center gap-3 focus:outline-none">
-                                <span class="text-gray-700 font-medium text-sm">{{ Auth::user()->name }}</span>
+                            <button @click="isOpen = !isOpen" class="flex items-center gap-3 focus:outline-none hover:bg-gray-50 rounded-lg px-3 py-2 transition-all duration-200">
+                                {{-- Foto Profil --}}
+                                @if(Auth::user()->profile_photo_path)
+                                    <img src="{{ asset('storage/' . Auth::user()->profile_photo_path) }}" 
+                                         alt="{{ Auth::user()->name }}" 
+                                         class="profile-image">
+                                @else
+                                    {{-- Default avatar dengan inisial --}}
+                                    <div class="profile-image bg-blue-500 flex items-center justify-center text-white font-semibold text-sm">
+                                        {{ substr(Auth::user()->name, 0, 1) }}
+                                    </div>
+                                @endif
+                                
+                                <div class="flex flex-col items-start">
+                                    <span class="text-gray-700 font-medium text-sm">{{ Auth::user()->name }}</span>
+                                    <span class="text-gray-500 text-xs">{{ Auth::user()->role ?? 'Admin' }}</span>
+                                </div>
                                 <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
                             </button>
 
-                            <div x-show="isOpen" @click.away="isOpen = false"
-                                class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-10">
+                            <div x-show="isOpen" @click.away="isOpen = false" x-transition
+                                class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl z-50 border border-gray-200 py-2">
+                                {{-- Header Profil di Dropdown --}}
+                                <div class="px-4 py-3 border-b border-gray-100">
+                                    <div class="flex items-center gap-3">
+                                        @if(Auth::user()->profile_photo_path)
+                                            <img src="{{ asset('storage/' . Auth::user()->profile_photo_path) }}" 
+                                                 alt="{{ Auth::user()->name }}" 
+                                                 class="w-10 h-10 rounded-full object-cover">
+                                        @else
+                                            <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
+                                                {{ substr(Auth::user()->name, 0, 1) }}
+                                            </div>
+                                        @endif
+                                        <div class="flex flex-col">
+                                            <span class="text-sm font-medium text-gray-900">{{ Auth::user()->name }}</span>
+                                            <span class="text-xs text-gray-500">{{ Auth::user()->email }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
                                 <a href="{{ route('setting.index') }}"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil</a>
+                                    class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-user-circle text-gray-400 w-4"></i>
+                                    <span>Profil Saya</span>
+                                </a>
+                                <a href="{{ route('setting.index') }}?tab=password"
+                                    class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-key text-gray-400 w-4"></i>
+                                    <span>Ubah Password</span>
+                                </a>
+                                <div class="border-t border-gray-100 my-1"></div>
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
                                     <button type="submit"
-                                        class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
+                                        class="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                        <i class="fas fa-sign-out-alt text-gray-400 w-4"></i>
+                                        <span>Logout</span>
+                                    </button>
                                 </form>
                             </div>
                         </div>
@@ -238,8 +300,16 @@
                     <div class="flex gap-3">
                         <button onclick="openModal('add')"
                             class="flex items-center gap-2 px-5 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition font-medium text-sm">
-                            <i class="fas fa-plus"></i>Add Data
+                            <i class="fas fa-plus"></i>Tambah Data
                         </button>
+
+                        {{-- Tombol Hapus Semua --}}
+                        @if($data_nakes->count() > 0)
+                        <button onclick="confirmDeleteAll()"
+                            class="flex items-center gap-2 px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition font-medium text-sm">
+                            <i class="fas fa-trash-alt"></i>Hapus Semua
+                        </button>
+                        @endif
 
                         <!-- Tombol Filter dengan Dropdown -->
                         <div class="relative">
@@ -337,7 +407,7 @@
                             <tr class="bg-white">
                                 <th
                                     class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                    ADMITTED</th>
+                                    TANGGAL</th>
                                 <th
                                     class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                     NAMA</th>
@@ -346,7 +416,7 @@
                                     STATUS</th>
                                 <th
                                     class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                    CONTACT</th>
+                                    KONTAK</th>
                                 <th class="px-6 py-3"></th>
                             </tr>
                         </thead>
@@ -409,12 +479,12 @@
                                 {{-- Previous Button --}}
                                 @if ($data_nakes->onFirstPage())
                                     <span class="px-4 py-2 text-gray-400 rounded transition text-sm flex items-center gap-2 pagination-disabled">
-                                        <i class="fas fa-chevron-left text-xs"></i>Previous
+                                        <i class="fas fa-chevron-left text-xs"></i>Sebelumnya
                                     </span>
                                 @else
                                     <a href="{{ $data_nakes->previousPageUrl() }}"
                                         class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm flex items-center gap-2">
-                                        <i class="fas fa-chevron-left text-xs"></i>Previous
+                                        <i class="fas fa-chevron-left text-xs"></i>Sebelumnya
                                     </a>
                                 @endif
 
@@ -462,18 +532,18 @@
                                 @if ($data_nakes->hasMorePages())
                                     <a href="{{ $data_nakes->nextPageUrl() }}"
                                         class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm flex items-center gap-2">
-                                        Next<i class="fas fa-chevron-right text-xs"></i>
+                                        Selanjutnya<i class="fas fa-chevron-right text-xs"></i>
                                     </a>
                                 @else
                                     <span class="px-4 py-2 text-gray-400 rounded transition text-sm flex items-center gap-2 pagination-disabled">
-                                        Next<i class="fas fa-chevron-right text-xs"></i>
+                                        Selanjutnya<i class="fas fa-chevron-right text-xs"></i>
                                     </span>
                                 @endif
                             </div>
 
                           {{-- Right: Export and Page Info --}}
                          <div class="flex items-center gap-4">
-                            {{-- Export Button (fixed version) --}}
+                            {{-- Export Button --}}
                         <button type="button"
                             onclick="window.location.href='{{ route('data-nakes.export') }}'"
                             class="relative z-0 flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 transition font-medium text-sm">
@@ -482,7 +552,7 @@
 
                                 <!-- 📄 Page Info (Rapi & Centered) -->
                                 <div class="flex items-center gap-3 text-sm text-gray-600">
-                                    <span class="font-medium text-gray-700">Page</span>
+                                    <span class="font-medium text-gray-700">Halaman</span>
                                     <div class="relative">
                                         <select id="pageSelect"
                                             class="appearance-none bg-white border border-gray-300 rounded-lg px-3 py-1.5 pr-8 text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200">
@@ -497,7 +567,7 @@
                                             <i class="fas fa-chevron-down text-xs"></i>
                                         </div>
                                     </div>
-                                    <span>of <span class="font-medium text-gray-800">{{ $data_nakes->lastPage() }}</span></span>
+                                    <span>dari <span class="font-medium text-gray-800">{{ $data_nakes->lastPage() }}</span></span>
                                 </div>
                             </div>
                         </div>
@@ -614,9 +684,61 @@
         </div>
     </div>
 
+    {{-- Modal Delete All --}}
+    <div id="deleteAllModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 transform transition-all">
+            <div class="p-6">
+                <div class="flex items-center justify-center w-16 h-16 mx-auto bg-red-100 rounded-full mb-4">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 text-center mb-2">Konfirmasi Hapus Semua</h3>
+                <p class="text-gray-600 text-center mb-6 text-sm">Apakah Anda yakin ingin menghapus <span class="font-bold text-red-600">SEMUA</span> data nakes? Tindakan ini tidak dapat dibatalkan!</p>
+
+                <div class="flex gap-3">
+                    <button onclick="closeDeleteAllModal()"
+                        class="flex-1 py-3 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition text-sm">
+                        <i class="fas fa-times mr-2"></i>BATAL
+                    </button>
+                    <form id="deleteAllForm" method="POST" action="{{ route('data-nakes.delete-all') }}" class="flex-1">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit"
+                            class="w-full py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition text-sm">
+                            <i class="fas fa-trash mr-2"></i>HAPUS SEMUA
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         let currentDataNakesId = null;
         let contextMenuItemId = null;
+
+        // ==================== CONTACT FORMATTING ====================
+
+        function formatContactNumber(input) {
+            // Hilangkan semua karakter non-digit
+            let numbers = input.replace(/\D/g, '');
+            
+            // Jika diawali dengan 62, ubah menjadi 0
+            if (numbers.startsWith('62')) {
+                numbers = '0' + numbers.substring(2);
+            }
+            
+            // Jika diawali dengan +62, ubah menjadi 0
+            if (numbers.startsWith('+62')) {
+                numbers = '0' + numbers.substring(3);
+            }
+            
+            return numbers;
+        }
+
+        // Event listener untuk input contact
+        document.getElementById('contact').addEventListener('blur', function(e) {
+            this.value = formatContactNumber(this.value);
+        });
 
         // ==================== PAGINATION FUNCTIONS ====================
 
@@ -806,6 +928,18 @@
             document.getElementById('deleteModal').classList.remove('flex');
         }
 
+        // ==================== DELETE ALL FUNCTIONS ====================
+
+        function confirmDeleteAll() {
+            document.getElementById('deleteAllModal').classList.remove('hidden');
+            document.getElementById('deleteAllModal').classList.add('flex');
+        }
+
+        function closeDeleteAllModal() {
+            document.getElementById('deleteAllModal').classList.add('hidden');
+            document.getElementById('deleteAllModal').classList.remove('flex');
+        }
+
         // Close context menu when clicking outside
         document.addEventListener('click', function(e) {
             const menu = document.getElementById('contextMenu');
@@ -822,16 +956,25 @@
             if (e.target === this) closeDeleteModal();
         });
 
+        document.getElementById('deleteAllModal').addEventListener('click', function(e) {
+            if (e.target === this) closeDeleteAllModal();
+        });
+
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeModal();
                 closeDeleteModal();
+                closeDeleteAllModal();
                 document.getElementById('contextMenu').classList.add('hidden');
                 document.getElementById('filterDropdown').classList.remove('show');
             }
         });
 
         document.getElementById('dataNakesForm').addEventListener('submit', function(e) {
+            // Format contact number sebelum submit
+            const contactInput = document.getElementById('contact');
+            contactInput.value = formatContactNumber(contactInput.value);
+            
             const submitBtn = this.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerHTML;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
@@ -844,8 +987,20 @@
             });
         }, 5000);
 
+        // Validasi input contact untuk hanya menerima angka
         document.getElementById('contact').addEventListener('input', function(e) {
             this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
+        // Real-time search (opsional)
+        let searchTimeout;
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                if (this.value.length >= 3 || this.value.length === 0) {
+                    document.getElementById('searchForm').dispatchEvent(new Event('submit'));
+                }
+            }, 500);
         });
     </script>
 </body>

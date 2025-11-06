@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -127,6 +127,22 @@
             font-weight: 600;
             letter-spacing: 0.025em;
         }
+
+        /* Profile image styling */
+        .profile-image {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #e5e7eb;
+        }
+
+        /* Search input styling for long placeholder */
+        .search-input::placeholder {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
 </head>
 
@@ -162,7 +178,7 @@
                 </a>
                 <a href="{{ route('setting.index') }}"
                     class="flex items-center gap-3 px-6 py-3 text-gray-500 hover:bg-gray-50">
-                    <i class="fas fa-cog w-5"></i><span class="font-medium">Setting</span>
+                    <i class="fas fa-cog w-5"></i><span class="font-medium">Settings</span>
                 </a>
             </nav>
         </aside>
@@ -175,32 +191,77 @@
                     <div class="flex items-center gap-6">
                         <form id="searchForm" method="GET" action="{{ route('code-stemi.index') }}"
                             class="relative flex items-center">
-                            <input type="text" name="search" id="searchInput" placeholder="Search type of keywords"
+                            <input type="text" name="search" id="searchInput" 
+                                placeholder="Search type of keywords"
                                 value="{{ request('search') }}"
-                                class="w-80 pl-4 pr-10 py-2 border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm transition-all duration-200" />
+                                class="w-80 pl-4 pr-10 py-2 border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm transition-all duration-200 search-input" />
                             <button type="submit"
                                 class="absolute right-3 text-gray-400 hover:text-blue-600 transition-all duration-150">
                                 <i class="fas fa-search"></i>
                             </button>
                         </form>
-                        <button class="relative">
-                            <i class="fas fa-bell text-gray-500 text-xl"></i>
-                            <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                        </button>
+                        
+                        {{-- User Profile with Photo --}}
                         <div x-data="{ isOpen: false }" class="relative">
-                            <button @click="isOpen = !isOpen" class="flex items-center gap-3 focus:outline-none">
-                                <span class="text-gray-700 font-medium text-sm">{{ Auth::user()->name }}</span>
+                            <button @click="isOpen = !isOpen" class="flex items-center gap-3 focus:outline-none hover:bg-gray-50 rounded-lg px-3 py-2 transition-all duration-200">
+                                {{-- Profile Photo --}}
+                                @if(Auth::user()->profile_photo_path)
+                                    <img src="{{ asset('storage/' . Auth::user()->profile_photo_path) }}" 
+                                         alt="{{ Auth::user()->name }}" 
+                                         class="profile-image">
+                                @else
+                                    {{-- Default avatar with initial --}}
+                                    <div class="profile-image bg-blue-500 flex items-center justify-center text-white font-semibold text-sm">
+                                        {{ substr(Auth::user()->name, 0, 1) }}
+                                    </div>
+                                @endif
+                                
+                                <div class="flex flex-col items-start">
+                                    <span class="text-gray-700 font-medium text-sm">{{ Auth::user()->name }}</span>
+                                    <span class="text-gray-500 text-xs">{{ Auth::user()->role ?? 'Admin' }}</span>
+                                </div>
                                 <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
                             </button>
 
-                            <div x-show="isOpen" @click.away="isOpen = false"
-                                class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-10">
+                            <div x-show="isOpen" @click.away="isOpen = false" x-transition
+                                class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl z-50 border border-gray-200 py-2">
+                                {{-- Profile Header in Dropdown --}}
+                                <div class="px-4 py-3 border-b border-gray-100">
+                                    <div class="flex items-center gap-3">
+                                        @if(Auth::user()->profile_photo_path)
+                                            <img src="{{ asset('storage/' . Auth::user()->profile_photo_path) }}" 
+                                                 alt="{{ Auth::user()->name }}" 
+                                                 class="w-10 h-10 rounded-full object-cover">
+                                        @else
+                                            <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
+                                                {{ substr(Auth::user()->name, 0, 1) }}
+                                            </div>
+                                        @endif
+                                        <div class="flex flex-col">
+                                            <span class="text-sm font-medium text-gray-900">{{ Auth::user()->name }}</span>
+                                            <span class="text-xs text-gray-500">{{ Auth::user()->email }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
                                 <a href="{{ route('setting.index') }}"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil</a>
+                                    class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-user-circle text-gray-400 w-4"></i>
+                                    <span>My Profile</span>
+                                </a>
+                                <a href="{{ route('setting.index') }}?tab=password"
+                                    class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-key text-gray-400 w-4"></i>
+                                    <span>Change Password</span>
+                                </a>
+                                <div class="border-t border-gray-100 my-1"></div>
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
                                     <button type="submit"
-                                        class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
+                                        class="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                        <i class="fas fa-sign-out-alt text-gray-400 w-4"></i>
+                                        <span>Logout</span>
+                                    </button>
                                 </form>
                             </div>
                         </div>
@@ -210,7 +271,7 @@
 
             {{-- Code STEMI Content --}}
             <div class="p-8">
-                {{-- Notifikasi --}}
+                {{-- Notifications --}}
                 @if (session('success'))
                     <div
                         class="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm auto-remove-notification">
@@ -233,7 +294,15 @@
                             <i class="fas fa-plus"></i>Add Data
                         </button>
 
-                        <!-- Tombol Filter dengan Dropdown -->
+                        {{-- Delete All Button --}}
+                        @if($data->count() > 0)
+                        <button onclick="confirmDeleteAll()"
+                            class="flex items-center gap-2 px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition font-medium text-sm">
+                            <i class="fas fa-trash-alt"></i>Delete All
+                        </button>
+                        @endif
+
+                        <!-- Filter Button with Dropdown -->
                         <div class="relative">
                             <button onclick="toggleFilterDropdown()"
                                 class="flex items-center gap-2 px-5 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-sm">
@@ -241,9 +310,9 @@
                                 <i class="fas fa-chevron-down text-xs ml-1"></i>
                             </button>
 
-                            <!-- Dropdown Filter -->
+                            <!-- Filter Dropdown -->
                             <div id="filterDropdown"
-                                class="filter-dropdown absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-10">
+                                class="filter-dropdown absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
                                 <div class="p-4">
                                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Filter Code STEMI</h3>
 
@@ -253,7 +322,7 @@
                                             <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
                                             <select name="status" id="filterStatus"
                                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
-                                                <option value="">Semua Status</option>
+                                                <option value="">All Status</option>
                                                 <option value="Running"
                                                     {{ request('status') == 'Running' ? 'selected' : '' }}>Running
                                                 </option>
@@ -263,13 +332,13 @@
                                             </select>
                                         </div>
 
-                                        <!-- Tanggal Filter -->
+                                        <!-- Date Filter -->
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-2">Admitted</label>
                                             <input type="date" name="date" id="filterDate"
                                                 value="{{ request('date') }}"
                                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
-                                            <label class="text-xs text-gray-500 mt-1">Pilih tanggal spesifik</label>
+                                            <label class="text-xs text-gray-500 mt-1">Select specific date</label>
                                         </div>
 
                                         <!-- Checklist Filter -->
@@ -279,10 +348,10 @@
                                                 @php
                                                     $checklistItems = [
                                                         'Anamnesis' => 'Anamnesis',
-                                                        'Rongten Thorax' => 'Rongten Thorax',
-                                                        'Laboratorium' => 'Laboratorium',
-                                                        'EKG' => 'EKG',
-                                                        'Pemeriksaan Fisik' => 'Pemeriksaan Fisik',
+                                                        'Rongten Thorax' => 'Chest X-Ray',
+                                                        'Laboratorium' => 'Laboratory',
+                                                        'EKG' => 'ECG',
+                                                        'Pemeriksaan Fisik' => 'Physical Examination',
                                                         'Informed Consent' => 'Informed Consent',
                                                     ];
                                                 @endphp
@@ -296,14 +365,14 @@
                                                     </label>
                                                 @endforeach
                                             </div>
-                                            <label class="text-xs text-gray-500 mt-1">Filter berdasarkan checklist yang dicentang</label>
+                                            <label class="text-xs text-gray-500 mt-1">Filter by checked checklist items</label>
                                         </div>
 
                                         <!-- Action Buttons -->
                                         <div class="flex gap-2 pt-2">
                                             <button type="button" onclick="applyFilter()"
                                                 class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition font-medium text-sm">
-                                                Terapkan Filter
+                                                Apply Filter
                                             </button>
                                             <button type="button" onclick="resetFilter()"
                                                 class="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition font-medium text-sm">
@@ -317,7 +386,7 @@
                     </div>
                 </div>
 
-                <!-- Filter Active Badges -->
+                <!-- Active Filter Badges -->
                 <div id="activeFilters" class="mb-6 flex flex-wrap gap-2">
                     @if (request('status'))
                         <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full flex items-center gap-1">
@@ -330,7 +399,7 @@
                     @if (request('date'))
                         <span
                             class="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full flex items-center gap-1">
-                            Tanggal: {{ request('date') }}
+                            Date: {{ request('date') }}
                             <button onclick="removeFilter('date')" class="text-green-600 hover:text-green-800">
                                 <i class="fas fa-times text-xs"></i>
                             </button>
@@ -340,10 +409,10 @@
                         @php
                             $checklistLabels = [
                                 'Anamnesis' => 'Anamnesis',
-                                'Rongten Thorax' => 'Rongten Thorax',
-                                'Laboratorium' => 'Laboratorium',
-                                'EKG' => 'EKG',
-                                'Pemeriksaan Fisik' => 'Pemeriksaan Fisik',
+                                'Rongten Thorax' => 'Chest X-Ray',
+                                'Laboratorium' => 'Laboratory',
+                                'EKG' => 'ECG',
+                                'Pemeriksaan Fisik' => 'Physical Examination',
                                 'Informed Consent' => 'Informed Consent',
                             ];
                         @endphp
@@ -360,7 +429,7 @@
                     @if (request('search'))
                         <span
                             class="bg-indigo-100 text-indigo-800 text-xs px-3 py-1 rounded-full flex items-center gap-1">
-                            Pencarian: "{{ request('search') }}"
+                            Search: "{{ request('search') }}"
                             <button onclick="removeFilter('search')" class="text-indigo-600 hover:text-indigo-800">
                                 <i class="fas fa-times text-xs"></i>
                             </button>
@@ -369,13 +438,13 @@
                 </div>
 
                 <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                    @if (isset($data) && $data->count() > 0)
+                    @if ($data->count() > 0)
                         <table class="w-full">
                             <thead>
                                 <tr class="bg-white">
                                     <th
                                         class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                        ADMITTED</th>
+                                        ADMITTTED</th>
                                     <th
                                         class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                         STATUS</th>
@@ -384,7 +453,7 @@
                                         DOOR TO BALLOON TIME</th>
                                     <th
                                         class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                        ACTION</th>
+                                        ACTIONS</th>
                                     <th class="px-6 py-3"></th>
                                 </tr>
                             </thead>
@@ -414,11 +483,11 @@
                                         <td class="px-6 py-4">
                                             <div class="flex items-center gap-2">
                                                 <button onclick="openDetailModal({{ $item->id }})"
-                                                    class="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition font-medium">Detail</button>
+                                                    class="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition font-medium">Details</button>
                                                 @if ($item->status === 'Running')
                                                     <button onclick="confirmFinish({{ $item->id }})"
                                                         class="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition font-medium whitespace-nowrap">
-                                                        Aktivasi Code Stemi Selesai
+                                                        Complete Code
                                                     </button>
                                                 @endif
                                             </div>
@@ -438,25 +507,26 @@
 
                         {{-- Pagination --}}
                         @php
-                            $currentPage = request('page', 1);
-                            $totalItems = $data->total();
-                            $perPage = $data->perPage();
+                            $currentPage = $data->currentPage();
                             $totalPages = $data->lastPage();
                             $prevPage = $data->currentPage() > 1 ? $data->currentPage() - 1 : null;
                             $nextPage = $data->currentPage() < $totalPages ? $data->currentPage() + 1 : null;
-
-                            $baseUrl = request()->url();
-                            $queryParams = request()->except('page');
                         @endphp
 
                         <div class="border-t border-gray-200 px-6 py-4">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-1">
                                     {{-- Previous Button --}}
-                                    <a href="{{ $prevPage ? $baseUrl . '?' . http_build_query(array_merge($queryParams, ['page' => $prevPage])) : '#' }}"
-                                        class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm flex items-center gap-2 {{ !$prevPage ? 'pagination-disabled' : '' }}">
-                                        <i class="fas fa-chevron-left text-xs"></i>Previous
-                                    </a>
+                                    @if ($prevPage)
+                                        <a href="{{ $data->previousPageUrl() }}"
+                                            class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm flex items-center gap-2">
+                                            <i class="fas fa-chevron-left text-xs"></i>Previous
+                                        </a>
+                                    @else
+                                        <span class="px-4 py-2 text-gray-400 rounded transition text-sm flex items-center gap-2 pagination-disabled">
+                                            <i class="fas fa-chevron-left text-xs"></i>Previous
+                                        </span>
+                                    @endif
 
                                     {{-- Page Numbers --}}
                                     @php
@@ -473,7 +543,7 @@
                                     @endphp
 
                                     @if ($startPage > 1)
-                                        <a href="{{ $baseUrl . '?' . http_build_query(array_merge($queryParams, ['page' => 1])) }}"
+                                        <a href="{{ $data->url(1) }}"
                                             class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm min-w-[40px] text-center">1</a>
                                         @if ($startPage > 2)
                                             <span class="px-2 text-gray-400 text-sm">...</span>
@@ -481,7 +551,7 @@
                                     @endif
 
                                     @for ($i = $startPage; $i <= $endPage; $i++)
-                                        <a href="{{ $baseUrl . '?' . http_build_query(array_merge($queryParams, ['page' => $i])) }}"
+                                        <a href="{{ $data->url($i) }}"
                                             class="px-3 py-2 rounded font-medium text-sm min-w-[40px] text-center {{ $i == $currentPage ? 'bg-blue-500 text-white pagination-active' : 'text-gray-700 hover:bg-gray-100' }}">
                                             {{ $i }}
                                         </a>
@@ -491,15 +561,21 @@
                                         @if ($endPage < $totalPages - 1)
                                             <span class="px-2 text-gray-400 text-sm">...</span>
                                         @endif
-                                        <a href="{{ $baseUrl . '?' . http_build_query(array_merge($queryParams, ['page' => $totalPages])) }}"
+                                        <a href="{{ $data->url($totalPages) }}"
                                             class="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm min-w-[40px] text-center">{{ $totalPages }}</a>
                                     @endif
 
                                     {{-- Next Button --}}
-                                    <a href="{{ $nextPage ? $baseUrl . '?' . http_build_query(array_merge($queryParams, ['page' => $nextPage])) : '#' }}"
-                                        class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm flex items-center gap-2 {{ !$nextPage ? 'pagination-disabled' : '' }}">
-                                        Next<i class="fas fa-chevron-right text-xs"></i>
-                                    </a>
+                                    @if ($nextPage)
+                                        <a href="{{ $data->nextPageUrl() }}"
+                                            class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition text-sm flex items-center gap-2">
+                                            Next<i class="fas fa-chevron-right text-xs"></i>
+                                        </a>
+                                    @else
+                                        <span class="px-4 py-2 text-gray-400 rounded transition text-sm flex items-center gap-2 pagination-disabled">
+                                            Next<i class="fas fa-chevron-right text-xs"></i>
+                                        </span>
+                                    @endif
                                 </div>
 
                                 {{-- Right: Export and Page Info --}}
@@ -532,87 +608,84 @@
                                 </div>
                             </div>
                         </div>
-                   @else
-    <table class="w-full">
-        <thead>
-            <tr class="bg-white">
-                <th
-                    class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    ADMITTED</th>
-                <th
-                    class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    STATUS</th>
-                <th
-                    class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    DOOR TO BALLOON TIME</th>
-                <th
-                    class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    ACTION</th>
-                <th class="px-6 py-3"></th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td colspan="5" class="px-6 py-8 text-center text-gray-500">
-                    <i class="fas fa-inbox text-4xl mb-2 block"></i>
-                    @if (request()->anyFilled(['status', 'date', 'checklist_filter', 'search']))
-                        Tidak ada data yang sesuai dengan filter
                     @else
-                        Belum ada data Code STEMI
-                    @endif
-                </td>
-            </tr>
-        </tbody>
-    </table>
+                        <table class="w-full">
+                            <thead>
+                                <tr class="bg-white">
+                                    <th
+                                        class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                        DATE</th>
+                                    <th
+                                        class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                        STATUS</th>
+                                    <th
+                                        class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                        DOOR TO BALLOON TIME</th>
+                                    <th
+                                        class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                        ACTIONS</th>
+                                    <th class="px-6 py-3"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                                        <i class="fas fa-inbox text-4xl mb-2 block"></i>
+                                        @if (request()->anyFilled(['status', 'date', 'checklist_filter', 'search']))
+                                            No data matching the filter criteria
+                                        @else
+                                            No Code STEMI data available
+                                        @endif
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
 
-    {{-- Pagination untuk kondisi tidak ada data --}}
-    <div class="border-t border-gray-200 px-6 py-4">
-        <div class="flex items-center justify-between">
-            {{-- Left: Pagination Navigation --}}
-            <div class="flex items-center gap-1">
-                {{-- Previous Button --}}
-                <span class="px-4 py-2 text-gray-400 rounded transition text-sm flex items-center gap-2 pagination-disabled">
-                    <i class="fas fa-chevron-left text-xs"></i>Previous
-                </span>
+                        {{-- Pagination for no data condition --}}
+                        <div class="border-t border-gray-200 px-6 py-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-1">
+                                    <span class="px-4 py-2 text-gray-400 rounded transition text-sm flex items-center gap-2 pagination-disabled">
+                                        <i class="fas fa-chevron-left text-xs"></i>Previous
+                                    </span>
 
-                {{-- Page Numbers --}}
-                <span class="px-3 py-2 rounded font-medium text-sm min-w-[40px] text-center bg-blue-500 text-white pagination-active">
-                    1
-                </span>
+                                    <span class="px-3 py-2 rounded font-medium text-sm min-w-[40px] text-center bg-blue-500 text-white pagination-active">
+                                        1
+                                    </span>
 
-                {{-- Next Button --}}
-                <span class="px-4 py-2 text-gray-400 rounded transition text-sm flex items-center gap-2 pagination-disabled">
-                    Next<i class="fas fa-chevron-right text-xs"></i>
-                </span>
-            </div>
+                                    <span class="px-4 py-2 text-gray-400 rounded transition text-sm flex items-center gap-2 pagination-disabled">
+                                        Next<i class="fas fa-chevron-right text-xs"></i>
+                                    </span>
+                                </div>
 
-            {{-- Right: Export and Page Info --}}
-            <div class="flex items-center gap-4">
-                {{-- Export Button --}}
-                <button type="button"
-                    class="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 transition font-medium text-sm">
-                    <i class="fas fa-download"></i> Export
-                </button>
+                                <div class="flex items-center gap-4">
+                                    <button type="button"
+                                        class="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 transition font-medium text-sm">
+                                        <i class="fas fa-download"></i> Export
+                                    </button>
 
-                <!-- Page Info -->
-                <div class="flex items-center gap-3 text-sm text-gray-600">
-                    <span class="font-medium text-gray-700">Page</span>
-                    <div class="relative">
-                        <select
-                            class="appearance-none bg-white border border-gray-300 rounded-lg px-3 py-1.5 pr-8 text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200">
-                            <option value="1" selected>1</option>
-                        </select>
-                        <div
-                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-gray-500">
-                            <i class="fas fa-chevron-down text-xs"></i>
+                                    <div class="flex items-center gap-3 text-sm text-gray-600">
+                                        <span class="font-medium text-gray-700">Page</span>
+                                        <div class="relative">
+                                            <select
+                                                class="appearance-none bg-white border border-gray-300 rounded-lg px-3 py-1.5 pr-8 text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200">
+                                                <option value="1" selected>1</option>
+                                            </select>
+                                            <div
+                                                class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-gray-500">
+                                                <i class="fas fa-chevron-down text-xs"></i>
+                                            </div>
+                                        </div>
+                                        <span>of <span class="font-medium text-gray-800">1</span></span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <span>of <span class="font-medium text-gray-800">1</span></span>
+                    @endif
                 </div>
             </div>
-        </div>
+        </main>
     </div>
-@endif
 
     {{-- Context Menu --}}
     <div id="contextMenu" class="fixed hidden bg-white shadow-lg rounded-lg py-2 z-50 border border-gray-200"
@@ -623,16 +696,16 @@
         </button>
         <button onclick="deleteFromMenu()"
             class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-700 flex items-center gap-2">
-            <i class="fas fa-trash-alt text-red-500 w-4"></i>Hapus
+            <i class="fas fa-trash-alt text-red-500 w-4"></i>Delete
         </button>
     </div>
 
-    {{-- Modal Add Data --}}
+    {{-- Add Data Modal --}}
     <div id="addCodeStemiModal"
         class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-md transform transition-all">
             <div class="flex items-center justify-between p-4 border-b border-gray-200">
-                <h3 class="text-lg font-bold text-gray-800">REGISTRASI CODE STEMI</h3>
+                <h3 class="text-lg font-bold text-gray-800">CODE STEMI REGISTRATION</h3>
                 <div class="flex items-center gap-3">
                     <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway"
                         class="h-10 object-contain">
@@ -653,15 +726,15 @@
                 <div class="p-5 space-y-4">
                     {{-- Checklist Section --}}
                     <div>
-                        <label class="block text-sm font-semibold text-gray-800 mb-2">Checklist Registrasi</label>
+                        <label class="block text-sm font-semibold text-gray-800 mb-2">Registration Checklist</label>
                         <div class="grid grid-cols-2 gap-2">
                             @php
                                 $checklistItems = [
                                     'Anamnesis' => 'Anamnesis',
-                                    'EKG' => 'EKG',
-                                    'Rongten Thorax' => 'Rongten Thorax',
-                                    'Pemeriksaan Fisik' => 'Pemeriksaan Fisik',
-                                    'Laboratorium' => 'Laboratorium',
+                                    'EKG' => 'ECG',
+                                    'Rongten Thorax' => 'Chest X-Ray',
+                                    'Pemeriksaan Fisik' => 'Physical Examination',
+                                    'Laboratorium' => 'Laboratory',
                                     'Informed Consent' => 'Informed Consent',
                                 ];
                             @endphp
@@ -678,35 +751,34 @@
 
                     {{-- Custom Message Section --}}
                     <div>
-                        <label class="block text-sm font-semibold text-gray-800 mb-2">Pesan Custom Broadcast</label>
+                        <label class="block text-sm font-semibold text-gray-800 mb-2">Custom Broadcast Message</label>
                         <p class="text-xs text-gray-600 mb-2">Fast Track STEMI Pathway</p>
 
                         <div class="bg-gray-100 rounded-lg p-3 space-y-1 mb-2">
-                            <p class="text-xs text-gray-700 font-semibold">CODE STEMI AKTIF</p>
-                            <p class="text-xs text-gray-600">Pasien STEMI telah berada di IGD RS Otak M Hatta
-                                Bukittinggi.</p>
-                            <p class="text-xs text-gray-600">Seluruh unit terkait dimohon segera siaga.</p>
-                            <p class="text-xs text-gray-600">Fast Track STEMI Pathway aktif.</p>
-                            <p class="text-xs text-gray-600">Waktu Door-to-balloon dimulai.</p>
+                            <p class="text-xs text-gray-700 font-semibold">CODE STEMI ACTIVE</p>
+                            <p class="text-xs text-gray-600">STEMI patient has arrived at the Emergency Department of M Hatta Brain Hospital Bukittinggi.</p>
+                            <p class="text-xs text-gray-600">All related units are requested to be on standby immediately.</p>
+                            <p class="text-xs text-gray-600">Fast Track STEMI Pathway is active.</p>
+                            <p class="text-xs text-gray-600">Door-to-balloon time has started.</p>
                         </div>
 
-                        <textarea name="custom_message" placeholder="Tambahkan pesan custom disini (opsional)"
+                        <textarea name="custom_message" placeholder="Add custom message here (optional)"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
                             rows="2"></textarea>
-                        <p class="text-xs text-gray-400 italic mt-1">Pesan ini akan ditambahkan di akhir broadcast</p>
+                        <p class="text-xs text-gray-400 italic mt-1">This message will be added at the end of the broadcast</p>
                     </div>
 
                     {{-- Submit Button --}}
                     <button type="button" onclick="confirmActivation()"
                         class="w-full py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition text-sm">
-                        AKTIVASI CODE STEMI DIMULAI
+                        ACTIVATE CODE STEMI STARTED
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
-    {{-- Modal Konfirmasi Aktivasi --}}
+    {{-- Activation Confirmation Modal --}}
     <div id="activationConfirmModal"
         class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 transform transition-all">
@@ -714,44 +786,44 @@
                 <div class="flex items-center justify-center w-16 h-16 mx-auto bg-blue-100 rounded-full mb-4">
                     <i class="fas fa-question-circle text-blue-600 text-xl"></i>
                 </div>
-                <h3 class="text-xl font-bold text-gray-800 text-center mb-2">Konfirmasi Aktivasi</h3>
-                <p class="text-gray-600 text-center mb-6">Apakah Anda yakin ingin mengaktifkan Code STEMI?</p>
+                <h3 class="text-xl font-bold text-gray-800 text-center mb-2">Activation Confirmation</h3>
+                <p class="text-gray-600 text-center mb-6">Are you sure you want to activate Code STEMI?</p>
 
                 <div class="flex gap-3">
                     <button onclick="closeActivationConfirmModal()"
                         class="flex-1 py-3 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition">
-                        <i class="fas fa-times mr-2"></i>BATAL
+                        <i class="fas fa-times mr-2"></i>CANCEL
                     </button>
                     <button onclick="submitActivationForm()"
                         class="flex-1 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition">
-                        <i class="fas fa-check mr-2"></i>AKTIVASI
+                        <i class="fas fa-check mr-2"></i>ACTIVATE
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- Modal Konfirmasi Penyelesaian --}}
+    {{-- Completion Confirmation Modal --}}
     <div id="finishConfirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 transform transition-all">
             <div class="p-6">
                 <div class="flex items-center justify-center w-16 h-16 mx-auto bg-orange-100 rounded-full mb-4">
                     <i class="fas fa-exclamation-circle text-orange-600 text-xl"></i>
                 </div>
-                <h3 class="text-xl font-bold text-gray-800 text-center mb-2">Konfirmasi Penyelesaian</h3>
-                <p class="text-gray-600 text-center mb-6">Apakah Anda yakin ingin menyelesaikan Code STEMI ini?</p>
+                <h3 class="text-xl font-bold text-gray-800 text-center mb-2">Completion Confirmation</h3>
+                <p class="text-gray-600 text-center mb-6">Are you sure you want to complete this Code STEMI?</p>
 
                 <div class="flex gap-3">
                     <button onclick="closeFinishConfirmModal()"
                         class="flex-1 py-3 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition">
-                        <i class="fas fa-times mr-2"></i>BATAL
+                        <i class="fas fa-times mr-2"></i>CANCEL
                     </button>
                     <form id="finishForm" method="POST" class="flex-1">
                         @csrf
                         @method('PATCH')
                         <button type="button" onclick="handleFinishSubmit()"
                             class="w-full py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition">
-                            <i class="fas fa-check mr-2"></i>SELESAI
+                            <i class="fas fa-check mr-2"></i>COMPLETE
                         </button>
                     </form>
                 </div>
@@ -759,7 +831,35 @@
         </div>
     </div>
 
-    {{-- Modal Edit Data --}}
+    {{-- Delete All Modal --}}
+    <div id="deleteAllModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 transform transition-all">
+            <div class="p-6">
+                <div class="flex items-center justify-center w-16 h-16 mx-auto bg-red-100 rounded-full mb-4">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 text-center mb-2">Delete All Confirmation</h3>
+                <p class="text-gray-600 text-center mb-6">Are you sure you want to delete <span class="font-bold text-red-600">ALL</span> Code STEMI data? This action cannot be undone!</p>
+
+                <div class="flex gap-3">
+                    <button onclick="closeDeleteAllModal()"
+                        class="flex-1 py-3 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition">
+                        <i class="fas fa-times mr-2"></i>CANCEL
+                    </button>
+                    <form id="deleteAllForm" method="POST" action="{{ route('code-stemi.delete-all') }}" class="flex-1">
+                        @csrf
+                        @method('DELETE')
+                        <button type="button" onclick="handleDeleteAllSubmit()"
+                            class="w-full py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition">
+                            <i class="fas fa-trash mr-2"></i>DELETE ALL
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Edit Data Modal --}}
     <div id="editCodeStemiModal"
         class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-md transform transition-all">
@@ -786,15 +886,15 @@
                 <div class="p-5 space-y-4">
                     {{-- Checklist Section --}}
                     <div>
-                        <label class="block text-sm font-semibold text-gray-800 mb-2">Checklist Registrasi</label>
+                        <label class="block text-sm font-semibold text-gray-800 mb-2">Registration Checklist</label>
                         <div class="grid grid-cols-2 gap-2" id="editChecklistContainer">
                             @php
                                 $checklistItems = [
                                     'Anamnesis' => 'Anamnesis',
-                                    'EKG' => 'EKG',
-                                    'Rongten Thorax' => 'Rongten Thorax',
-                                    'Pemeriksaan Fisik' => 'Pemeriksaan Fisik',
-                                    'Laboratorium' => 'Laboratorium',
+                                    'EKG' => 'ECG',
+                                    'Rongten Thorax' => 'Chest X-Ray',
+                                    'Pemeriksaan Fisik' => 'Physical Examination',
+                                    'Laboratorium' => 'Laboratory',
                                     'Informed Consent' => 'Informed Consent',
                                 ];
                             @endphp
@@ -811,22 +911,21 @@
 
                     {{-- Custom Message Section --}}
                     <div>
-                        <label class="block text-sm font-semibold text-gray-800 mb-2">Pesan Custom Broadcast</label>
+                        <label class="block text-sm font-semibold text-gray-800 mb-2">Custom Broadcast Message</label>
                         <p class="text-xs text-gray-600 mb-2">Fast Track STEMI Pathway</p>
 
                         <div class="bg-gray-100 rounded-lg p-3 space-y-1 mb-2">
-                            <p class="text-xs text-gray-700 font-semibold">CODE STEMI AKTIF</p>
-                            <p class="text-xs text-gray-600">Pasien STEMI telah berada di IGD RS Otak M Hatta
-                                Bukittinggi.</p>
-                            <p class="text-xs text-gray-600">Seluruh unit terkait dimohon segera siaga.</p>
-                            <p class="text-xs text-gray-600">Fast Track STEMI Pathway aktif.</p>
-                            <p class="text-xs text-gray-600">Waktu Door-to-balloon dimulai.</p>
+                            <p class="text-xs text-gray-700 font-semibold">CODE STEMI ACTIVE</p>
+                            <p class="text-xs text-gray-600">STEMI patient has arrived at the Emergency Department of M Hatta Brain Hospital Bukittinggi.</p>
+                            <p class="text-xs text-gray-600">All related units are requested to be on standby immediately.</p>
+                            <p class="text-xs text-gray-600">Fast Track STEMI Pathway is active.</p>
+                            <p class="text-xs text-gray-600">Door-to-balloon time has started.</p>
                         </div>
 
-                        <textarea name="custom_message" id="editCustomMessage" placeholder="Tambahkan pesan custom disini (opsional)"
+                        <textarea name="custom_message" id="editCustomMessage" placeholder="Add custom message here (optional)"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
                             rows="2"></textarea>
-                        <p class="text-xs text-gray-400 italic mt-1">Pesan ini akan ditambahkan di akhir broadcast</p>
+                        <p class="text-xs text-gray-400 italic mt-1">This message will be added at the end of the broadcast</p>
                     </div>
 
                     {{-- Submit Button --}}
@@ -839,12 +938,12 @@
         </div>
     </div>
 
-    {{-- Modal Detail Data --}}
+    {{-- Detail Data Modal --}}
     <div id="detailCodeStemiModal"
         class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-md transform transition-all">
             <div class="flex items-center justify-between p-4 border-b border-gray-200">
-                <h3 class="text-lg font-bold text-gray-800">DETAIL CODE STEMI</h3>
+                <h3 class="text-lg font-bold text-gray-800">CODE STEMI DETAILS</h3>
                 <div class="flex items-center gap-3">
                     <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway"
                         class="h-10 object-contain">
@@ -860,32 +959,32 @@
                 </div>
             </div>
             <div id="detailContent" class="p-5 space-y-4">
-                {{-- Content akan diisi via JavaScript --}}
+                {{-- Content will be filled via JavaScript --}}
             </div>
         </div>
     </div>
 
-    {{-- Modal Delete --}}
+    {{-- Delete Modal --}}
     <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 transform transition-all">
             <div class="p-6">
                 <div class="flex items-center justify-center w-16 h-16 mx-auto bg-red-100 rounded-full mb-4">
                     <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
                 </div>
-                <h3 class="text-xl font-bold text-gray-800 text-center mb-2">Konfirmasi Hapus</h3>
-                <p class="text-gray-600 text-center mb-6">Apakah Anda yakin ingin menghapus data Code STEMI ini?</p>
+                <h3 class="text-xl font-bold text-gray-800 text-center mb-2">Delete Confirmation</h3>
+                <p class="text-gray-600 text-center mb-6">Are you sure you want to delete this Code STEMI data?</p>
 
                 <div class="flex gap-3">
                     <button onclick="closeDeleteModal()"
                         class="flex-1 py-3 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition">
-                        <i class="fas fa-times mr-2"></i>BATAL
+                        <i class="fas fa-times mr-2"></i>CANCEL
                     </button>
                     <form id="deleteForm" method="POST" class="flex-1">
                         @csrf
                         @method('DELETE')
                         <button type="button" onclick="handleDeleteSubmit()"
                             class="w-full py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition">
-                            <i class="fas fa-trash mr-2"></i>HAPUS
+                            <i class="fas fa-trash mr-2"></i>DELETE
                         </button>
                     </form>
                 </div>
@@ -949,19 +1048,19 @@
                     const result = await response.json();
 
                     if (result.success) {
-                        showSuccessNotification('Data Code STEMI berhasil diperbarui');
+                        showSuccessNotification('Code STEMI data updated successfully');
                         closeEditModal();
-                        // Auto refresh setelah 2 detik
+                        // Auto refresh after 2 seconds
                         setTimeout(() => {
                             location.reload();
                         }, 2000);
                     } else {
-                        showErrorModal(result.message || 'Terjadi kesalahan saat mengupdate data');
+                        showErrorModal(result.message || 'Error occurred while updating data');
                     }
 
                 } catch (error) {
                     console.error('Error updating data:', error);
-                    showErrorModal('Terjadi kesalahan saat mengupdate data');
+                    showErrorModal('Error occurred while updating data');
                 }
             });
 
@@ -975,10 +1074,10 @@
 
         // ==================== AUTO REFRESH FUNCTIONS ====================
         function startAutoRefresh() {
-            // Refresh setiap 30 detik untuk update real-time
+            // Refresh every 30 seconds for real-time updates
             autoRefreshInterval = setInterval(() => {
                 checkForUpdates();
-            }, 30000); // 30 detik
+            }, 30000); // 30 seconds
         }
 
         function stopAutoRefresh() {
@@ -994,7 +1093,7 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    // Jika ada perubahan, refresh halaman
+                    // If there are changes, refresh the page
                     const currentUrl = new URL(window.location.href);
                     if (!currentUrl.searchParams.get('page')) {
                         location.reload();
@@ -1019,7 +1118,7 @@
             for (let [key, value] of formData) {
                 if (value) {
                     if (key === 'checklist_filter') {
-                        // Untuk checklist, tambahkan semua nilai yang dipilih
+                        // For checklist, add all selected values
                         params.append(key, value);
                     } else {
                         params.append(key, value);
@@ -1115,11 +1214,11 @@
 
         // ==================== NOTIFICATION FUNCTIONS ====================
         function showSuccessNotification(message) {
-            // Hapus notifikasi lama jika ada
+            // Remove old notifications if any
             const oldNotifications = document.querySelectorAll('.auto-remove-notification');
             oldNotifications.forEach(notification => notification.remove());
 
-            // Buat notifikasi baru
+            // Create new notification
             const notification = document.createElement('div');
             notification.className =
                 'auto-remove-notification mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm';
@@ -1135,11 +1234,11 @@
             </div>
         `;
 
-            // Sisipkan notifikasi di atas konten
+            // Insert notification above content
             const content = document.querySelector('.p-8');
             content.insertBefore(notification, content.firstChild);
 
-            // Auto remove setelah 5 detik
+            // Auto remove after 5 seconds
             setTimeout(() => {
                 if (notification.parentElement) {
                     notification.remove();
@@ -1151,7 +1250,7 @@
         function showErrorModal(message) {
             Swal.fire({
                 icon: 'error',
-                title: 'Terjadi Kesalahan',
+                title: 'Error Occurred',
                 text: message,
                 confirmButtonColor: '#dc2626',
                 confirmButtonText: 'OK'
@@ -1211,25 +1310,74 @@
                     closeFinishConfirmModal();
                     updateTableAfterFinish(itemId);
                     showSuccessNotification(
-                        'Aktivasi Code STEMI telah berhasil diselesaikan. Door-to-balloon time telah dicatat.');
+                        'Code STEMI activation has been successfully completed. Door-to-balloon time has been recorded.');
 
-                    // Auto refresh setelah 2 detik
+                    // Auto refresh after 2 seconds
                     setTimeout(() => {
                         location.reload();
                     }, 2000);
 
                 } else {
-                    showErrorModal(result.message || 'Terjadi kesalahan saat menyelesaikan Code STEMI');
+                    showErrorModal(result.message || 'Error occurred while completing Code STEMI');
                     closeFinishConfirmModal();
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showErrorModal('Terjadi kesalahan saat menyelesaikan Code STEMI');
+                showErrorModal('Error occurred while completing Code STEMI');
                 closeFinishConfirmModal();
             }
         }
 
-        // FUNGSI UNTUK UPDATE TABEL SETELAH FINISH
+        // ==================== DELETE ALL FUNCTIONS ====================
+        function confirmDeleteAll() {
+            document.getElementById('deleteAllModal').classList.remove('hidden');
+            document.getElementById('deleteAllModal').classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDeleteAllModal() {
+            document.getElementById('deleteAllModal').classList.add('hidden');
+            document.getElementById('deleteAllModal').classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
+
+        async function handleDeleteAllSubmit() {
+            const form = document.getElementById('deleteAllForm');
+            const url = form.action;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: new FormData(form)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    closeDeleteAllModal();
+                    showSuccessNotification('All Code STEMI data deleted successfully!');
+
+                    // Auto refresh after 1 second
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+
+                } else {
+                    showErrorModal(result.message || 'Error occurred while deleting all data');
+                    closeDeleteAllModal();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showErrorModal('Error occurred while deleting all data');
+                closeDeleteAllModal();
+            }
+        }
+
+        // FUNCTION TO UPDATE TABLE AFTER FINISH
         function updateTableAfterFinish(itemId) {
             const statusBadge = document.querySelector(`tr[data-id="${itemId}"] .status-badge`);
             if (statusBadge) {
@@ -1278,20 +1426,20 @@
 
                 if (result.success) {
                     closeDeleteModal();
-                    showSuccessNotification('Data Code STEMI berhasil dihapus!');
+                    showSuccessNotification('Code STEMI data deleted successfully!');
 
-                    // Auto refresh setelah 1 detik
+                    // Auto refresh after 1 second
                     setTimeout(() => {
                         location.reload();
                     }, 1000);
 
                 } else {
-                    showErrorModal(result.message || 'Terjadi kesalahan saat menghapus data');
+                    showErrorModal(result.message || 'Error occurred while deleting data');
                     closeDeleteModal();
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showErrorModal('Terjadi kesalahan saat menghapus data');
+                showErrorModal('Error occurred while deleting data');
                 closeDeleteModal();
             }
         }
@@ -1401,7 +1549,7 @@
 
             } catch (error) {
                 console.error('Error loading edit data:', error);
-                showErrorModal('Gagal memuat data untuk edit');
+                showErrorModal('Failed to load data for editing');
             }
         }
 
@@ -1410,7 +1558,7 @@
                 const response = await fetch(`/code-stemi/${id}`);
                 const data = await response.json();
 
-                // Buat checklist dalam 2 kolom seperti gambar
+                // Create checklist in 2 columns like the image
                 const leftColumnItems = ['Anamnesis', 'Rongten Thorax', 'Laboratorium'];
                 const rightColumnItems = ['EKG', 'Pemeriksaan Fisik', 'Informed Consent'];
 
@@ -1422,7 +1570,7 @@
                     leftColumnHTML += `
                     <label class="flex items-center gap-2">
                         <input type="checkbox" ${isChecked ? 'checked' : ''} disabled class="w-4 h-4 text-blue-600 rounded border-gray-300">
-                        <span class="text-sm text-gray-700 ${isChecked ? 'font-medium' : 'text-gray-400'}">${item}</span>
+                        <span class="text-sm text-gray-700 ${isChecked ? 'font-medium' : 'text-gray-400'}">${item === 'Rongten Thorax' ? 'Chest X-Ray' : item === 'Laboratorium' ? 'Laboratory' : item}</span>
                     </label>
                 `;
                 });
@@ -1432,7 +1580,7 @@
                     rightColumnHTML += `
                     <label class="flex items-center gap-2">
                         <input type="checkbox" ${isChecked ? 'checked' : ''} disabled class="w-4 h-4 text-blue-600 rounded border-gray-300">
-                        <span class="text-sm text-gray-700 ${isChecked ? 'font-medium' : 'text-gray-400'}">${item}</span>
+                        <span class="text-sm text-gray-700 ${isChecked ? 'font-medium' : 'text-gray-400'}">${item === 'EKG' ? 'ECG' : item === 'Pemeriksaan Fisik' ? 'Physical Examination' : item}</span>
                     </label>
                 `;
                 });
@@ -1441,7 +1589,7 @@
                 <div class="space-y-4">
                     <!-- Checklist Section -->
                     <div>
-                        <h4 class="text-sm font-semibold text-gray-800 mb-3">DETAIL CODE STEMI</h4>
+                        <h4 class="text-sm font-semibold text-gray-800 mb-3">CODE STEMI DETAILS</h4>
                         <div class="grid grid-cols-2 gap-4">
                             <div class="space-y-2">
                                 ${leftColumnHTML}
@@ -1455,17 +1603,17 @@
 
                     <!-- Broadcast Message Section -->
                     <div class="border-t pt-4">
-                        <h4 class="text-sm font-semibold text-gray-800 mb-2">Pesan Broadcast</h4>
+                        <h4 class="text-sm font-semibold text-gray-800 mb-2">Broadcast Message</h4>
                         <p class="text-xs text-gray-600 mb-2">Fast Track STEMI Pathway</p>
                         <div class="bg-blue-50 rounded-lg p-3 space-y-1 border border-blue-200">
-                            <p class="text-xs text-blue-900 font-semibold">CODE STEMI AKTIF</p>
-                            <p class="text-xs text-blue-800">Pasien STEMI telah berada di IGD RS Otak M Hatta Bukittinggi.</p>
-                            <p class="text-xs text-blue-800">Seluruh unit terkait dimohon segera siaga.</p>
-                            <p class="text-xs text-blue-800">Fast Track STEMI Pathway aktif.</p>
-                            <p class="text-xs text-blue-800">Waktu Door-to-balloon dimulai.</p>
+                            <p class="text-xs text-blue-900 font-semibold">CODE STEMI ACTIVE</p>
+                            <p class="text-xs text-blue-800">STEMI patient has arrived at the Emergency Department of M Hatta Brain Hospital Bukittinggi.</p>
+                            <p class="text-xs text-blue-800">All related units are requested to be on standby immediately.</p>
+                            <p class="text-xs text-blue-800">Fast Track STEMI Pathway is active.</p>
+                            <p class="text-xs text-blue-800">Door-to-balloon time has started.</p>
                             ${data.custom_message ? `
                                 <div class="mt-2 pt-2 border-t border-blue-200">
-                                    <p class="text-xs text-blue-900 font-semibold">Pesan Tambahan:</p>
+                                    <p class="text-xs text-blue-900 font-semibold">Additional Message:</p>
                                     <p class="text-xs text-blue-800">${data.custom_message}</p>
                                 </div>
                             ` : ''}
@@ -1478,10 +1626,10 @@
                         <div id="detail-time-${data.id}" class="text-3xl font-bold text-blue-600 tracking-wider timer-text">${data.door_to_balloon_time}</div>
                     </div>
 
-                    <!-- Finish Button untuk yang masih Running -->
+                    <!-- Finish Button for those still Running -->
                     ${data.status === 'Running' ? `
                         <button onclick="confirmFinish(${data.id})" class="w-full py-2.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition text-sm">
-                            AKTIVASI CODE STEMI SELESAI
+                            COMPLETE CODE STEMI ACTIVATION
                         </button>
                     ` : ''}
                 </div>
@@ -1493,7 +1641,7 @@
 
             } catch (error) {
                 console.error('Error loading detail:', error);
-                showErrorModal('Gagal memuat detail data');
+                showErrorModal('Failed to load detail data');
             }
         }
 
@@ -1531,7 +1679,7 @@
 
             const modals = [
                 'addCodeStemiModal', 'activationConfirmModal', 'finishConfirmModal',
-                'editCodeStemiModal', 'detailCodeStemiModal', 'deleteModal'
+                'editCodeStemiModal', 'detailCodeStemiModal', 'deleteModal', 'deleteAllModal'
             ];
 
             modals.forEach(modalId => {
@@ -1553,7 +1701,7 @@
         function closeAllModals() {
             const modals = [
                 'addCodeStemiModal', 'activationConfirmModal', 'finishConfirmModal',
-                'editCodeStemiModal', 'detailCodeStemiModal', 'deleteModal'
+                'editCodeStemiModal', 'detailCodeStemiModal', 'deleteModal', 'deleteAllModal'
             ];
 
             modals.forEach(modalId => {
