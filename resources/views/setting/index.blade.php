@@ -16,6 +16,7 @@
             font-weight: 400;
             line-height: 1.5;
             letter-spacing: -0.011em;
+            overflow: hidden; /* Prevent whole page scrolling */
         }
         
         /* Font Weight Adjustments */
@@ -131,6 +132,30 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
+        /* Custom scrollbar for data area only */
+        .data-scroll-container {
+            height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+
+        .data-scroll-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .data-scroll-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .data-scroll-container::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+
+        .data-scroll-container::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
     </style>
 </head>
 
@@ -167,8 +192,8 @@
         </aside>
 
         {{-- Main Content --}}
-        <main class="flex-1 overflow-y-auto">
-            <header class="bg-white shadow-sm px-8 py-4">
+        <main class="flex-1 flex flex-col">
+            <header class="bg-white shadow-sm px-8 py-4 flex-shrink-0">
                 <div class="flex items-center justify-between">
                     <div></div>
                     <div class="flex items-center gap-6">
@@ -266,7 +291,7 @@
             @endif
 
             {{-- Setting Content --}}
-            <div class="p-8">
+            <div class="p-8 flex-1 data-scroll-container">
                 {{-- Title --}}
                 <div class="flex items-center justify-between mb-8">
                     <h2 class="text-3xl font-bold text-gray-800">Setting</h2>
