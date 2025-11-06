@@ -945,10 +945,10 @@
                             @php
                                 $checklistItems = [
                                     'Anamnesis',
-                                    'EKG',
                                     'Rongten Thorax',
-                                    'Pemeriksaan Fisik',
                                     'Laboratorium',
+                                    'EKG',
+                                    'Pemeriksaan Fisik',
                                     'Informed Consent',
                                 ];
                             @endphp
@@ -1048,48 +1048,285 @@
         </div>
     </div>
 
-   <script>
-    let timers = new Map();
-    let detailTimers = new Map();
-    let contextMenuItemId = null;
-    let autoRefreshInterval = null;
-    let searchTimeout;
+    <script>
+        let timers = new Map();
+        let detailTimers = new Map();
+        let contextMenuItemId = null;
+        let autoRefreshInterval = null;
+        let searchTimeout;
 
-    document.addEventListener('DOMContentLoaded', function() {
-        initializeTimers();
-        startAutoRefresh();
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTimers();
+            startAutoRefresh();
 
-        // ==================== PAGINATION FUNCTIONS ====================
-        document.getElementById('pageSelect')?.addEventListener('change', function() {
-            const page = this.value;
-            const url = new URL(window.location.href);
-            url.searchParams.set('page', page);
-            window.location.href = url.toString();
+            // ==================== PAGINATION FUNCTIONS ====================
+            document.getElementById('pageSelect')?.addEventListener('change', function() {
+                const page = this.value;
+                const url = new URL(window.location.href);
+                url.searchParams.set('page', page);
+                window.location.href = url.toString();
+            });
+
+            // ==================== SEARCH FUNCTION - DIPERBAIKI ====================
+            document.getElementById('searchForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                performSearch();
+            });
+
+            // Real-time search (opsional)
+            document.getElementById('searchInput').addEventListener('input', function(e) {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    if (this.value.length >= 3 || this.value.length === 0) {
+                        performSearch();
+                    }
+                }, 500);
+            });
+
+            // Handle form submission edit
+            document.getElementById('editCodeStemiForm')?.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                const form = this;
+                const formData = new FormData(form);
+                const url = form.action;
+
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]')
+                                .value,
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showSuccessNotification('Code STEMI data updated successfully');
+                        closeEditModal();
+                        // Auto refresh after 2 seconds
+                        setTimeout(() => {
+                            location.reload();
+                        }, 2000);
+                    } else {
+                        showErrorModal(result.message || 'Error occurred while updating data');
+                    }
+
+                } catch (error) {
+                    console.error('Error updating data:', error);
+                    showErrorModal('Error occurred while updating data');
+                }
+            });
+
+            // Auto remove notifications after 5 seconds
+            setTimeout(() => {
+                document.querySelectorAll('.auto-remove-notification').forEach(notification => {
+                    notification.remove();
+                });
+            }, 5000);
         });
 
         // ==================== SEARCH FUNCTION - DIPERBAIKI ====================
-        document.getElementById('searchForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            performSearch();
-        });
+        function performSearch() {
+            const searchValue = document.getElementById('searchInput').value;
+            const url = new URL(window.location.href);
 
-        // Real-time search (opsional)
-        document.getElementById('searchInput').addEventListener('input', function(e) {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                if (this.value.length >= 3 || this.value.length === 0) {
-                    performSearch();
+            if (searchValue) {
+                url.searchParams.set('search', searchValue);
+            } else {
+                url.searchParams.delete('search');
+            }
+
+            // Reset to page 1 when searching
+            url.searchParams.set('page', 1);
+            window.location.href = url.toString();
+        }
+
+        // ==================== FILTER FUNCTIONS - DIPERBAIKI ====================
+        function toggleFilterDropdown() {
+            const dropdown = document.getElementById('filterDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function applyFilter() {
+            const form = document.getElementById('filterForm');
+            const formData = new FormData(form);
+            const params = new URLSearchParams();
+
+            for (let [key, value] of formData) {
+                if (value) {
+                    if (key === 'checklist_filter') {
+                        // For checklist, add all selected values
+                        params.append(key, value);
+                    } else {
+                        params.append(key, value);
+                    }
                 }
-            }, 500);
+            }
+
+            // Reset to page 1 when applying filters
+            params.append('page', 1);
+
+            // Close filter dropdown
+            document.getElementById('filterDropdown').classList.remove('show');
+
+            // Redirect with filter parameters
+            window.location.href = '{{ route('code-stemi.index') }}?' + params.toString();
+        }
+
+        function resetFilter() {
+            document.getElementById('filterForm').reset();
+            window.location.href = '{{ route('code-stemi.index') }}';
+        }
+
+        function removeFilter(filterName) {
+            const url = new URL(window.location.href);
+            url.searchParams.delete(filterName);
+            // Reset to page 1 when removing filters
+            url.searchParams.set('page', 1);
+            window.location.href = url.toString();
+        }
+
+        function removeChecklistFilter(checklistItem) {
+            const url = new URL(window.location.href);
+            const currentChecklist = url.searchParams.getAll('checklist_filter[]');
+            const newChecklist = currentChecklist.filter(item => item !== checklistItem);
+
+            url.searchParams.delete('checklist_filter[]');
+            newChecklist.forEach(item => {
+                url.searchParams.append('checklist_filter[]', item);
+            });
+
+            url.searchParams.set('page', 1);
+            window.location.href = url.toString();
+        }
+
+        // Close filter dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            const filterBtn = document.querySelector('button[onclick="toggleFilterDropdown()"]');
+            const dropdown = document.getElementById('filterDropdown');
+
+            if (filterBtn && dropdown && !filterBtn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
         });
 
-        // Handle form submission edit
-        document.getElementById('editCodeStemiForm')?.addEventListener('submit', async function(e) {
-            e.preventDefault();
+        // ==================== AUTO REFRESH FUNCTIONS ====================
+        function startAutoRefresh() {
+            // Refresh every 30 seconds for real-time updates
+            autoRefreshInterval = setInterval(() => {
+                checkForUpdates();
+            }, 30000); // 30 seconds
+        }
 
-            const form = this;
+        function stopAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+            }
+        }
+
+        async function checkForUpdates() {
+            try {
+                const response = await fetch('/code-stemi/stats');
+                const result = await response.json();
+
+                if (result.success) {
+                    // If there are changes, refresh the page
+                    const currentUrl = new URL(window.location.href);
+                    if (!currentUrl.searchParams.get('page')) {
+                        location.reload();
+                    }
+                }
+            } catch (error) {
+                console.log('Auto-refresh check failed:', error);
+            }
+        }
+
+        // ==================== NOTIFICATION FUNCTIONS ====================
+        function showSuccessNotification(message) {
+            // Remove old notifications if any
+            const oldNotifications = document.querySelectorAll('.auto-remove-notification');
+            oldNotifications.forEach(notification => notification.remove());
+
+            // Create new notification
+            const notification = document.createElement('div');
+            notification.className =
+                'auto-remove-notification mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm';
+            notification.innerHTML = `
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    <span>${message}</span>
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" class="text-green-600 hover:text-green-800">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+
+            // Insert notification above content
+            const content = document.querySelector('.p-8');
+            content.insertBefore(notification, content.firstChild);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+
+        // ==================== ERROR MODAL FUNCTIONS ====================
+        function showErrorModal(message) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error Occurred',
+                text: message,
+                confirmButtonColor: '#dc2626',
+                confirmButtonText: 'OK'
+            });
+        }
+
+        // ==================== ACTIVATION CONFIRMATION FUNCTIONS ====================
+        function confirmActivation() {
+            document.getElementById('activationConfirmModal').classList.remove('hidden');
+            document.getElementById('activationConfirmModal').classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeActivationConfirmModal() {
+            document.getElementById('activationConfirmModal').classList.add('hidden');
+            document.getElementById('activationConfirmModal').classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
+
+        function submitActivationForm() {
+            document.getElementById('activationForm').submit();
+        }
+
+        // ==================== FINISH CONFIRMATION FUNCTIONS ====================
+        function confirmFinish(id) {
+            document.getElementById('finishForm').action = `/code-stemi/${id}/finish`;
+            document.getElementById('finishConfirmModal').classList.remove('hidden');
+            document.getElementById('finishConfirmModal').classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeFinishConfirmModal() {
+            document.getElementById('finishConfirmModal').classList.add('hidden');
+            document.getElementById('finishConfirmModal').classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
+
+        async function handleFinishSubmit() {
+            const form = document.getElementById('finishForm');
             const formData = new FormData(form);
             const url = form.action;
+            const itemId = url.split('/').filter(Boolean).pop();
 
             try {
                 const response = await fetch(url, {
@@ -1104,590 +1341,354 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    showSuccessNotification('Code STEMI data updated successfully');
-                    closeEditModal();
+                    closeFinishConfirmModal();
+                    updateTableAfterFinish(itemId);
+                    showSuccessNotification(
+                        'Code STEMI activation has been successfully completed. Door-to-balloon time has been recorded.'
+                    );
+
                     // Auto refresh after 2 seconds
                     setTimeout(() => {
                         location.reload();
                     }, 2000);
-                } else {
-                    showErrorModal(result.message || 'Error occurred while updating data');
-                }
 
+                } else {
+                    showErrorModal(result.message || 'Error occurred while completing Code STEMI');
+                    closeFinishConfirmModal();
+                }
             } catch (error) {
-                console.error('Error updating data:', error);
-                showErrorModal('Error occurred while updating data');
+                console.error('Error:', error);
+                showErrorModal('Error occurred while completing Code STEMI');
+                closeFinishConfirmModal();
             }
-        });
-
-        // Auto remove notifications after 5 seconds
-        setTimeout(() => {
-            document.querySelectorAll('.auto-remove-notification').forEach(notification => {
-                notification.remove();
-            });
-        }, 5000);
-    });
-
-    // ==================== SEARCH FUNCTION - DIPERBAIKI ====================
-    function performSearch() {
-        const searchValue = document.getElementById('searchInput').value;
-        const url = new URL(window.location.href);
-
-        if (searchValue) {
-            url.searchParams.set('search', searchValue);
-        } else {
-            url.searchParams.delete('search');
         }
 
-        // Reset to page 1 when searching
-        url.searchParams.set('page', 1);
-        window.location.href = url.toString();
-    }
+        // ==================== DELETE ALL FUNCTIONS ====================
+        function confirmDeleteAll() {
+            document.getElementById('deleteAllModal').classList.remove('hidden');
+            document.getElementById('deleteAllModal').classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
 
-    // ==================== FILTER FUNCTIONS - DIPERBAIKI ====================
-    function toggleFilterDropdown() {
-        const dropdown = document.getElementById('filterDropdown');
-        dropdown.classList.toggle('show');
-    }
+        function closeDeleteAllModal() {
+            document.getElementById('deleteAllModal').classList.add('hidden');
+            document.getElementById('deleteAllModal').classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
 
-    function applyFilter() {
-        const form = document.getElementById('filterForm');
-        const formData = new FormData(form);
-        const params = new URLSearchParams();
+        async function handleDeleteAllSubmit() {
+            const form = document.getElementById('deleteAllForm');
+            const url = form.action;
 
-        for (let [key, value] of formData) {
-            if (value) {
-                if (key === 'checklist_filter') {
-                    // For checklist, add all selected values
-                    params.append(key, value);
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: new FormData(form)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    closeDeleteAllModal();
+                    showSuccessNotification('All Code STEMI data deleted successfully!');
+
+                    // Auto refresh after 1 second
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+
                 } else {
-                    params.append(key, value);
+                    showErrorModal(result.message || 'Error occurred while deleting all data');
+                    closeDeleteAllModal();
                 }
-            }
-        }
-
-        // Reset to page 1 when applying filters
-        params.append('page', 1);
-
-        // Close filter dropdown
-        document.getElementById('filterDropdown').classList.remove('show');
-
-        // Redirect with filter parameters
-        window.location.href = '{{ route('code-stemi.index') }}?' + params.toString();
-    }
-
-    function resetFilter() {
-        document.getElementById('filterForm').reset();
-        window.location.href = '{{ route('code-stemi.index') }}';
-    }
-
-    function removeFilter(filterName) {
-        const url = new URL(window.location.href);
-        url.searchParams.delete(filterName);
-        // Reset to page 1 when removing filters
-        url.searchParams.set('page', 1);
-        window.location.href = url.toString();
-    }
-
-    function removeChecklistFilter(checklistItem) {
-        const url = new URL(window.location.href);
-        const currentChecklist = url.searchParams.getAll('checklist_filter[]');
-        const newChecklist = currentChecklist.filter(item => item !== checklistItem);
-
-        url.searchParams.delete('checklist_filter[]');
-        newChecklist.forEach(item => {
-            url.searchParams.append('checklist_filter[]', item);
-        });
-
-        url.searchParams.set('page', 1);
-        window.location.href = url.toString();
-    }
-
-    // Close filter dropdown when clicking outside
-    document.addEventListener('click', function(e) {
-        const filterBtn = document.querySelector('button[onclick="toggleFilterDropdown()"]');
-        const dropdown = document.getElementById('filterDropdown');
-
-        if (filterBtn && dropdown && !filterBtn.contains(e.target) && !dropdown.contains(e.target)) {
-            dropdown.classList.remove('show');
-        }
-    });
-
-    // ==================== AUTO REFRESH FUNCTIONS ====================
-    function startAutoRefresh() {
-        // Refresh every 30 seconds for real-time updates
-        autoRefreshInterval = setInterval(() => {
-            checkForUpdates();
-        }, 30000); // 30 seconds
-    }
-
-    function stopAutoRefresh() {
-        if (autoRefreshInterval) {
-            clearInterval(autoRefreshInterval);
-            autoRefreshInterval = null;
-        }
-    }
-
-    async function checkForUpdates() {
-        try {
-            const response = await fetch('/code-stemi/stats');
-            const result = await response.json();
-
-            if (result.success) {
-                // If there are changes, refresh the page
-                const currentUrl = new URL(window.location.href);
-                if (!currentUrl.searchParams.get('page')) {
-                    location.reload();
-                }
-            }
-        } catch (error) {
-            console.log('Auto-refresh check failed:', error);
-        }
-    }
-
-    // ==================== NOTIFICATION FUNCTIONS ====================
-    function showSuccessNotification(message) {
-        // Remove old notifications if any
-        const oldNotifications = document.querySelectorAll('.auto-remove-notification');
-        oldNotifications.forEach(notification => notification.remove());
-
-        // Create new notification
-        const notification = document.createElement('div');
-        notification.className =
-            'auto-remove-notification mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm';
-        notification.innerHTML = `
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <i class="fas fa-check-circle mr-2"></i>
-                    <span>${message}</span>
-                </div>
-                <button onclick="this.parentElement.parentElement.remove()" class="text-green-600 hover:text-green-800">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        `;
-
-        // Insert notification above content
-        const content = document.querySelector('.p-8');
-        content.insertBefore(notification, content.firstChild);
-
-        // Auto remove after 5 seconds
-        setTimeout(() => {
-            if (notification.parentElement) {
-                notification.remove();
-            }
-        }, 5000);
-    }
-
-    // ==================== ERROR MODAL FUNCTIONS ====================
-    function showErrorModal(message) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Error Occurred',
-            text: message,
-            confirmButtonColor: '#dc2626',
-            confirmButtonText: 'OK'
-        });
-    }
-
-    // ==================== ACTIVATION CONFIRMATION FUNCTIONS ====================
-    function confirmActivation() {
-        document.getElementById('activationConfirmModal').classList.remove('hidden');
-        document.getElementById('activationConfirmModal').classList.add('flex');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeActivationConfirmModal() {
-        document.getElementById('activationConfirmModal').classList.add('hidden');
-        document.getElementById('activationConfirmModal').classList.remove('flex');
-        document.body.style.overflow = 'auto';
-    }
-
-    function submitActivationForm() {
-        document.getElementById('activationForm').submit();
-    }
-
-    // ==================== FINISH CONFIRMATION FUNCTIONS ====================
-    function confirmFinish(id) {
-        document.getElementById('finishForm').action = `/code-stemi/${id}/finish`;
-        document.getElementById('finishConfirmModal').classList.remove('hidden');
-        document.getElementById('finishConfirmModal').classList.add('flex');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeFinishConfirmModal() {
-        document.getElementById('finishConfirmModal').classList.add('hidden');
-        document.getElementById('finishConfirmModal').classList.remove('flex');
-        document.body.style.overflow = 'auto';
-    }
-
-    async function handleFinishSubmit() {
-        const form = document.getElementById('finishForm');
-        const formData = new FormData(form);
-        const url = form.action;
-        const itemId = url.split('/').filter(Boolean).pop();
-
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: formData
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                closeFinishConfirmModal();
-                updateTableAfterFinish(itemId);
-                showSuccessNotification(
-                    'Code STEMI activation has been successfully completed. Door-to-balloon time has been recorded.'
-                );
-
-                // Auto refresh after 2 seconds
-                setTimeout(() => {
-                    location.reload();
-                }, 2000);
-
-            } else {
-                showErrorModal(result.message || 'Error occurred while completing Code STEMI');
-                closeFinishConfirmModal();
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            showErrorModal('Error occurred while completing Code STEMI');
-            closeFinishConfirmModal();
-        }
-    }
-
-    // ==================== DELETE ALL FUNCTIONS ====================
-    function confirmDeleteAll() {
-        document.getElementById('deleteAllModal').classList.remove('hidden');
-        document.getElementById('deleteAllModal').classList.add('flex');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeDeleteAllModal() {
-        document.getElementById('deleteAllModal').classList.add('hidden');
-        document.getElementById('deleteAllModal').classList.remove('flex');
-        document.body.style.overflow = 'auto';
-    }
-
-    async function handleDeleteAllSubmit() {
-        const form = document.getElementById('deleteAllForm');
-        const url = form.action;
-
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: new FormData(form)
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                closeDeleteAllModal();
-                showSuccessNotification('All Code STEMI data deleted successfully!');
-
-                // Auto refresh after 1 second
-                setTimeout(() => {
-                    location.reload();
-                }, 1000);
-
-            } else {
-                showErrorModal(result.message || 'Error occurred while deleting all data');
+            } catch (error) {
+                console.error('Error:', error);
+                showErrorModal('Error occurred while deleting all data');
                 closeDeleteAllModal();
             }
-        } catch (error) {
-            console.error('Error:', error);
-            showErrorModal('Error occurred while deleting all data');
-            closeDeleteAllModal();
-        }
-    }
-
-    // FUNCTION TO UPDATE TABLE AFTER FINISH
-    function updateTableAfterFinish(itemId) {
-        const statusBadge = document.querySelector(`tr[data-id="${itemId}"] .status-badge`);
-        if (statusBadge) {
-            statusBadge.textContent = 'Finished';
-            statusBadge.className =
-                'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium status-badge bg-gray-100 text-gray-800';
         }
 
-        const timeElement = document.getElementById(`time-${itemId}`);
-        if (timeElement) {
-            timeElement.className = 'text-sm font-semibold timer-text text-red-600';
-            if (timers.has(itemId)) {
-                clearInterval(timers.get(itemId));
-                timers.delete(itemId);
+        // FUNCTION TO UPDATE TABLE AFTER FINISH
+        function updateTableAfterFinish(itemId) {
+            const statusBadge = document.querySelector(`tr[data-id="${itemId}"] .status-badge`);
+            if (statusBadge) {
+                statusBadge.textContent = 'Finished';
+                statusBadge.className =
+                    'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium status-badge bg-gray-100 text-gray-800';
             }
-        }
 
-        const finishButton = document.querySelector(`tr[data-id="${itemId}"] button[onclick*="confirmFinish"]`);
-        if (finishButton) {
-            finishButton.remove();
-        }
-
-        const row = document.querySelector(`tr[data-id="${itemId}"]`);
-        if (row) {
-            row.setAttribute('data-status', 'Finished');
-            row.setAttribute('data-end-time', new Date().toISOString());
-        }
-    }
-
-    // ==================== DELETE FUNCTIONS ====================
-    async function handleDeleteSubmit() {
-        const form = document.getElementById('deleteForm');
-        const url = form.action;
-
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: new FormData(form)
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                closeDeleteModal();
-                showSuccessNotification('Code STEMI data deleted successfully!');
-
-                // Auto refresh after 1 second
-                setTimeout(() => {
-                    location.reload();
-                }, 1000);
-
-            } else {
-                showErrorModal(result.message || 'Error occurred while deleting data');
-                closeDeleteModal();
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            showErrorModal('Error occurred while deleting data');
-            closeDeleteModal();
-        }
-    }
-
-    // ==================== CONTEXT MENU FUNCTIONS ====================
-    function openContextMenu(event, id) {
-        event.stopPropagation();
-        const menu = document.getElementById('contextMenu');
-        contextMenuItemId = id;
-
-        const rect = event.currentTarget.getBoundingClientRect();
-        menu.style.left = (rect.left - 120) + 'px';
-        menu.style.top = (rect.bottom + 5) + 'px';
-        menu.classList.remove('hidden');
-    }
-
-    function editFromMenu() {
-        const id = contextMenuItemId;
-        document.getElementById('contextMenu').classList.add('hidden');
-        openEditModal(id);
-    }
-
-    function deleteFromMenu() {
-        const id = contextMenuItemId;
-        document.getElementById('contextMenu').classList.add('hidden');
-        confirmDelete(id);
-    }
-
-    // ==================== DELETE MODAL FUNCTIONS ====================
-    function confirmDelete(id) {
-        document.getElementById('deleteForm').action = `/code-stemi/${id}`;
-        document.getElementById('deleteModal').classList.remove('hidden');
-        document.getElementById('deleteModal').classList.add('flex');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeDeleteModal() {
-        document.getElementById('deleteModal').classList.add('hidden');
-        document.getElementById('deleteModal').classList.remove('flex');
-        document.body.style.overflow = 'auto';
-    }
-
-    // ==================== MODAL FUNCTIONS ====================
-    function openAddModal() {
-        const modal = document.getElementById('addCodeStemiModal');
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeAddModal() {
-        const modal = document.getElementById('addCodeStemiModal');
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-        document.body.style.overflow = 'auto';
-    }
-
-    function openEditModal(id) {
-        loadEditData(id);
-        const modal = document.getElementById('editCodeStemiModal');
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeEditModal() {
-        const modal = document.getElementById('editCodeStemiModal');
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-        document.body.style.overflow = 'auto';
-    }
-
-    function openDetailModal(id) {
-        loadDetailData(id);
-        const modal = document.getElementById('detailCodeStemiModal');
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeDetailModal() {
-        const modal = document.getElementById('detailCodeStemiModal');
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-        document.body.style.overflow = 'auto';
-
-        detailTimers.forEach((timerId) => {
-            clearInterval(timerId);
-        });
-        detailTimers.clear();
-    }
-
-    // ==================== TIMER FUNCTIONS ====================
-    function initializeTimers() {
-        const rows = document.querySelectorAll('tr[data-start-time]');
-        rows.forEach(row => {
-            const id = row.getAttribute('data-id');
-            const startTime = row.getAttribute('data-start-time');
-            const status = row.getAttribute('data-status');
-
-            if (status === 'Running') {
-                startTimer(id, startTime);
-            }
-        });
-    }
-
-    function startTimer(id, startTime) {
-        const start = new Date(startTime);
-
-        function updateTimer() {
-            const now = new Date();
-            const diff = Math.max(0, now - start);
-
-            const hours = Math.floor(diff / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-            const timeString =
-                `${hours.toString().padStart(2, '0')}h : ${minutes.toString().padStart(2, '0')}m : ${seconds.toString().padStart(2, '0')}s`;
-
-            const timeElement = document.getElementById(`time-${id}`);
+            const timeElement = document.getElementById(`time-${itemId}`);
             if (timeElement) {
-                timeElement.textContent = timeString;
+                timeElement.className = 'text-sm font-semibold timer-text text-red-600';
+                if (timers.has(itemId)) {
+                    clearInterval(timers.get(itemId));
+                    timers.delete(itemId);
+                }
             }
 
-            if (detailTimers.has(id)) {
+            const finishButton = document.querySelector(`tr[data-id="${itemId}"] button[onclick*="confirmFinish"]`);
+            if (finishButton) {
+                finishButton.remove();
+            }
+
+            const row = document.querySelector(`tr[data-id="${itemId}"]`);
+            if (row) {
+                row.setAttribute('data-status', 'Finished');
+                row.setAttribute('data-end-time', new Date().toISOString());
+            }
+        }
+
+        // ==================== DELETE FUNCTIONS ====================
+        async function handleDeleteSubmit() {
+            const form = document.getElementById('deleteForm');
+            const url = form.action;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: new FormData(form)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    closeDeleteModal();
+                    showSuccessNotification('Code STEMI data deleted successfully!');
+
+                    // Auto refresh after 1 second
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+
+                } else {
+                    showErrorModal(result.message || 'Error occurred while deleting data');
+                    closeDeleteModal();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showErrorModal('Error occurred while deleting data');
+                closeDeleteModal();
+            }
+        }
+
+        // ==================== CONTEXT MENU FUNCTIONS ====================
+        function openContextMenu(event, id) {
+            event.stopPropagation();
+            const menu = document.getElementById('contextMenu');
+            contextMenuItemId = id;
+
+            const rect = event.currentTarget.getBoundingClientRect();
+            menu.style.left = (rect.left - 120) + 'px';
+            menu.style.top = (rect.bottom + 5) + 'px';
+            menu.classList.remove('hidden');
+        }
+
+        function editFromMenu() {
+            const id = contextMenuItemId;
+            document.getElementById('contextMenu').classList.add('hidden');
+            openEditModal(id);
+        }
+
+        function deleteFromMenu() {
+            const id = contextMenuItemId;
+            document.getElementById('contextMenu').classList.add('hidden');
+            confirmDelete(id);
+        }
+
+        // ==================== DELETE MODAL FUNCTIONS ====================
+        function confirmDelete(id) {
+            document.getElementById('deleteForm').action = `/code-stemi/${id}`;
+            document.getElementById('deleteModal').classList.remove('hidden');
+            document.getElementById('deleteModal').classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.add('hidden');
+            document.getElementById('deleteModal').classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
+
+        // ==================== MODAL FUNCTIONS ====================
+        function openAddModal() {
+            const modal = document.getElementById('addCodeStemiModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeAddModal() {
+            const modal = document.getElementById('addCodeStemiModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
+
+        function openEditModal(id) {
+            loadEditData(id);
+            const modal = document.getElementById('editCodeStemiModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeEditModal() {
+            const modal = document.getElementById('editCodeStemiModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
+
+        function openDetailModal(id) {
+            loadDetailData(id);
+            const modal = document.getElementById('detailCodeStemiModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDetailModal() {
+            const modal = document.getElementById('detailCodeStemiModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = 'auto';
+
+            detailTimers.forEach((timerId) => {
+                clearInterval(timerId);
+            });
+            detailTimers.clear();
+        }
+
+        // ==================== TIMER FUNCTIONS ====================
+        function initializeTimers() {
+            const rows = document.querySelectorAll('tr[data-start-time]');
+            rows.forEach(row => {
+                const id = row.getAttribute('data-id');
+                const startTime = row.getAttribute('data-start-time');
+                const status = row.getAttribute('data-status');
+
+                if (status === 'Running') {
+                    startTimer(id, startTime);
+                }
+            });
+        }
+
+        function startTimer(id, startTime) {
+            const start = new Date(startTime);
+
+            function updateTimer() {
+                const now = new Date();
+                const diff = Math.max(0, now - start);
+
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                const timeString =
+                    `${hours.toString().padStart(2, '0')}h : ${minutes.toString().padStart(2, '0')}m : ${seconds.toString().padStart(2, '0')}s`;
+
+                const timeElement = document.getElementById(`time-${id}`);
+                if (timeElement) {
+                    timeElement.textContent = timeString;
+                }
+
+                if (detailTimers.has(id)) {
+                    const detailTimeElement = document.getElementById(`detail-time-${id}`);
+                    if (detailTimeElement) {
+                        detailTimeElement.textContent = timeString;
+                    }
+                }
+            }
+
+            updateTimer();
+            const timerId = setInterval(updateTimer, 1000);
+            timers.set(id, timerId);
+        }
+
+        function startDetailTimer(id, startTime) {
+            const start = new Date(startTime);
+
+            function updateDetailTimer() {
+                const now = new Date();
+                const diff = Math.max(0, now - start);
+
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                const timeString =
+                    `${hours.toString().padStart(2, '0')}h : ${minutes.toString().padStart(2, '0')}m : ${seconds.toString().padStart(2, '0')}s`;
+
                 const detailTimeElement = document.getElementById(`detail-time-${id}`);
                 if (detailTimeElement) {
                     detailTimeElement.textContent = timeString;
                 }
             }
+
+            updateDetailTimer();
+            const timerId = setInterval(updateDetailTimer, 1000);
+            detailTimers.set(id, timerId);
         }
 
-        updateTimer();
-        const timerId = setInterval(updateTimer, 1000);
-        timers.set(id, timerId);
-    }
+        // ==================== DATA LOADING FUNCTIONS ====================
+        async function loadEditData(id) {
+            try {
+                const response = await fetch(`/code-stemi/${id}/edit`);
+                const data = await response.json();
 
-    function startDetailTimer(id, startTime) {
-        const start = new Date(startTime);
+                document.getElementById('editCodeStemiForm').action = `/code-stemi/${id}`;
 
-        function updateDetailTimer() {
-            const now = new Date();
-            const diff = Math.max(0, now - start);
+                const checkboxes = document.querySelectorAll('.edit-checklist');
 
-            const hours = Math.floor(diff / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                console.log('Data dari server:', data);
+                console.log('Checklist data:', data.checklist);
 
-            const timeString =
-                `${hours.toString().padStart(2, '0')}h : ${minutes.toString().padStart(2, '0')}m : ${seconds.toString().padStart(2, '0')}s`;
-
-            const detailTimeElement = document.getElementById(`detail-time-${id}`);
-            if (detailTimeElement) {
-                detailTimeElement.textContent = timeString;
-            }
-        }
-
-        updateDetailTimer();
-        const timerId = setInterval(updateDetailTimer, 1000);
-        detailTimers.set(id, timerId);
-    }
-
-    // ==================== DATA LOADING FUNCTIONS ====================
-    async function loadEditData(id) {
-        try {
-            const response = await fetch(`/code-stemi/${id}/edit`);
-            const data = await response.json();
-
-            document.getElementById('editCodeStemiForm').action = `/code-stemi/${id}`;
-
-            const checkboxes = document.querySelectorAll('.edit-checklist');
-
-            console.log('Data dari server:', data);
-            console.log('Checklist data:', data.checklist);
-
-            // Reset semua checkbox terlebih dahulu
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = false;
-            });
-
-            // Centang checkbox yang sesuai dengan data
-            if (data.checklist && Array.isArray(data.checklist)) {
+                // Reset semua checkbox terlebih dahulu
                 checkboxes.forEach(checkbox => {
-                    // Cek apakah value checkbox ada dalam data checklist
-                    if (data.checklist.includes(checkbox.value)) {
-                        checkbox.checked = true;
-                        console.log('Checked checkbox with value:', checkbox.value);
-                    }
+                    checkbox.checked = false;
                 });
+
+                // Centang checkbox yang sesuai dengan data
+                if (data.checklist && Array.isArray(data.checklist)) {
+                    checkboxes.forEach(checkbox => {
+                        // Cek apakah value checkbox ada dalam data checklist
+                        if (data.checklist.includes(checkbox.value)) {
+                            checkbox.checked = true;
+                            console.log('Checked checkbox with value:', checkbox.value);
+                        }
+                    });
+                }
+
+                document.getElementById('editCustomMessage').value = data.custom_message || '';
+
+            } catch (error) {
+                console.error('Error loading edit data:', error);
+                showErrorModal('Failed to load data for editing');
             }
-
-            document.getElementById('editCustomMessage').value = data.custom_message || '';
-
-        } catch (error) {
-            console.error('Error loading edit data:', error);
-            showErrorModal('Failed to load data for editing');
         }
-    }
 
-    async function loadDetailData(id) {
-        try {
-            const response = await fetch(`/code-stemi/${id}`);
-            const data = await response.json();
+        async function loadDetailData(id) {
+            try {
+                const response = await fetch(`/code-stemi/${id}`);
+                const data = await response.json();
 
-            // Format checklist items - SEMUA 6 ITEM
-            const checklistItems = ['Anamnesis', 'Rongten Thorax', 'Laboratorium', 'EKG', 'Pemeriksaan Fisik',
-                'Informed Consent'
-            ];
+                // Format checklist items - SEMUA 6 ITEM
+                const checklistItems = ['Anamnesis', 'Rongten Thorax', 'Laboratorium', 'EKG', 'Pemeriksaan Fisik',
+                    'Informed Consent'
+                ];
 
-            let checklistHTML = '';
-            checklistItems.forEach(item => {
-                const isChecked = data.checklist && data.checklist.includes(item);
-                checklistHTML += `
+                let checklistHTML = '';
+                checklistItems.forEach(item => {
+                    const isChecked = data.checklist && data.checklist.includes(item);
+                    checklistHTML += `
                     <label class="flex items-center gap-2">
                         <input type="checkbox" ${isChecked ? 'checked' : ''} disabled 
                             class="w-4 h-4 text-blue-600 rounded border-gray-300">
@@ -1696,12 +1697,12 @@
                         </span>
                     </label>
                 `;
-            });
+                });
 
-            // Format waktu
-            const doorToBalloonTime = data.door_to_balloon_time || '00h : 00m : 00s';
+                // Format waktu
+                const doorToBalloonTime = data.door_to_balloon_time || '00h : 00m : 00s';
 
-            document.getElementById('detailContent').innerHTML = `
+                document.getElementById('detailContent').innerHTML = `
                 <div class="space-y-4">
                     <!-- Checklist Section -->
                     <div>
@@ -1722,11 +1723,11 @@
                             <p class="text-xs text-blue-800">Fast Track STEMI Pathway aktif.</p>
                             <p class="text-xs text-blue-800">Waktu Door-to-balloon dimulai.</p>
                             ${data.custom_message ? `
-                                <div class="mt-2 pt-2 border-t border-blue-200">
-                                    <p class="text-xs text-blue-900 font-semibold">Pesan Tambahan:</p>
-                                    <p class="text-xs text-blue-800">${data.custom_message}</p>
-                                </div>
-                            ` : ''}
+                                    <div class="mt-2 pt-2 border-t border-blue-200">
+                                        <p class="text-xs text-blue-900 font-semibold">Pesan Tambahan:</p>
+                                        <p class="text-xs text-blue-800">${data.custom_message}</p>
+                                    </div>
+                                ` : ''}
                         </div>
                     </div>
 
@@ -1740,80 +1741,80 @@
 
                     <!-- Complete Button untuk status Running -->
                     ${data.status === 'Running' ? `
-                        <button onclick="confirmFinish(${data.id})" 
-                            class="w-full py-2.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition text-sm">
-                            COMPLETE CODE STEMI ACTIVATION
-                        </button>
-                    ` : ''}
+                            <button onclick="confirmFinish(${data.id})" 
+                                class="w-full py-2.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition text-sm">
+                                COMPLETE CODE STEMI ACTIVATION
+                            </button>
+                        ` : ''}
                 </div>
             `;
 
-            // Jika status Running, mulai timer
-            if (data.status === 'Running') {
-                startDetailTimer(data.id, data.start_time);
+                // Jika status Running, mulai timer
+                if (data.status === 'Running') {
+                    startDetailTimer(data.id, data.start_time);
+                }
+
+            } catch (error) {
+                console.error('Error loading detail:', error);
+                showErrorModal('Gagal memuat data detail');
+            }
+        }
+
+        // ==================== EVENT LISTENERS ====================
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('contextMenu');
+            if (menu && !menu.contains(e.target)) {
+                menu.classList.add('hidden');
             }
 
-        } catch (error) {
-            console.error('Error loading detail:', error);
-            showErrorModal('Gagal memuat data detail');
-        }
-    }
+            const modals = [
+                'addCodeStemiModal', 'activationConfirmModal', 'finishConfirmModal',
+                'editCodeStemiModal', 'detailCodeStemiModal', 'deleteModal', 'deleteAllModal'
+            ];
 
-    // ==================== EVENT LISTENERS ====================
-    document.addEventListener('click', function(e) {
-        const menu = document.getElementById('contextMenu');
-        if (menu && !menu.contains(e.target)) {
-            menu.classList.add('hidden');
-        }
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (modal && e.target === modal) {
+                    closeAllModals();
+                }
+            });
+        });
 
-        const modals = [
-            'addCodeStemiModal', 'activationConfirmModal', 'finishConfirmModal',
-            'editCodeStemiModal', 'detailCodeStemiModal', 'deleteModal', 'deleteAllModal'
-        ];
-
-        modals.forEach(modalId => {
-            const modal = document.getElementById(modalId);
-            if (modal && e.target === modal) {
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
                 closeAllModals();
+                document.getElementById('contextMenu').classList.add('hidden');
+                document.getElementById('filterDropdown').classList.remove('show');
             }
         });
-    });
 
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeAllModals();
-            document.getElementById('contextMenu').classList.add('hidden');
-            document.getElementById('filterDropdown').classList.remove('show');
+        function closeAllModals() {
+            const modals = [
+                'addCodeStemiModal', 'activationConfirmModal', 'finishConfirmModal',
+                'editCodeStemiModal', 'detailCodeStemiModal', 'deleteModal', 'deleteAllModal'
+            ];
+
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                }
+            });
+            document.body.style.overflow = 'auto';
         }
-    });
 
-    function closeAllModals() {
-        const modals = [
-            'addCodeStemiModal', 'activationConfirmModal', 'finishConfirmModal',
-            'editCodeStemiModal', 'detailCodeStemiModal', 'deleteModal', 'deleteAllModal'
-        ];
-
-        modals.forEach(modalId => {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            stopAutoRefresh();
+            timers.forEach((timerId) => {
+                clearInterval(timerId);
+            });
+            detailTimers.forEach((timerId) => {
+                clearInterval(timerId);
+            });
         });
-        document.body.style.overflow = 'auto';
-    }
-
-    // Cleanup on page unload
-    window.addEventListener('beforeunload', function() {
-        stopAutoRefresh();
-        timers.forEach((timerId) => {
-            clearInterval(timerId);
-        });
-        detailTimers.forEach((timerId) => {
-            clearInterval(timerId);
-        });
-    });
-</script>
+    </script>
 </body>
 
 </html>
