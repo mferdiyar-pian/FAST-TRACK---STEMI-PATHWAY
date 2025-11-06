@@ -18,7 +18,6 @@
             line-height: 1.5;
             letter-spacing: -0.011em;
             overflow: hidden;
-            /* Prevent whole page scrolling */
         }
 
         .font-semibold {
@@ -169,6 +168,23 @@
         .data-scroll-container::-webkit-scrollbar-thumb:hover {
             background: #a8a8a8;
         }
+
+        /* Auto remove notification styling */
+        .auto-remove-notification {
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 
@@ -215,7 +231,6 @@
                 <div class="flex items-center justify-between">
                     <div></div>
                     <div class="flex items-center gap-6">
-                        <!-- PERBAIKAN: Search Form dengan real-time search -->
                         <form id="searchForm" method="GET" action="{{ route('code-stemi.index') }}"
                             class="relative flex items-center">
                             <input type="text" name="search" id="searchInput" placeholder="Search type of keywords"
@@ -304,14 +319,32 @@
                 @if (session('success'))
                     <div
                         class="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm auto-remove-notification">
-                        {{ session('success') }}
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i class="fas fa-check-circle mr-2"></i>
+                                <span>{{ session('success') }}</span>
+                            </div>
+                            <button onclick="this.parentElement.parentElement.remove()"
+                                class="text-green-600 hover:text-green-800">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
                     </div>
                 @endif
 
                 @if (session('error'))
                     <div
                         class="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm auto-remove-notification">
-                        {{ session('error') }}
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i class="fas fa-exclamation-circle mr-2"></i>
+                                <span>{{ session('error') }}</span>
+                            </div>
+                            <button onclick="this.parentElement.parentElement.remove()"
+                                class="text-red-600 hover:text-red-800">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
                     </div>
                 @endif
 
@@ -1246,7 +1279,7 @@
             }
         }
 
-        // ==================== NOTIFICATION FUNCTIONS ====================
+        // ==================== NOTIFICATION FUNCTIONS - DIPERBAIKI ====================
         function showSuccessNotification(message) {
             // Remove old notifications if any
             const oldNotifications = document.querySelectorAll('.auto-remove-notification');
@@ -1255,22 +1288,59 @@
             // Create new notification
             const notification = document.createElement('div');
             notification.className =
-                'auto-remove-notification mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm';
+                'mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm auto-remove-notification';
             notification.innerHTML = `
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <i class="fas fa-check-circle mr-2"></i>
-                    <span>${message}</span>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        <span>${message}</span>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="text-green-600 hover:text-green-800">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
-                <button onclick="this.parentElement.parentElement.remove()" class="text-green-600 hover:text-green-800">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        `;
+            `;
 
             // Insert notification above content
             const content = document.querySelector('.p-8');
-            content.insertBefore(notification, content.firstChild);
+            if (content) {
+                content.insertBefore(notification, content.firstChild);
+            }
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+
+        function showErrorNotification(message) {
+            // Remove old notifications if any
+            const oldNotifications = document.querySelectorAll('.auto-remove-notification');
+            oldNotifications.forEach(notification => notification.remove());
+
+            // Create error notification
+            const notification = document.createElement('div');
+            notification.className =
+                'mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm auto-remove-notification';
+            notification.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        <span>${message}</span>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="text-red-600 hover:text-red-800">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+
+            // Insert notification above content
+            const content = document.querySelector('.p-8');
+            if (content) {
+                content.insertBefore(notification, content.firstChild);
+            }
 
             // Auto remove after 5 seconds
             setTimeout(() => {
@@ -1363,7 +1433,7 @@
             }
         }
 
-        // ==================== DELETE ALL FUNCTIONS ====================
+        // ==================== DELETE ALL FUNCTIONS - DIPERBAIKI ====================
         function confirmDeleteAll() {
             document.getElementById('deleteAllModal').classList.remove('hidden');
             document.getElementById('deleteAllModal').classList.add('flex');
@@ -1394,7 +1464,8 @@
 
                 if (result.success) {
                     closeDeleteAllModal();
-                    showSuccessNotification('All Code STEMI data deleted successfully!');
+                    // TAMPILKAN NOTIFIKASI SUCCESS
+                    showSuccessNotification(result.message || 'All Code STEMI data deleted successfully!');
 
                     // Auto refresh after 1 second
                     setTimeout(() => {
@@ -1442,7 +1513,7 @@
             }
         }
 
-        // ==================== DELETE FUNCTIONS ====================
+        // ==================== DELETE FUNCTIONS - DIPERBAIKI ====================
         async function handleDeleteSubmit() {
             const form = document.getElementById('deleteForm');
             const url = form.action;
@@ -1461,7 +1532,8 @@
 
                 if (result.success) {
                     closeDeleteModal();
-                    showSuccessNotification('Code STEMI data deleted successfully!');
+                    // TAMPILKAN NOTIFIKASI SUCCESS
+                    showSuccessNotification(result.message || 'Code STEMI data deleted successfully!');
 
                     // Auto refresh after 1 second
                     setTimeout(() => {
@@ -1689,65 +1761,65 @@
                 checklistItems.forEach(item => {
                     const isChecked = data.checklist && data.checklist.includes(item);
                     checklistHTML += `
-                    <label class="flex items-center gap-2">
-                        <input type="checkbox" ${isChecked ? 'checked' : ''} disabled 
-                            class="w-4 h-4 text-blue-600 rounded border-gray-300">
-                        <span class="text-sm text-gray-700 ${isChecked ? 'font-medium' : 'text-gray-400'}">
-                            ${item}
-                        </span>
-                    </label>
-                `;
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" ${isChecked ? 'checked' : ''} disabled 
+                                class="w-4 h-4 text-blue-600 rounded border-gray-300">
+                            <span class="text-sm text-gray-700 ${isChecked ? 'font-medium' : 'text-gray-400'}">
+                                ${item}
+                            </span>
+                        </label>
+                    `;
                 });
 
                 // Format waktu
                 const doorToBalloonTime = data.door_to_balloon_time || '00h : 00m : 00s';
 
                 document.getElementById('detailContent').innerHTML = `
-                <div class="space-y-4">
-                    <!-- Checklist Section -->
-                    <div>
-                        <h4 class="text-sm font-semibold text-gray-800 mb-3">Checklist Registrasi</h4>
-                        <div class="grid grid-cols-2 gap-2">
-                            ${checklistHTML}
+                    <div class="space-y-4">
+                        <!-- Checklist Section -->
+                        <div>
+                            <h4 class="text-sm font-semibold text-gray-800 mb-3">Checklist Registrasi</h4>
+                            <div class="grid grid-cols-2 gap-2">
+                                ${checklistHTML}
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Broadcast Message Section -->
-                    <div class="border-t pt-4">
-                        <h4 class="text-sm font-semibold text-gray-800 mb-2">Pesan Broadcast</h4>
-                        <p class="text-xs text-gray-600 mb-2">Fast Track STEMI Pathway</p>
-                        <div class="bg-blue-50 rounded-lg p-3 space-y-1 border border-blue-200">
-                            <p class="text-xs text-blue-900 font-semibold">CODE STEMI AKTIF</p>
-                            <p class="text-xs text-blue-800">Pasien STEMI telah berada di IGD RS Otak M Hatta Bukittinggi.</p>
-                            <p class="text-xs text-blue-800">Seluruh unit terkait dimohon segera siaga.</p>
-                            <p class="text-xs text-blue-800">Fast Track STEMI Pathway aktif.</p>
-                            <p class="text-xs text-blue-800">Waktu Door-to-balloon dimulai.</p>
-                            ${data.custom_message ? `
-                                    <div class="mt-2 pt-2 border-t border-blue-200">
-                                        <p class="text-xs text-blue-900 font-semibold">Pesan Tambahan:</p>
-                                        <p class="text-xs text-blue-800">${data.custom_message}</p>
-                                    </div>
-                                ` : ''}
+                        <!-- Broadcast Message Section -->
+                        <div class="border-t pt-4">
+                            <h4 class="text-sm font-semibold text-gray-800 mb-2">Pesan Broadcast</h4>
+                            <p class="text-xs text-gray-600 mb-2">Fast Track STEMI Pathway</p>
+                            <div class="bg-blue-50 rounded-lg p-3 space-y-1 border border-blue-200">
+                                <p class="text-xs text-blue-900 font-semibold">CODE STEMI AKTIF</p>
+                                <p class="text-xs text-blue-800">Pasien STEMI telah berada di IGD RS Otak M Hatta Bukittinggi.</p>
+                                <p class="text-xs text-blue-800">Seluruh unit terkait dimohon segera siaga.</p>
+                                <p class="text-xs text-blue-800">Fast Track STEMI Pathway aktif.</p>
+                                <p class="text-xs text-blue-800">Waktu Door-to-balloon dimulai.</p>
+                                ${data.custom_message ? `
+                                        <div class="mt-2 pt-2 border-t border-blue-200">
+                                            <p class="text-xs text-blue-900 font-semibold">Pesan Tambahan:</p>
+                                            <p class="text-xs text-blue-800">${data.custom_message}</p>
+                                        </div>
+                                    ` : ''}
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Door-to-Balloon Time Section -->
-                    <div class="bg-white border border-gray-200 rounded-lg p-4 text-center">
-                        <p class="text-sm font-semibold text-gray-800 mb-2">DOOR TO BALLOON TIME</p>
-                        <div id="detail-time-${data.id}" class="text-3xl font-bold text-blue-600 tracking-wider timer-text">
-                            ${doorToBalloonTime}
+                        <!-- Door-to-Balloon Time Section -->
+                        <div class="bg-white border border-gray-200 rounded-lg p-4 text-center">
+                            <p class="text-sm font-semibold text-gray-800 mb-2">DOOR TO BALLOON TIME</p>
+                            <div id="detail-time-${data.id}" class="text-3xl font-bold text-blue-600 tracking-wider timer-text">
+                                ${doorToBalloonTime}
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Complete Button untuk status Running -->
-                    ${data.status === 'Running' ? `
-                            <button onclick="confirmFinish(${data.id})" 
-                                class="w-full py-2.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition text-sm">
-                                COMPLETE CODE STEMI ACTIVATION
-                            </button>
-                        ` : ''}
-                </div>
-            `;
+                        <!-- Complete Button untuk status Running -->
+                        ${data.status === 'Running' ? `
+                                <button onclick="confirmFinish(${data.id})" 
+                                    class="w-full py-2.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition text-sm">
+                                    COMPLETE CODE STEMI ACTIVATION
+                                </button>
+                            ` : ''}
+                    </div>
+                `;
 
                 // Jika status Running, mulai timer
                 if (data.status === 'Running') {

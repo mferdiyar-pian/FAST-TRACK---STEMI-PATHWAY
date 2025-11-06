@@ -40,7 +40,7 @@ class CodeStemiController extends Controller
             });
         }
         
-        // PERBAIKAN: Filter berdasarkan pencarian yang lebih komprehensif
+        // Filter berdasarkan pencarian yang lebih komprehensif
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -60,7 +60,7 @@ class CodeStemiController extends Controller
 
         $data = $query->orderBy('start_time', 'desc')->paginate(10);
         
-        // Tambahkan formatted_date untuk setiap item
+        // Tambahkan formatted_date dan door_to_balloon_time untuk setiap item
         $data->getCollection()->transform(function ($item) {
             $item->formatted_date = $item->start_time->setTimezone('Asia/Makassar')->format('d M, Y');
             $item->door_to_balloon_time = $this->calculateDoorToBalloonTime($item);
