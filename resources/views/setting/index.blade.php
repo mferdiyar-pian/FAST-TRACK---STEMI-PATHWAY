@@ -324,143 +324,108 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-3 gap-6">
-                    {{-- Profile Section --}}
-                    <div class="col-span-2 space-y-6">
-                        {{-- Profile Information --}}
-                        <div class="bg-white rounded-xl shadow-sm p-6">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-6">Profile Information</h3>
-                            
-                            <form action="{{ route('setting.update-profile') }}" method="POST">
-                                @csrf
-                                <div class="space-y-4">
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
-                                            <input type="text" name="name" value="{{ old('name', $user->name) }}"
-                                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
-                                            @error('name')
-                                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                            @enderror
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                                            <input type="email" name="email" value="{{ old('email', $user->email ?? '') }}"
-                                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
-                                            @error('email')
-                                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                            @enderror
-                                        </div>
-                                    </div>
-
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                                            <input type="tel" name="phone_number" value="{{ old('phone_number', $user->phone_number ?? '') }}"
-                                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
-                                            <select name="role"
-                                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
-                                                <option value="">Select Role</option>
-                                                <option value="Dokter Spesialis" {{ old('role', $settings['role'] ?? '') == 'Dokter Spesialis' ? 'selected' : '' }}>Dokter Spesialis</option>
-                                                <option value="Dokter Umum" {{ old('role', $settings['role'] ?? '') == 'Dokter Umum' ? 'selected' : '' }}>Dokter Umum</option>
-                                                <option value="Perawat" {{ old('role', $settings['role'] ?? '') == 'Perawat' ? 'selected' : '' }}>Perawat</option>
-                                                <option value="Admin" {{ old('role', $settings['role'] ?? '') == 'Admin' ? 'selected' : '' }}>Admin</option>
-                                            </select>
-                                        </div>
-                                    </div>
-
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {{-- Profile Information --}}
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-6">Profile Information</h3>
+                        
+                        <form action="{{ route('setting.update-profile') }}" method="POST">
+                            @csrf
+                            <div class="space-y-4">
+                                <div class="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Hospital</label>
-                                        <input type="text" name="hospital" value="{{ old('hospital', $settings['hospital'] ?? '') }}"
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                                        <input type="text" name="name" value="{{ old('name', $user->name) }}"
                                             class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
-                                    </div>
-                                </div>
-
-                                <div class="flex justify-end mt-6">
-                                    <button type="submit"
-                                        class="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm">
-                                        Save Changes
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-
-                        {{-- Change Password --}}
-                        <div class="bg-white rounded-xl shadow-sm p-6">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-6">Change Password</h3>
-
-                            <form action="{{ route('setting.update-password') }}" method="POST">
-                                @csrf
-                                <div class="space-y-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
-                                        <input type="password" name="current_password" placeholder="Enter current password"
-                                            class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
-                                        @error('current_password')
+                                        @error('name')
                                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                         @enderror
                                     </div>
-
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
-                                            <input type="password" name="new_password" placeholder="Enter new password"
-                                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
-                                            @error('new_password')
-                                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                            @enderror
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
-                                            <input type="password" name="new_password_confirmation" placeholder="Confirm new password"
-                                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
-                                        </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                        <input type="email" name="email" value="{{ old('email', $user->email ?? '') }}"
+                                            class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
+                                        @error('email')
+                                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                        @enderror
                                     </div>
                                 </div>
 
-                                <div class="flex justify-end mt-6">
-                                    <button type="submit"
-                                        class="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm">
-                                        Update Password
-                                    </button>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                                        <input type="tel" name="phone_number" value="{{ old('phone_number', $user->phone_number ?? '') }}"
+                                            class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                                        <select name="role"
+                                            class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
+                                            <option value="">Select Role</option>
+                                            <option value="Dokter Spesialis" {{ old('role', $settings['role'] ?? '') == 'Dokter Spesialis' ? 'selected' : '' }}>Dokter Spesialis</option>
+                                            <option value="Dokter Umum" {{ old('role', $settings['role'] ?? '') == 'Dokter Umum' ? 'selected' : '' }}>Dokter Umum</option>
+                                            <option value="Perawat" {{ old('role', $settings['role'] ?? '') == 'Perawat' ? 'selected' : '' }}>Perawat</option>
+                                            <option value="Admin" {{ old('role', $settings['role'] ?? '') == 'Admin' ? 'selected' : '' }}>Admin</option>
+                                        </select>
+                                    </div>
                                 </div>
-                            </form>
-                        </div>
 
-
-                    </div>
-
-                    {{-- Right Side --}}
-                    <div class="space-y-6">
-
-                        {{-- Quick Stats --}}
-                        <div class="bg-white rounded-xl shadow-sm p-6">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-6">Account Stats</h3>
-
-                            <div class="space-y-4">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-sm text-gray-600 font-medium">Cases Handled</span>
-                                    <span class="font-semibold text-gray-800">{{ $totalCases }}</span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-sm text-gray-600 font-medium">Active Cases</span>
-                                    <span class="font-semibold text-gray-800">{{ $activeCases }}</span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-sm text-gray-600 font-medium">Success Rate</span>
-                                    <span class="font-semibold text-green-600">{{ $successRate }}%</span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-sm text-gray-600 font-medium">Member Since</span>
-                                    <span class="font-semibold text-gray-800">{{ $user->created_at->format('M Y') }}</span>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Hospital</label>
+                                    <input type="text" name="hospital" value="{{ old('hospital', $settings['hospital'] ?? '') }}"
+                                        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
                                 </div>
                             </div>
-                        </div>
 
+                            <div class="flex justify-end mt-6">
+                                <button type="submit"
+                                    class="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm">
+                                    Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
 
+                    {{-- Change Password --}}
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-6">Change Password</h3>
+
+                        <form action="{{ route('setting.update-password') }}" method="POST">
+                            @csrf
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
+                                    <input type="password" name="current_password" placeholder="Enter current password"
+                                        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
+                                    @error('current_password')
+                                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                                        <input type="password" name="new_password" placeholder="Enter new password"
+                                            class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
+                                        @error('new_password')
+                                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+                                        <input type="password" name="new_password_confirmation" placeholder="Confirm new password"
+                                            class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end mt-6">
+                                <button type="submit"
+                                    class="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm">
+                                    Update Password
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
