@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Register - FAST TRACK STEMI PATHWAY</title>
+    <title>Forgot Password - FAST TRACK STEMI PATHWAY</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -30,6 +30,7 @@
             overflow: auto;
         }
 
+        /* Background with gradient using #2563eb */
         body::before {
             content: '';
             position: absolute;
@@ -45,7 +46,7 @@
 
         .login-container {
             width: 100%;
-            max-width: 450px;
+            max-width: 380px;
             position: relative;
             z-index: 1;
         }
@@ -191,28 +192,6 @@
         .link-primary-custom:hover {
             color: #1d4ed8;
         }
-
-        .divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            margin: 1.5rem 0;
-        }
-        
-        .divider::before,
-        .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid #f1f5f9;
-        }
-        
-        .divider span {
-            padding: 0 0.75rem;
-            color: #64748b;
-            font-size: 0.8rem;
-            font-weight: 500;
-            background: white;
-        }
     </style>
 </head>
 <body>
@@ -231,52 +210,17 @@
                     </div>
                 </div>
 
-                <form method="POST" action="{{ route('register') }}">
+                @if (session('status'))
+                    <div class="alert alert-success" role="alert">
+                        {{ session('status') }}
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('password.email') }}">
                     @csrf
                     
                     <div class="form-group">
-                        <label for="name" class="form-label">Full Name</label>
-                        <div class="position-relative">
-                            <i class="bi bi-person-fill input-icon"></i>
-                            <input id="name" 
-                                   type="text" 
-                                   class="form-control @error('name') is-invalid @enderror" 
-                                   name="name" 
-                                   value="{{ old('name') }}" 
-                                   required 
-                                   autocomplete="name" 
-                                   autofocus
-                                   placeholder="Enter your full name">
-                            @error('name')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="username" class="form-label">Username</label>
-                        <div class="position-relative">
-                            <i class="bi bi-person-badge input-icon"></i>
-                            <input id="username" 
-                                   type="text" 
-                                   class="form-control @error('username') is-invalid @enderror" 
-                                   name="username" 
-                                   value="{{ old('username') }}" 
-                                   required 
-                                   autocomplete="username"
-                                   placeholder="Choose a username">
-                            @error('username')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="email" class="form-label">Email Address (Optional)</label>
+                        <label for="email" class="form-label">Email Address</label>
                         <div class="position-relative">
                             <i class="bi bi-envelope-fill input-icon"></i>
                             <input id="email" 
@@ -284,7 +228,9 @@
                                    class="form-control @error('email') is-invalid @enderror" 
                                    name="email" 
                                    value="{{ old('email') }}" 
-                                   autocomplete="email"
+                                   required 
+                                   autocomplete="email" 
+                                   autofocus
                                    placeholder="Enter your email address">
                             @error('email')
                                 <span class="invalid-feedback" role="alert">
@@ -294,71 +240,14 @@
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="phone_number" class="form-label">Phone Number (Optional)</label>
-                        <div class="position-relative">
-                            <i class="bi bi-phone-fill input-icon"></i>
-                            <input id="phone_number" 
-                                   type="tel" 
-                                   class="form-control @error('phone_number') is-invalid @enderror" 
-                                   name="phone_number" 
-                                   value="{{ old('phone_number') }}" 
-                                   autocomplete="tel"
-                                   placeholder="Enter your phone number">
-                            @error('phone_number')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="password" class="form-label">Password</label>
-                        <div class="position-relative">
-                            <i class="bi bi-lock-fill input-icon"></i>
-                            <input id="password" 
-                                   type="password" 
-                                   class="form-control @error('password') is-invalid @enderror" 
-                                   name="password" 
-                                   required 
-                                   autocomplete="new-password"
-                                   placeholder="Enter your password">
-                            @error('password')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="password-confirm" class="form-label">Confirm Password</label>
-                        <div class="position-relative">
-                            <i class="bi bi-lock-fill input-icon"></i>
-                            <input id="password-confirm" 
-                                   type="password" 
-                                   class="form-control" 
-                                   name="password_confirmation" 
-                                   required 
-                                   autocomplete="new-password"
-                                   placeholder="Confirm your password">
-                        </div>
-                    </div>
-
                     <button type="submit" class="btn-login">
-                        <i class="bi bi-person-plus me-2"></i>
-                        Create Account
+                        Send Password Reset Link
                     </button>
                 </form>
 
-                <div class="divider">
-                    <span>Already have an account?</span>
-                </div>
-
                 <div class="text-center">
                     <a href="{{ route('login') }}" class="link-primary-custom d-inline-flex align-items-center fw-bold">
-                        <i class="bi bi-arrow-left me-2"></i>
+                        <i class="bi bi-arrow-left ms-2"></i>
                         Back to login
                     </a>
                 </div>

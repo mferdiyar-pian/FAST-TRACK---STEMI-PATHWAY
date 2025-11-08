@@ -9,6 +9,8 @@ use App\Http\Controllers\BroadcastController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -146,3 +148,9 @@ Route::middleware(['auth'])->prefix('settings')->name('setting.')->group(functio
     Route::post('/profile-photo', [SettingController::class, 'updateProfilePhoto'])->name('update-profile-photo');
     Route::post('/remove-profile-photo', [SettingController::class, 'removeProfilePhoto'])->name('remove-profile-photo');
 });
+
+// Password Reset Routes
+Route::get('password/reset', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+Route::get('password/reset/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('password.update');

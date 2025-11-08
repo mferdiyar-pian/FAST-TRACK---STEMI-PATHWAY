@@ -329,7 +329,7 @@
                             </label>
                         </div>
 
-                        <a href="#" class="link-primary-custom">
+                        <a href="{{ route('password.request') }}" class="link-primary-custom">
                             Forgot password?
                         </a>
                     </div>
