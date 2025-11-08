@@ -104,6 +104,32 @@ class SettingController extends Controller
         }
     }
 
+    public function updateUsername(Request $request)
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        $validated = $request->validateWithBag('updateUsername', [
+            'username' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('users')->ignore($user->id),
+            ],
+        ]);
+
+        try {
+            $user->username = $validated['username'];
+            $user->save();
+
+            return redirect()->route('setting.index')->with('success', 'Username updated successfully!');
+            
+        } catch (\Exception $e) {
+            Log::error('Username update error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to update username: ' . $e->getMessage())->withErrors([], 'updateUsername');
+        }
+    }
+
     public function updateNotifications(Request $request)
     {
         $user = Auth::user();

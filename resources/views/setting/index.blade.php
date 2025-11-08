@@ -337,7 +337,7 @@
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
                                         <input type="text" name="name" value="{{ old('name', $user->name) }}"
                                             class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
-                                        @error('name')
+                                        @error('name', 'updateProfile')
                                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                         @enderror
                                     </div>
@@ -345,7 +345,7 @@
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
                                         <input type="email" name="email" value="{{ old('email', $user->email ?? '') }}"
                                             class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
-                                        @error('email')
+                                        @error('email', 'updateProfile')
                                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                         @enderror
                                     </div>
@@ -397,7 +397,7 @@
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
                                     <input type="password" name="current_password" placeholder="Enter current password"
                                         class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
-                                    @error('current_password')
+                                    @error('current_password', 'updatePassword')
                                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                     @enderror
                                 </div>
@@ -407,7 +407,7 @@
                                         <label class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
                                         <input type="password" name="new_password" placeholder="Enter new password"
                                             class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm">
-                                        @error('new_password')
+                                        @error('new_password', 'updatePassword')
                                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                         @enderror
                                     </div>
@@ -423,6 +423,31 @@
                                 <button type="submit"
                                     class="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm">
                                     Update Password
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    {{-- Change Username --}}
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-6">Change Username</h3>
+
+                        <form action="{{ route('setting.updateUsername') }}" method="POST">
+                            @csrf
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                                    <input type="text" name="username" value="{{ old('username', $user->username ?? '') }}"
+                                        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm" placeholder="Enter new username">
+                                    @error('username', 'updateUsername')
+                                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end mt-6">
+                                <button type="submit"
+                                    class="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm">
+                                    Update Username
                                 </button>
                             </div>
                         </form>

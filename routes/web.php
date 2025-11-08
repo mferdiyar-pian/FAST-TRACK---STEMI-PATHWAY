@@ -144,6 +144,7 @@ Route::middleware(['auth'])->prefix('settings')->name('setting.')->group(functio
     Route::get('/', [SettingController::class, 'index'])->name('index');
     Route::post('/profile', [SettingController::class, 'updateProfile'])->name('update-profile');
     Route::post('/password', [SettingController::class, 'updatePassword'])->name('update-password');
+    Route::post('/username', [SettingController::class, 'updateUsername'])->name('updateUsername');
     Route::post('/notifications', [SettingController::class, 'updateNotifications'])->name('update-notifications');
     Route::post('/profile-photo', [SettingController::class, 'updateProfilePhoto'])->name('update-profile-photo');
     Route::post('/remove-profile-photo', [SettingController::class, 'removeProfilePhoto'])->name('remove-profile-photo');

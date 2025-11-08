@@ -289,18 +289,23 @@
                     @csrf
                     
                     <div class="form-group">
-                        <label for="username" class="form-label">Username</label>
+                        <label for="login" class="form-label">Username or Email</label>
                         <div class="position-relative">
                             <i class="bi bi-person-fill input-icon"></i>
-                            <input id="username" 
+                            <input id="login" 
                                    type="text" 
-                                   class="form-control" 
-                                   name="username" 
-                                   value="{{ old('username') }}" 
+                                   class="form-control @error('login') is-invalid @enderror" 
+                                   name="login" 
+                                   value="{{ old('login') }}" 
                                    required 
-                                   autocomplete="username" 
+                                   autocomplete="login" 
                                    autofocus
-                                   placeholder="Enter your username">
+                                   placeholder="Enter your username or email">
+                            @error('login')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
                         </div>
                     </div>
 
