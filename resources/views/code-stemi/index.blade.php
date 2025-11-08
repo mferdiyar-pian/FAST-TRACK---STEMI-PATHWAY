@@ -374,7 +374,7 @@
 
                             <!-- Filter Dropdown -->
                             <div id="filterDropdown"
-                                class="filter-dropdown absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                                class="filter-dropdown absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-30">
                                 <div class="p-4">
                                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Filter Code STEMI</h3>
 
@@ -420,12 +420,12 @@
                                                     ];
                                                 @endphp
 
-                                                @foreach ($checklistItems as $key => $label)
+                                                @foreach ($checklistItems as $label)
                                                     <label class="flex items-center gap-2 cursor-pointer">
                                                         <input type="checkbox" name="checklist_filter[]"
-                                                            value="{{ $key }}"
+                                                            value="{{ $label }}"
                                                             class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                                                            {{ in_array($key, request('checklist_filter', [])) ? 'checked' : '' }}>
+                                                            {{ in_array($label, request('checklist_filter', [])) ? 'checked' : '' }}>
                                                         <span class="text-sm text-gray-700">{{ $label }}</span>
                                                     </label>
                                                 @endforeach
@@ -472,20 +472,10 @@
                         </span>
                     @endif
                     @if (request('checklist_filter'))
-                        @php
-                            $checklistLabels = [
-                                'Anamnesis',
-                                'Rongten Thorax',
-                                'Laboratorium',
-                                'EKG',
-                                'Pemeriksaan Fisik',
-                                'Informed Consent',
-                            ];
-                        @endphp
                         @foreach (request('checklist_filter') as $checklistItem)
                             <span
                                 class="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full flex items-center gap-1">
-                                Checklist: {{ $checklistLabels[$checklistItem] ?? $checklistItem }}
+                                Checklist: {{ $checklistItem }}
                                 <button onclick="removeChecklistFilter('{{ $checklistItem }}')"
                                     class="text-purple-600 hover:text-purple-800">
                                     <i class="fas fa-times text-xs"></i>
@@ -511,6 +501,9 @@
                                 <tr class="bg-white">
                                     <th
                                         class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                        No. Rekam Medis</th>
+                                    <th
+                                        class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                         ADMITTTED</th>
                                     <th
                                         class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
@@ -533,6 +526,7 @@
                                         data-end-time="{{ $item->end_time ? $item->end_time->toISOString() : '' }}"
                                         data-date="{{ $item->start_time->format('Y-m-d') }}"
                                         data-checklist="{{ json_encode($item->checklist ?? []) }}">
+                                        <td class="px-6 py-4 text-sm text-gray-700">{{ $item->medical_record_number }}</td>
                                         <td class="px-6 py-4 text-sm text-gray-700">{{ $item->formatted_date }}</td>
                                         <td class="px-6 py-4">
                                             <span
@@ -683,6 +677,9 @@
                                 <tr class="bg-white">
                                     <th
                                         class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                        No. Rekam Medis</th>
+                                    <th
+                                        class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                         DATE</th>
                                     <th
                                         class="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
@@ -698,7 +695,7 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                                    <td colspan="6" class="px-6 py-8 text-center text-gray-500">
                                         <i class="fas fa-inbox text-4xl mb-2 block"></i>
                                         @if (request()->anyFilled(['status', 'date', 'checklist_filter', 'search']))
                                             No data matching the filter criteria
@@ -760,7 +757,7 @@
     </div>
 
     {{-- Context Menu --}}
-    <div id="contextMenu" class="fixed hidden bg-white shadow-lg rounded-lg py-2 z-50 border border-gray-200"
+    <div id="contextMenu" class="fixed hidden bg-white shadow-lg rounded-lg py-2 z-30 border border-gray-200"
         style="min-width: 140px;">
         <button onclick="editFromMenu()"
             class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-700 flex items-center gap-2">
@@ -774,7 +771,7 @@
 
     {{-- Add Data Modal --}}
     <div id="addCodeStemiModal"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-40 p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-md transform transition-all">
             <div class="flex items-center justify-between p-4 border-b border-gray-200">
                 <h3 class="text-lg font-bold text-gray-800">REGISTRASI CODE STEMI</h3>
@@ -796,6 +793,15 @@
             <form action="{{ route('code-stemi.store') }}" method="POST" id="activationForm">
                 @csrf
                 <div class="p-5 space-y-4">
+                    {{-- No Rekam Medis Section --}}
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-800 mb-2">No. Rekam Medis</label>
+                        <input type="text" name="medical_record_number" id="medicalRecordNumber"
+                            placeholder="Masukkan nomor rekam medis"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            required>
+                    </div>
+
                     {{-- Checklist Section --}}
                     <div>
                         <label class="block text-sm font-semibold text-gray-800 mb-2">Checklist Registrasi</label>
@@ -850,7 +856,6 @@
                         <textarea name="custom_message" placeholder="Tambahkan pesan custom disini (opsional)"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
                             rows="2"></textarea>
-                        <p class="text-xs text-gray-400 italic mt-1">Pesan ini akan ditambahkan di akhir broadcast</p>
                     </div>
 
                     {{-- Submit Button --}}
@@ -948,7 +953,7 @@
 
     {{-- Edit Data Modal --}}
     <div id="editCodeStemiModal"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-40 p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-md transform transition-all">
             <div class="flex items-center justify-between p-4 border-b border-gray-200">
                 <h3 class="text-lg font-bold text-gray-800">EDIT CODE STEMI</h3>
@@ -971,6 +976,15 @@
                 @csrf
                 @method('PUT')
                 <div class="p-5 space-y-4">
+                    {{-- No Rekam Medis Section --}}
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-800 mb-2">No. Rekam Medis</label>
+                        <input type="text" name="medical_record_number" id="editMedicalRecordNumber"
+                            placeholder="Masukkan nomor rekam medis"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            required>
+                    </div>
+
                     {{-- Checklist Section --}}
                     <div>
                         <label class="block text-sm font-semibold text-gray-800 mb-2">Registration Checklist</label>
@@ -1029,7 +1043,7 @@
 
     {{-- Detail Data Modal --}}
     <div id="detailCodeStemiModal"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-40 p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-md transform transition-all">
             <div class="flex items-center justify-between p-4 border-b border-gray-200">
                 <h3 class="text-lg font-bold text-gray-800">DETAIL CODE STEMI</h3>
@@ -1363,6 +1377,13 @@
 
         // ==================== ACTIVATION CONFIRMATION FUNCTIONS ====================
         function confirmActivation() {
+            // Validate medical record number
+            const medicalRecordNumber = document.getElementById('medicalRecordNumber').value;
+            if (!medicalRecordNumber.trim()) {
+                showErrorNotification('Nomor rekam medis harus diisi');
+                return;
+            }
+            
             document.getElementById('activationConfirmModal').classList.remove('hidden');
             document.getElementById('activationConfirmModal').classList.add('flex');
             document.body.style.overflow = 'hidden';
@@ -1718,6 +1739,9 @@
 
                 document.getElementById('editCodeStemiForm').action = `/code-stemi/${id}`;
 
+                // Load medical record number
+                document.getElementById('editMedicalRecordNumber').value = data.medical_record_number || '';
+
                 const checkboxes = document.querySelectorAll('.edit-checklist');
 
                 console.log('Data dari server:', data);
@@ -1776,6 +1800,14 @@
 
                 document.getElementById('detailContent').innerHTML = `
                     <div class="space-y-4">
+                        <!-- Medical Record Number Section -->
+                        <div>
+                            <h4 class="text-sm font-semibold text-gray-800 mb-2">No. Rekam Medis</h4>
+                            <p class="text-sm text-gray-700 bg-gray-50 p-2 rounded-lg border border-gray-200">
+                                ${data.medical_record_number || 'Tidak tersedia'}
+                            </p>
+                        </div>
+
                         <!-- Checklist Section -->
                         <div>
                             <h4 class="text-sm font-semibold text-gray-800 mb-3">Checklist Registrasi</h4>
@@ -1888,5 +1920,4 @@
         });
     </script>
 </body>
-
 </html>

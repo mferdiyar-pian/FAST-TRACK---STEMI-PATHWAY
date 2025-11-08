@@ -12,6 +12,7 @@ class CodeStemi extends Model
     protected $table = 'code_stemi';
 
     protected $fillable = [
+        'medical_record_number',
         'status',
         'start_time',
         'end_time',

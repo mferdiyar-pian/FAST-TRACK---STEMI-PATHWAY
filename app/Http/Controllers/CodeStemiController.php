@@ -35,7 +35,7 @@ class CodeStemiController extends Controller
         if ($request->has('checklist_filter') && !empty($request->checklist_filter)) {
             $query->where(function($q) use ($request) {
                 foreach ($request->checklist_filter as $checklistItem) {
-                    $q->orWhereJsonContains('checklist', $checklistItem);
+                    $q->whereJsonContains('checklist', $checklistItem);
                 }
             });
         }
@@ -44,15 +44,11 @@ class CodeStemiController extends Controller
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                // Cari di custom_message
-                $q->where('custom_message', 'like', "%{$search}%")
-                  // Cari di status
+                $q->where('medical_record_number', 'like', "%{$search}%")
+                  ->orWhere('custom_message', 'like', "%{$search}%")
                   ->orWhere('status', 'like', "%{$search}%")
-                  // Cari di duration (kolom fisik di database)
                   ->orWhere('duration', 'like', "%{$search}%")
-                  // Cari di checklist (dikonversi ke string untuk pencarian)
                   ->orWhereRaw('JSON_UNQUOTE(JSON_EXTRACT(checklist, "$")) LIKE ?', ["%{$search}%"])
-                  // Cari di tanggal (format berbeda)
                   ->orWhereDate('start_time', 'like', "%{$search}%")
                   ->orWhereDate('end_time', 'like', "%{$search}%");
             });
@@ -98,6 +94,7 @@ class CodeStemiController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'medical_record_number' => 'required|string|max:255',
             'checklist' => 'nullable|array',
             'checklist.*' => 'string',
             'custom_message' => 'nullable|string|max:500'
@@ -113,6 +110,7 @@ class CodeStemiController extends Controller
 
             // Pesan broadcast dasar
             $baseMessage = "🚨 *CODE STEMI AKTIF!*\n\n" .
+                          "No. Rekam Medis: *" . $request->medical_record_number . "*\n\n" .
                           "Pasien STEMI telah teridentifikasi di IGD RS Otak M Hatta Bukittinggi.\n" .
                           "Seluruh tim Cath Lab dan unit terkait harap bersiaga.\n\n" .
                           "Fast Track STEMI Pathway aktif.\n" .
@@ -152,6 +150,7 @@ class CodeStemiController extends Controller
 
             // Simpan status Code STEMI ke database dengan waktu WITA
             $codeStemi = CodeStemi::create([
+                'medical_record_number' => $request->medical_record_number,
                 'status' => 'Running',
                 'start_time' => Carbon::now('Asia/Makassar'),
                 'checklist' => $request->checklist ?? [],
@@ -185,6 +184,7 @@ class CodeStemiController extends Controller
         
         return response()->json([
             'id' => $codeStemi->id,
+            'medical_record_number' => $codeStemi->medical_record_number,
             'status' => $codeStemi->status,
             'checklist' => $codeStemi->checklist,
             'custom_message' => $codeStemi->custom_message,
@@ -199,6 +199,7 @@ class CodeStemiController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
+            'medical_record_number' => 'required|string|max:255',
             'checklist' => 'nullable|array',
             'checklist.*' => 'string',
             'custom_message' => 'nullable|string|max:500'
@@ -208,6 +209,7 @@ class CodeStemiController extends Controller
             $codeStemi = CodeStemi::findOrFail($id);
             
             $codeStemi->update([
+                'medical_record_number' => $request->medical_record_number,
                 'checklist' => $request->checklist ?? [],
                 'custom_message' => $request->custom_message,
             ]);
@@ -328,6 +330,7 @@ class CodeStemiController extends Controller
         
         return response()->json([
             'id' => $codeStemi->id,
+            'medical_record_number' => $codeStemi->medical_record_number,
             'status' => $codeStemi->status,
             'checklist' => $codeStemi->checklist,
             'door_to_balloon_time' => $this->calculateDoorToBalloonTime($codeStemi),
@@ -461,7 +464,8 @@ class CodeStemiController extends Controller
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('custom_message', 'like', "%{$search}%")
+                $q->where('medical_record_number', 'like', "%{$search}%")
+                  ->orWhere('custom_message', 'like', "%{$search}%")
                   ->orWhere('status', 'like', "%{$search}%")
                   ->orWhere('duration', 'like', "%{$search}%")
                   ->orWhereRaw('JSON_UNQUOTE(JSON_EXTRACT(checklist, "$")) LIKE ?', ["%{$search}%"]);

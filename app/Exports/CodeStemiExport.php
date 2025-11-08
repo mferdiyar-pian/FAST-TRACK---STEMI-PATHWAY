@@ -24,6 +24,7 @@ class CodeStemiExport implements FromCollection, WithHeadings, WithMapping, Shou
     public function headings(): array
     {
         return [
+            'No. Rekam Medis',
             'ID',
             'Status',
             'Start Time',
@@ -38,6 +39,7 @@ class CodeStemiExport implements FromCollection, WithHeadings, WithMapping, Shou
     public function map($row): array
     {
         return [
+            $row->medical_record_number,
             $row->id,
             $row->status,
             optional($row->start_time)->format('d-m-Y H:i:s'),
