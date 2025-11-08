@@ -91,6 +91,69 @@ class CodeStemiController extends Controller
     /**
      * Aktivasi Code STEMI — kirim broadcast WA & catat waktu mulai.
      */
+    private function sendWhatsAppNotification(Request $request)
+    {
+        // Ambil semua staf aktif dari tabel data_nakes
+        $staffs = DataNakes::where('aktif', true)->get();
+
+        if ($staffs->isEmpty()) {
+            return ['success' => false, 'message' => 'Tidak ada staf aktif untuk dikirimi notifikasi.'];
+        }
+
+        // Pesan broadcast dasar
+        $baseMessage = "🚨 *CODE STEMI AKTIF!*\n\n" .
+                      "No. Rekam Medis: *" . $request->medical_record_number . "*\n\n" .
+                      "Pasien STEMI telah teridentifikasi di IGD RS Otak M Hatta Bukittinggi.\n" .
+                      "Seluruh tim Cath Lab dan unit terkait harap bersiaga.\n\n" .
+                      "Fast Track STEMI Pathway aktif.\n" .
+                      "🕒 Waktu Door-to-Balloon dimulai.";
+
+        // Tambahkan custom message jika ada
+        $message = $baseMessage;
+        if ($request->filled('custom_message')) {
+            $message .= "\n\n" . $request->custom_message;
+        }
+
+        $successCount = 0;
+        $failedNumbers = [];
+
+        // Kirim pesan ke setiap staf
+        foreach ($staffs as $staff) {
+            if ($staff->contact) {
+                try {
+                    $response = Http::timeout(10)
+                        ->withHeaders([
+                            'Authorization' => config('services.fonnte.token'),
+                        ])->post('https://api.fonnte.com/send', [
+                            'target' => $staff->contact,
+                            'message' => $message,
+                        ]);
+
+                    if ($response->successful()) {
+                        $successCount++;
+                    } else {
+                        $failedNumbers[] = $staff->contact;
+                    }
+                } catch (\Exception $e) {
+                    $failedNumbers[] = $staff->contact;
+                }
+            }
+        }
+
+        $statusMessage = '';
+        if ($successCount > 0) {
+            $statusMessage .= "Notifikasi berhasil dikirim ke {$successCount} staf.";
+        }
+        if (!empty($failedNumbers)) {
+            $statusMessage .= " Gagal mengirim ke " . count($failedNumbers) . " nomor.";
+        }
+
+        return ['success' => true, 'message' => $statusMessage];
+    }
+
+    /**
+     * Aktivasi Code STEMI — kirim broadcast WA & catat waktu mulai.
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -101,52 +164,8 @@ class CodeStemiController extends Controller
         ]);
 
         try {
-            // Ambil semua staf aktif dari tabel data_nakes
-            $staffs = DataNakes::where('aktif', true)->get();
-
-            if ($staffs->isEmpty()) {
-                return back()->with('error', 'Tidak ada staf aktif untuk dikirimi notifikasi.');
-            }
-
-            // Pesan broadcast dasar
-            $baseMessage = "🚨 *CODE STEMI AKTIF!*\n\n" .
-                          "No. Rekam Medis: *" . $request->medical_record_number . "*\n\n" .
-                          "Pasien STEMI telah teridentifikasi di IGD RS Otak M Hatta Bukittinggi.\n" .
-                          "Seluruh tim Cath Lab dan unit terkait harap bersiaga.\n\n" .
-                          "Fast Track STEMI Pathway aktif.\n" .
-                          "🕒 Waktu Door-to-Balloon dimulai.";
-
-            // Tambahkan custom message jika ada
-            $message = $baseMessage;
-            if ($request->filled('custom_message')) {
-                $message .= "\n\n" . $request->custom_message;
-            }
-
-            $successCount = 0;
-            $failedNumbers = [];
-
-            // Kirim pesan ke setiap staf
-            foreach ($staffs as $staff) {
-                if ($staff->contact) {
-                    try {
-                        $response = Http::timeout(10)
-                            ->withHeaders([
-                                'Authorization' => config('services.fonnte.token'),
-                            ])->post('https://api.fonnte.com/send', [
-                                'target' => $staff->contact,
-                                'message' => $message,
-                            ]);
-
-                        if ($response->successful()) {
-                            $successCount++;
-                        } else {
-                            $failedNumbers[] = $staff->contact;
-                        }
-                    } catch (\Exception $e) {
-                        $failedNumbers[] = $staff->contact;
-                    }
-                }
-            }
+            // Kirim notifikasi WhatsApp
+            $notificationResult = $this->sendWhatsAppNotification($request);
 
             // Simpan status Code STEMI ke database dengan waktu WITA
             $codeStemi = CodeStemi::create([
@@ -160,13 +179,7 @@ class CodeStemiController extends Controller
             // ✅ TRIGGER REAL-TIME UPDATE
             broadcast(new CodeStemiStatusUpdated());
 
-            $message = 'Code STEMI berhasil diaktifkan! ';
-            if ($successCount > 0) {
-                $message .= "Notifikasi berhasil dikirim ke {$successCount} staf.";
-            }
-            if (!empty($failedNumbers)) {
-                $message .= " Gagal mengirim ke " . count($failedNumbers) . " nomor.";
-            }
+            $message = 'Code STEMI berhasil diaktifkan! ' . ($notificationResult['message'] ?? '');
 
             return redirect()->route('code-stemi.index')->with('success', $message);
 
@@ -196,6 +209,68 @@ class CodeStemiController extends Controller
     /**
      * Update data Code STEMI.
      */
+    private function sendWhatsAppUpdateNotification(Request $request, CodeStemi $codeStemi)
+    {
+        // Ambil semua staf aktif dari tabel data_nakes
+        $staffs = DataNakes::where('aktif', true)->get();
+
+        if ($staffs->isEmpty()) {
+            return ['success' => false, 'message' => 'Tidak ada staf aktif untuk dikirimi notifikasi.'];
+        }
+
+        // Pesan broadcast dasar
+        $baseMessage = "🔄 *CODE STEMI DIPERBARUI!*\n\n" .
+                      "No. Rekam Medis: *" . $request->medical_record_number . "*\n\n" .
+                      "Pasien STEMI telah teridentifikasi di IGD RS Otak M Hatta Bukittinggi.\n" .
+                      "Seluruh tim Cath Lab dan unit terkait harap bersiaga.\n\n" .
+                      "Fast Track STEMI Pathway aktif.\n" .
+                      "🕒 Waktu Door-to-Balloon dimulai.";
+        // Tambahkan custom message jika ada
+        $message = $baseMessage;
+        if ($request->filled('custom_message')) {
+            $message .= "\n\n" . $request->custom_message;
+        }
+
+        $successCount = 0;
+        $failedNumbers = [];
+
+        // Kirim pesan ke setiap staf
+        foreach ($staffs as $staff) {
+            if ($staff->contact) {
+                try {
+                    $response = Http::timeout(10)
+                        ->withHeaders([
+                            'Authorization' => config('services.fonnte.token'),
+                        ])->post('https://api.fonnte.com/send', [
+                            'target' => $staff->contact,
+                            'message' => $message,
+                        ]);
+
+                    if ($response->successful()) {
+                        $successCount++;
+                    } else {
+                        $failedNumbers[] = $staff->contact;
+                    }
+                } catch (\Exception $e) {
+                    $failedNumbers[] = $staff->contact;
+                }
+            }
+        }
+
+        $statusMessage = '';
+        if ($successCount > 0) {
+            $statusMessage .= "Notifikasi pembaruan berhasil dikirim ke {$successCount} staf.";
+        }
+        if (!empty($failedNumbers)) {
+            $statusMessage .= " Gagal mengirim ke " . count($failedNumbers) . " nomor.";
+        }
+
+        return ['success' => true, 'message' => $statusMessage];
+    }
+
+    /**
+     * Update data Code STEMI.
+     */
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -214,12 +289,15 @@ class CodeStemiController extends Controller
                 'custom_message' => $request->custom_message,
             ]);
 
+            // Kirim notifikasi WhatsApp
+            $notificationResult = $this->sendWhatsAppUpdateNotification($request, $codeStemi);
+
             // ✅ TRIGGER REAL-TIME UPDATE
             broadcast(new CodeStemiStatusUpdated());
 
             return response()->json([
                 'success' => true,
-                'message' => 'Data Code STEMI berhasil diperbarui!'
+                'message' => 'Data Code STEMI berhasil diperbarui! ' . ($notificationResult['message'] ?? '')
             ]);
 
         } catch (\Exception $e) {
