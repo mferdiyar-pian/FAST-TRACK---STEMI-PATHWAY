@@ -812,24 +812,24 @@
                                 <span class="text-sm text-gray-700">Anamnesis</span>
                             </label>
                             <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="checklist[]" value="Rongten Thorax"
+                                    class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700">Rongten Thorax</span>
+                            </label>
+                             <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="checklist[]" value="Laboratorium"
+                                    class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700">Laboratorium</span>
+                            </label>
+                              <label class="flex items-center gap-2 cursor-pointer">
                                 <input type="checkbox" name="checklist[]" value="EKG"
                                     class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
                                 <span class="text-sm text-gray-700">EKG</span>
                             </label>
                             <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" name="checklist[]" value="Rongten Thorax"
-                                    class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
-                                <span class="text-sm text-gray-700">Rongten Thorax</span>
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer">
                                 <input type="checkbox" name="checklist[]" value="Pemeriksaan Fisik"
                                     class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
                                 <span class="text-sm text-gray-700">Pemeriksaan Fisik</span>
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" name="checklist[]" value="Laboratorium"
-                                    class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
-                                <span class="text-sm text-gray-700">Laboratorium</span>
                             </label>
                             <label class="flex items-center gap-2 cursor-pointer">
                                 <input type="checkbox" name="checklist[]" value="Informed Consent"
