@@ -197,7 +197,7 @@
                     <img src="{{ asset('images/Logo.PNG') }}" alt="Fast Track STEMI Pathway"
                         class="h-14 w-14 object-contain">
                     <div>
-                        <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">FAST</h1>
+                        <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">FAST1</h1>
                         <h1 class="text-blue-600 font-bold text-sm leading-tight logo-text">TRACK</h1>
                         <p class="text-teal-600 font-bold text-xs leading-tight logo-text">STEMI</p>
                         <p class="text-teal-600 font-bold text-xs leading-tight logo-text">PATHWAY</p>
